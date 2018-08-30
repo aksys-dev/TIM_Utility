@@ -1,0 +1,50 @@
+<resources>
+    <string name="app_name">GamePadV2Upgade</string>
+
+        <!--  BluetoothChat -->
+        <string name="send">Send</string>
+        <string name="not_connected">You are not connected to a device</string>
+        <string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving Bluetooth Chat.</string>
+        <string name="title_connecting">connecting...</string>
+        <string name="title_connected_to">connected: </string>
+        <string name="title_not_connected">not connected</string>
+
+        <!--  DeviceListActivity -->
+        <string name="scanning">scanning for devices...</string>
+        <string name="select_device">select a device to connect</string>
+        <string name="none_paired">No devices have been paired</string>
+        <string name="none_found">No devices found</string>
+        <string name="title_paired_devices">Paired Devices</string>
+        <string name="title_other_devices">Other Available Devices</string>
+        <string name="button_scan">Scan for devices</string>
+
+        <!-- Options Menu -->
+        <string name="connect">Connect a device</string>
+        <string name="discoverable">Make discoverable</string>
+        <string name="note_str">Press &quot;Menu&quot; to set the data format</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="inno_firmware_download">Firmware download</string>
+    <string name="inno_gamepad_update">Accessori TIMgames</string>
+    <string name="gamepad_one">Gamepad</string>
+    <string name="gamepad_two">Gamepad 2</string>
+    <string name="dongle">Nano Receiver</string>
+    <string name="gampad_unconnected">Disconnesso,accendere li dispositivo</string>
+    <string name="Upgrade_All">Aggiorna gli accessori</string>
+
+    <string name="guidedstep_first_title">Guided Step First Page</string>
+    <string name="guidedstep_first_description">First step of guided sequence</string>
+    <string name="guidedstep_first_breadcrumb">Guided Steps: 1</string>
+    <string name="guidedstep_continue">Continue</string>
+    <string name="guidedstep_letsdoit">Let\'s do it</string>
+    <string name="guidedstep_nevermind">Never mind</string>
+    <string name="guidedstep_cancel">Cancel</string>
+    <string name="no_target_device">Target Device not connected, Please connect the gamepad at first!</string>
+    <string name="not_support_bt">This device not support BlueTooth</string>
+    <string name="select_upgrade_file">Please select the firmware file for upgrade game pad</string>
+    <string name="enable_imu">Enable IMU</string>
+    <string name="disable_imu">Disable IMU</string>
+
+
+</resources>
