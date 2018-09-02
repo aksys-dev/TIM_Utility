@@ -11,8 +11,6 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
-import it.telecomitalia.TIMgamepad2.model.DeviceInfo;
-import it.telecomitalia.TIMgamepad2.model.SPPData;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.model.Constant.TAG;
@@ -29,26 +27,26 @@ public class BlueToothConnThread extends Thread {
     private static final int STREAM_BUSY = 1;
     private static final int STREAM_FAILED = 2;
     private static final int STREAM_INITIATED = 3;
-    private DeviceInfo mDeviceInfo;
+    private DeviceModel mDeviceInfo;
     private BluetoothSocket mSocket = null;
     private InputStream mIS = null;
     private OutputStream mOS = null;
-    private boolean mIMUEnabled = false;
+    private boolean sppRunning = false;
     private int mStreamReady = STREAM_UNINITIATED; //-1=uninitialized,  0=ready , 1=busy, 2=failed
-    private IMURawDataListener mCb;
+    private SPPDataListener mCb;
     private ConnectionReadyListener mListener;
     private boolean firstRun = true;
 
     private ProxyManager mProxy = ProxyManager.getInstance();
-    private Thread IMUDataThread = new Thread(new Runnable() {
+    private Thread SPPDataThread = new Thread(new Runnable() {
 
         @Override
         public void run() {
 
             int bytes;
-            byte[] recv = new byte[22];
+            byte[] recv = new byte[64];
             // Keep listening to the InputStream while connected
-            while (mIMUEnabled) {
+            while (sppRunning) {
                 try {
                     if (firstRun) {
                         LogUtil.d("IMU:" + getName() + " ");
@@ -57,13 +55,7 @@ public class BlueToothConnThread extends Thread {
                     // Read from the InputStream
                     if (mIS != null) {
                         bytes = mIS.read(recv);
-//                        LogUtil.d("Received "+bytes+" bytes");
-                        if (checkValid(recv, bytes)) {
-//                            mCb.onRawDataArrived(recv, bytes);
-                            mProxy.send(new byte[]{0x09, recv[6], recv[7], recv[8], recv[9], recv[10], recv[11], recv[12], recv[13], recv[14], recv[15], recv[16], recv[17]});
-                        } else {
-                            LogUtil.e("Wrong data received!");
-                        }
+                        mCb.onDataArrived(recv, bytes);
                     } else {
                         LogUtil.e("Input stream socket has been closed");
                     }
@@ -76,18 +68,18 @@ public class BlueToothConnThread extends Thread {
     });
 
 
-    BlueToothConnThread(DeviceInfo info, IMURawDataListener cb, ConnectionReadyListener listener) {
+    BlueToothConnThread(DeviceModel info, SPPDataListener cb, ConnectionReadyListener listener) {
         mDeviceInfo = info;
         mListener = listener;
-        setName("BTConnThread-" + info.getChannel());
+        setName("BTConnThread-" + info.getIndicator());
         LogUtil.d("" + getName() + " ");
         mCb = cb;
     }
 
-    BlueToothConnThread(DeviceInfo info, ConnectionReadyListener listener) {
+    BlueToothConnThread(DeviceModel info, ConnectionReadyListener listener) {
         mDeviceInfo = info;
         mListener = listener;
-        setName("BTConnThread-" + info.getChannel());
+        setName("BTConnThread-" + info.getIndicator());
         LogUtil.d("" + getName() + " ");
     }
 
@@ -142,17 +134,17 @@ public class BlueToothConnThread extends Thread {
         mListener.onConnectionReady(true);
     }
 
-    public void startReceiveIMUDate() {
-        mIMUEnabled = true;
-        IMUDataThread.start();
+    public void startSPPDataListener() {
+        sppRunning = true;
+        SPPDataThread.start();
     }
 
-    public void stopReceiveIMUDate() {
-        mIMUEnabled = false;
+    public void stopSPPDataListener() {
+        sppRunning = false;
     }
 
     public void cancel() {
-        mIMUEnabled = false;
+        stopSPPDataListener();
         try {
             if (mIS != null) {
                 LogUtil.d("Close SPP socket input stream");
@@ -184,13 +176,15 @@ public class BlueToothConnThread extends Thread {
      * @param buffer The bytes to write
      */
     public void write(byte[] buffer) {
-        waitUntilSocketReady();
-//        LogUtil.d("Now start really operation");
+//        waitUntilSocketReady();
+        String c = "";
+        for (int i = 0; i < buffer.length; i++) {
+            c += Integer.toHexString(buffer[i]) + " ";
+        }
+        LogUtil.d("Send spp data (" + c + ") to game pad");
         try {
             if (mOS != null) {
                 mOS.write(buffer);
-                LogUtil.i(TAG, "数据量");
-
             } else {
                 LogUtil.e("Can not find target device");
             }
@@ -200,7 +194,7 @@ public class BlueToothConnThread extends Thread {
     }
 
     public void write(byte cmd) {
-        waitUntilSocketReady();
+//        waitUntilSocketReady();
         try {
             LogUtil.d("Send spp data (" + Integer.toHexString(cmd) + ") to game pad");
             if (mOS != null) {
@@ -230,30 +224,28 @@ public class BlueToothConnThread extends Thread {
         return size;
     }
 
-    public SPPData read() {
-        waitUntilSocketReady();
-        int size;
-        byte[] recv = new byte[22];
-        try {
-            // Read from the InputStream
-            if (mIS != null) {
-                size = mIS.read(recv);
-                LogUtil.d("Received " + size + " bytes");
-                if (checkValid(recv, size)) {
-                    return new SPPData(size, recv);
-                } else {
-                    LogUtil.e("Wrong data received!");
-                }
-            } else {
-                LogUtil.e("Input stream socket has been closed");
-            }
-        } catch (IOException e) {
-            LogUtil.e("disconnected\n", e.toString());
-        }
-        return null;
-    }
+//    public SPPData read() {
+//        waitUntilSocketReady();
+//        int size;
+//        byte[] recv = new byte[22];
+//        try {
+//            // Read from the InputStream
+//            if (mIS != null) {
+//                size = mIS.read(recv);
+//                LogUtil.d("Received " + size + " bytes");
+//                if (checkValid(recv, size)) {
+//                    return new SPPData(size, recv);
+//                } else {
+//                    LogUtil.e("Wrong data received!");
+//                }
+//            } else {
+//                LogUtil.e("Input stream socket has been closed");
+//            }
+//        } catch (IOException e) {
+//            LogUtil.e("disconnected\n", e.toString());
+//        }
+//        return null;
+//    }
 
-    private boolean checkValid(byte[] data, int size) {
-        return (size == 22 && data[1] == 0x55);
-    }
+
 }

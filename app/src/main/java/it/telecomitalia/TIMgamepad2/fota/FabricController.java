@@ -26,6 +26,12 @@ public class FabricController {
     private static String EVENT_SPEC_KEY = "FOTA_SpecialKey";
     private static Context mContext;
 
+    public static final String STATUS_CONNECTED = "connected";
+    public static final String STATUS_DISCONNECTED = "disconnected";
+    public static final String STATUS_UNPAIRED = "unpaired";
+
+    public static final String GP_V2_NAME = "V2";
+
     private FabricController() {
         Fabric.with(mContext, new Crashlytics());
     }

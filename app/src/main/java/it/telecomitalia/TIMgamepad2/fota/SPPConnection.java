@@ -1,8 +1,9 @@
 package it.telecomitalia.TIMgamepad2.fota;
 
 
-import it.telecomitalia.TIMgamepad2.model.DeviceInfo;
-import it.telecomitalia.TIMgamepad2.model.SPPData;
+import android.os.SystemClock;
+
+import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.model.Constant.TAG;
@@ -11,7 +12,11 @@ import static it.telecomitalia.TIMgamepad2.model.Constant.TAG;
  * Created by D on 2018/1/18 0018.
  */
 
-public class SPPConnection implements ConnectionReadyListener {
+public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
+
+    private static final int CMD_HEADER = 0;
+    private static final int CMD_PAYLOAD = 1;
+
     public static final byte CMD_ENABLE_IMU = (byte) 0x80;
     public static final byte CMD_DISABLE_IMU = (byte) 0x81;
     public static final byte CMD_QUERY_IMU = (byte) 0x82;
@@ -34,112 +39,106 @@ public class SPPConnection implements ConnectionReadyListener {
     public static final byte CMD_GET_BAT_V = (byte) 0x93;
     public static final byte DATA_IMU_HEADER = (byte) 0x22;
 
-    /*public static final String IMU_OPEN="UPDATE ENABLE";
-    public static final String IMU_CLOSE="UPDATE DISABLE";
-    public static final String SET_MODEL_PC="set_mode0";
-    public static final String SET_MODEL_GAME="set_mode1";
-    public static final String SET_MODEL_ANDROID="set_mode2";
-    public static final String SET_MODEL_CTV="set_mode3";
-    public static final String GET_MODEL_PC="get_mode";
-    public static final String GET_MODEL_CTV_SUMSUNG="set_cTV_mode1";
-    public static final String GET_MODEL_CTV_LG="set_cTV_mode2";
-    public static final String GET_MODEL_CTV="get_cTV_mode";
-    public static final String UPDATE_ENABLE="FOTA_ON";//升级时，首先需要进入升级模式
-    public static final String UPDATE_DISABLE="FOTA_OFF";//退出升级模式
-    public static final String GVERSION="GVERSION";//升级模式时，获取版本号
-    public static final String COMMIT_OK="COMMITOK";//升级成功重连之后发送这个*/
-
-
     private BlueToothConnThread mConnectionThread;
-    private DeviceInfo mInfo;
+    private DeviceModel mInfo;
     private boolean ready;
+    private ProxyManager mProxyManager = ProxyManager.getInstance();
 
-    public SPPConnection(DeviceInfo info, IMURawDataListener listener) {
-        mConnectionThread = new BlueToothConnThread(info, listener, this);
-        mInfo = info;
-    }
+    private static final String UNKNOWN = "unknown";
 
-    public SPPConnection(DeviceInfo info) {
+    private String mFirmwareVersion = UNKNOWN;
+    private int mBatteryVolt = -1;
+
+    SPPConnection(DeviceModel info) {
         LogUtil.d(TAG, "SPPConnection : " + info.getDevice().getName());
-        mConnectionThread = new BlueToothConnThread(info, this);
+        mConnectionThread = new BlueToothConnThread(info, this, this);
         mInfo = info;
-    }
-
-    public SPPConnection(DeviceInfo info, IMUDataListener listener) {
-//        mConnectionThread = new BlueToothConnThread(info, listener, this);
-//        mInfo = info;
     }
 
     private static int combineHighAndLowByte(byte high, byte low) {
         return (high << 8) | (low & 0xFF);
     }
 
-    public DeviceInfo getDeviceInfo() {
-        return mInfo;
-    }
-
-    public void init() {
+    public void start() {
         mConnectionThread.start();
     }
 
-    public void deinit() {
+    public void stop() {
         mConnectionThread.cancel();
+        mConnectionThread = null;
     }
 
-    public void enableSensor(boolean enable) {
-        int bytes;
-        byte[] recv = new byte[22];
-        if (enable) {
-            mConnectionThread.write(CMD_ENABLE_IMU);
-
-            bytes = mConnectionThread.read(recv);
-            String msg = "enable received: " + bytes + " byte:";
-            msg += " 0x" + Integer.toHexString(combineHighAndLowByte(recv[0], recv[1]));
-            LogUtil.d(msg);
-
-            mConnectionThread.startReceiveIMUDate();
-        } else {
-            mConnectionThread.write(CMD_DISABLE_IMU);
-
-            bytes = mConnectionThread.read(recv);
-            String msg = "Disable received: " + bytes + " byte:";
-            msg += " 0x" + Integer.toHexString(combineHighAndLowByte(recv[0], recv[1]));
-            LogUtil.d(msg);
-
-            mConnectionThread.stopReceiveIMUDate();
-        }
-    }
+//    public void enableSensor(boolean enable) {
+//        int bytes;
+//        byte[] recv = new byte[22];
+//        if (enable) {
+//            mConnectionThread.write(CMD_ENABLE_IMU);
+//
+//            bytes = mConnectionThread.read(recv);
+//            String msg = "enable received: " + bytes + " byte:";
+//            msg += " 0x" + Integer.toHexString(combineHighAndLowByte(recv[0], recv[1]));
+//            LogUtil.d(msg);
+//
+//            mConnectionThread.startSPPDataListener();
+//        } else {
+//            mConnectionThread.write(CMD_DISABLE_IMU);
+//
+//            bytes = mConnectionThread.read(recv);
+//            String msg = "Disable received: " + bytes + " byte:";
+//            msg += " 0x" + Integer.toHexString(combineHighAndLowByte(recv[0], recv[1]));
+//            LogUtil.d(msg);
+//
+//            mConnectionThread.stopSPPDataListener();
+//        }
+//    }
 
     public String getDeviceFirmwareVersion() {
-        byte[] recv = new byte[57];
-        String result = "";
-
-        mConnectionThread.write(CMD_QUERY_FW_VERSION);
-        int size = mConnectionThread.read(recv);
-
-        ReceivedData data = new ReceivedData(recv, size);
-        if (data.mCmd == CMD_QUERY_FW_VERSION) {
-            result = data.mResult;
-            LogUtil.i(TAG, "Version: " + result);
-        }
-        return result;
+        return mFirmwareVersion;
+//        byte[] recv = new byte[57];
+//        String result = "";
+//
+//        mConnectionThread.write(CMD_QUERY_FW_VERSION);
+//        int size = mConnectionThread.read(recv);
+//
+//        ReceivedData data = new ReceivedData(recv, size);
+//        if (data.mCmd == CMD_QUERY_FW_VERSION) {
+//            result = data.mResult;
+//            LogUtil.i(TAG, "Version: " + result);
+//        }
+//        return result;
     }
 
     public int getDeviceBattery() {
-        LogUtil.d(TAG, "query battery");
-        byte[] recv = new byte[57];
-        String result = "";
-
-        mConnectionThread.write(CMD_GET_BAT_V);
-        int size = mConnectionThread.read(recv);
-
-        LogUtil.d(TAG, "byte : " + recv + " cmd " + CMD_GET_BAT_V);
-        ReceivedData data = new ReceivedData(recv, size);
-        if (data.mCmd == CMD_GET_BAT_V) {
-            return combineHighAndLowByte(recv[2], recv[3]);
-        }
-        return -1;
+//        LogUtil.d(TAG, "query battery");
+//        byte[] recv = new byte[57];
+//        String result = "";
+//
+//        mConnectionThread.write(CMD_GET_BAT_V);
+//        int size = mConnectionThread.read(recv);
+//
+//        LogUtil.d(TAG, "byte : " + recv + " cmd " + CMD_GET_BAT_V);
+//        ReceivedData data = new ReceivedData(recv, size);
+//        if (data.mCmd == CMD_GET_BAT_V) {
+//            return combineHighAndLowByte(recv[2], recv[3]);
+//        }
+//        return -1;
+        return mBatteryVolt;
     }
+
+    private void setGamePadLedIndicator() {
+        //TODO: send the led indicator number to device
+        try {
+            LogUtil.d("Header:" + CMD_SET_CHANNEL + "; Channel:" + mInfo.getIndicator());
+            byte[] cmd = new byte[2];
+            cmd[CMD_HEADER] = CMD_SET_CHANNEL;
+            cmd[CMD_PAYLOAD] = mInfo.getIndicator();
+            mConnectionThread.write(cmd);
+        } catch (NullPointerException e) {
+            LogUtil.e(e.toString());
+            e.printStackTrace();
+        }
+    }
+
 
     public String imuSwitch(byte imuData) {
         LogUtil.i(TAG, "sppSend: " + imuData);
@@ -156,7 +155,6 @@ public class SPPConnection implements ConnectionReadyListener {
         byte[] recv = new byte[100];
         mConnectionThread.write(cmd);
         int size = mConnectionThread.read(recv);
-
         ReceivedData data = new ReceivedData(recv, size);
         return data;
     }
@@ -185,23 +183,22 @@ public class SPPConnection implements ConnectionReadyListener {
         mConnectionThread.write(CMD_QUERY_IMU);
     }
 
-    public int setDeviceChannel(byte channel) {
+    public void setDeviceChannel(byte channel) {
         byte[] cmd = new byte[2];
         cmd[0] = CMD_SET_CHANNEL;
         cmd[1] = channel;
         mConnectionThread.write(cmd);
-        SPPData sppdata = mConnectionThread.read();
-        int size = sppdata.getSize();
-        byte[] data = sppdata.getData();
-        LogUtil.d("received data: " + size + " bytes");
-        String text = null;
-        for (int i = 0; i < size; i++) {
-            text = text + " " + data[i];
-        }
-        LogUtil.d("" + text);
-
-        return data[1];
-
+//        SPPData sppdata = mConnectionThread.read();
+//        int size = sppdata.getSize();
+//        byte[] data = sppdata.getData();
+//        LogUtil.d("received data: " + size + " bytes");
+//        String text = null;
+//        for (int i = 0; i < size; i++) {
+//            text = text + " " + data[i];
+//        }
+//        LogUtil.d("" + text);
+//
+//        return data[1];
     }
 
     public void sendData(byte[] data) {
@@ -216,10 +213,92 @@ public class SPPConnection implements ConnectionReadyListener {
     @Override
     public void onConnectionReady(boolean b) {
         ready = b;
+        mConnectionThread.startSPPDataListener();
+        setGamePadLedIndicator();
+        SystemClock.sleep(500);
+        queryFirmwareVersion();
+        SystemClock.sleep(500);
+        queryFirmwareBatteryLevel();
+
     }
 
-    public boolean getReady() {
+    public boolean isReady() {
         return ready;
+    }
+
+    private void queryFirmwareVersion() {
+        mConnectionThread.write(CMD_QUERY_FW_VERSION);
+    }
+
+    private void queryFirmwareBatteryLevel() {
+        mConnectionThread.write(CMD_GET_BAT_V);
+    }
+
+    @Override
+    public void onDataArrived(byte[] data, int size) {
+        LogUtil.d("On " + size + " bytes data arrived");
+        switch (data[0]) {
+            case CMD_ENABLE_IMU:
+                LogUtil.d("CMD_ENABLE_IMU");
+                break;
+            case CMD_DISABLE_IMU:
+                LogUtil.d("CMD_DISABLE_IMU");
+                break;
+            case CMD_QUERY_IMU:
+                LogUtil.d("CMD_QUERY_IMU");
+                break;
+            case CMD_SET_CHANNEL:
+                LogUtil.d("CMD_SET_CHANNEL");
+                break;
+            case CMD_QUERY_FW_VERSION:
+                LogUtil.d("CMD_QUERY_FW_VERSION");
+                mFirmwareVersion = new String(data, 2, size);
+                LogUtil.d("Firmware version on device: " + mFirmwareVersion);
+                break;
+            case CMD_START_FW_UPGRADE:
+                LogUtil.d("CMD_START_FW_UPGRADE");
+                break;
+            case CMD_SET_MODEL_PC:
+            case CMD_SET_MODEL_GAME:
+            case CMD_SET_MODEL_ANDROID:
+            case CMD_GET_MODEL_PC:
+            case CMD_GET_MODEL_CTV_SUMSUNG:
+            case CMD_GET_MODEL_CTV_LG:
+            case CMD_GET_MODEL_CTV:
+                break;
+            case CMD_ENABLE_UPDATE_MODE:
+                LogUtil.d("Moto OFF");
+                break;
+            case CMD_DISABLE_UPDATE_MODE:
+                LogUtil.d("CMD_DISABLE_UPDATE_MODE");
+                break;
+            case CMD_UPGRADE_SUCCESS:
+                LogUtil.d("CMD_UPGRADE_SUCCESS");
+                break;
+            case CMD_UPGRADE_FAILED:
+                LogUtil.d("CMD_UPGRADE_FAILED");
+                break;
+            case CMD_MOTOR_ON:
+                LogUtil.d("CMD_MOTOR_ON");
+                break;
+            case CMD_MOTOR_OFF:
+                LogUtil.d("CMD_MOTOR_OFF");
+                break;
+            case CMD_GET_BAT_V:
+                LogUtil.d(TAG, "CMD_GET_BAT_V ");
+                mBatteryVolt = combineHighAndLowByte(data[2], data[3]);
+                LogUtil.d("BatteryVolt: " + mBatteryVolt);
+                break;
+            case DATA_IMU_HEADER:
+                LogUtil.d("DATA_IMU_HEADER: " + data[0]);
+                if (checkValid(data, size)) {
+                    mProxyManager.send(new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17]});
+                }
+                break;
+            default:
+                LogUtil.e("Unknown command!");
+                break;
+        }
     }
 
     public static class ReceivedData {
@@ -240,5 +319,9 @@ public class SPPConnection implements ConnectionReadyListener {
             builder.append("RESULT : " + mResult);
             return builder.toString();
         }
+    }
+
+    private boolean checkValid(byte[] data, int size) {
+        return (size == 22 && data[1] == 0x55);
     }
 }

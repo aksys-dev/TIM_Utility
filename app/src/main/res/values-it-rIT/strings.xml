@@ -1,27 +1,27 @@
 <resources>
-    <string name="app_name">GamePadV2Upgade</string>
+    <string name="app_name">Utilità GamePad</string>
 
-        <!--  BluetoothChat -->
-        <string name="send">Inviare</string>
-        <string name="not_connected">Non sei connesso a un dispositivo</string>
-        <string name="bt_not_enabled_leaving">Bluetooth non è stato abilitato. Lasciando la chat Bluetooth.</string>
-        <string name="title_connecting">collegamento...</string>
-        <string name="title_connected_to">collegato: </string>
-        <string name="title_not_connected">non collegata</string>
+    <!--  BluetoothChat -->
+    <string name="send">Inviare</string>
+    <string name="not_connected">Non sei connesso a un dispositivo</string>
+    <string name="bt_not_enabled_leaving">Bluetooth non è stato abilitato. Lasciando la chat Bluetooth.</string>
+    <string name="title_connecting">collegamento...</string>
+    <string name="title_connected_to">collegato: </string>
+    <string name="title_not_connected">non collegata</string>
 
-        <!--  DeviceListActivity -->
-        <string name="scanning">scansione per dispositivi...</string>
-        <string name="select_device">seleziona un dispositivo da connettere</string>
-        <string name="none_paired">Nessun dispositivo è stato abbinato</string>
-        <string name="none_found">Nessun dispositivo trovato</string>
-        <string name="title_paired_devices">Dispositivi accoppiati</string>
-        <string name="title_other_devices">Altri dispositivi disponibili</string>
-        <string name="button_scan">Cerca dispositivi</string>
+    <!--  DeviceListActivity -->
+    <string name="scanning">scansione per dispositivi...</string>
+    <string name="select_device">seleziona un dispositivo da connettere</string>
+    <string name="none_paired">Nessun dispositivo è stato abbinato</string>
+    <string name="none_found">Nessun dispositivo trovato</string>
+    <string name="title_paired_devices">Dispositivi accoppiati</string>
+    <string name="title_other_devices">Altri dispositivi disponibili</string>
+    <string name="button_scan">Cerca dispositivi</string>
 
-        <!-- Options Menu -->
-        <string name="connect">Collegare un dispositivo</string>
-        <string name="discoverable">Rendilo visibile</string>
-        <string name="note_str">stampa &quot;Menu&quot; per impostare il formato dei dati</string>
+    <!-- Options Menu -->
+    <string name="connect">Collegare un dispositivo</string>
+    <string name="discoverable">Rendilo visibile</string>
+    <string name="note_str">stampa &quot;Menu&quot; per impostare il formato dei dati</string>
 
     <string name="hello_world">Ciao mondo!</string>
     <string name="menu_settings">impostazioni</string>
@@ -45,4 +45,23 @@
     <string name="select_upgrade_file">Selezionare il file del firmware per l\'aggiornamento del game pad</string>
     <string name="enable_imu">Abilita IMU</string>
     <string name="disable_imu">Disabilita IMU</string>
+
+    <!-- Custom String -->
+    <string name="title_gamepad_advanced">opzioni avanzate gamepad</string>
+    <string name="gamepads">Gamepads</string>
+    <string name="Calibration">calibrazione sensore inerziale</string>
+    <string name="menu_gamepad">stato del TIM gamepad</string>
+    <string name="menu_imu">IMU Setting</string>
+    <string name="menu_about">About Application</string>
+    <string name="new_firmware">Premi qui per ottenere una nuova versione.</string>
+    <string name="battery">batteria</string>
+    <string name="on">acceso</string>
+    <string name="off">spento</string>
+    <string name="firmware">Firmware</string>
+    <string name="verision">versione</string>
+    <string name="imu_sensitivity">sensibilità sensore di inerziale</string>
+    <string name="current_version">versione corrente</string>
+    <string name="latest_update">versione aggiornata</string>
+    <string name="unknown">Unknown</string>
+    <string name="updated">updated</string>
 </resources>

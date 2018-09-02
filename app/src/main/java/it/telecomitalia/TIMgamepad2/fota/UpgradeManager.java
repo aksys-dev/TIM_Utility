@@ -1,6 +1,5 @@
 package it.telecomitalia.TIMgamepad2.fota;
 
-import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -66,15 +65,15 @@ public class UpgradeManager {
         }
     }
 
-    public void startUpgrade(final BluetoothDeviceManager.DeviceModel model, final Handler handler) {
+    public void startUpgrade(final DeviceModel model, final Handler handler) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 LogUtil.d(TAG, "Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
-                String path = FileUtils.downLoadBin(model.getmFabricModel().mFirmwareConfig.getmDownUrl(), handler);
+                String path = FileUtils.downLoadBin(model.getFabricModel().mFirmwareConfig.getmDownUrl(), handler);
 
                 LogUtil.d(TAG, "download success " + path);
-                SPPConnection mainConnection = model.getmSPPConnection();
+                SPPConnection mainConnection = model.getSPPConnection();
                 mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
                 Message msg = handler.obtainMessage();
                 msg.what = FotaMainActivity.MSG_SET_PROGRESSBAR;
@@ -115,7 +114,7 @@ public class UpgradeManager {
         }).start();
     }
 
-    public void upgrade(BluetoothDeviceManager.DeviceModel device) {
+    public void upgrade(DeviceModel device) {
         String newversion = "";
         String fmVersion = "";
 
@@ -129,8 +128,8 @@ public class UpgradeManager {
             newversion = "";
         }
 
-        if (TextUtils.isEmpty(device.getmFabricModel().mPreviousVersion)){
-            fmVersion = device.getmSPPConnection().getDeviceFirmwareVersion().substring(8,14);
+        if (TextUtils.isEmpty(device.getFabricModel().mPreviousVersion)){
+            fmVersion = device.getSPPConnection().getDeviceFirmwareVersion().substring(8,14);
         }
 
         if(!TextUtils.isEmpty(newversion)){

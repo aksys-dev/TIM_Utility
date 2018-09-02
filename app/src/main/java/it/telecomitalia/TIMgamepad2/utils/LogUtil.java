@@ -23,6 +23,11 @@ public class LogUtil {
     private static String TUTONG_LOG_FILE = getSDPath() + "/gamepadv2upagde_log.log";
 
 
+    private static final String TAG = "GamePadUtility";
+
+    private static final boolean DEBUG_LINE = false;
+
+    private static String LOG_FILE = getSDPath() + "/gamepad_log.log";
 
     public static void d(String TAG, String method, String msg) {
         Log.d(TAG, "[" + method + "]" + msg);
@@ -30,16 +35,21 @@ public class LogUtil {
 
     public static void d(String TAG, String msg) {
         if (DEBUG) {
-            Log.d(TAG, "[" + getFileLineMethod() + "]" + msg);
+            Log.d(TAG, getFileLineMethod() + msg);
         }
     }
+
+//    public static void d(String msg) {
+//        if (DEBUG) {
+//            Log.d(_FILE_(), "[" + getLineMethod() + "]" + msg);
+//        }
+//    }
 
     public static void d(String msg) {
         if (DEBUG) {
-            Log.d(_FILE_(), "[" + getLineMethod() + "]" + msg);
+            Log.d(TAG, getFileLineMethod() + msg);
         }
     }
-
 
 
     public static void w(String TAG, String msg) {
@@ -62,13 +72,19 @@ public class LogUtil {
 
     public static void i(String msg) {
         if (DEBUG) {
-            Log.i(_FILE_(), msg);
+            Log.i(TAG, getLineMethod() + msg);
         }
     }
 
     public static void e(String msg) {
         if (DEBUG) {
-            Log.e(_FILE_(), getLineMethod() + msg);
+            Log.e(TAG, getLineMethod() + msg);
+        }
+    }
+
+    public static void l() {
+        if (DEBUG_LINE) {
+            Log.i(TAG, getLineMethod());
         }
     }
 
@@ -80,12 +96,12 @@ public class LogUtil {
 
     public static void f(String TAG, String msg) {
         if (DEBUG) {
-            try{
-                FileWriter fw = new FileWriter(TUTONG_LOG_FILE, true);
+            try {
+                FileWriter fw = new FileWriter(LOG_FILE, true);
                 fw.write(msg + "\n");
                 fw.close();
-                i(TAG,msg);
-            }catch(IOException e){
+                i(TAG, msg);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -94,16 +110,16 @@ public class LogUtil {
     public static String getFileLineMethod() {
         StackTraceElement traceElement = ((new Exception()).getStackTrace())[2];
         StringBuffer toStringBuffer = new StringBuffer("[")
-                .append(traceElement.getFileName()).append(" | ")
-                .append(traceElement.getLineNumber()).append(" | ")
-                .append(traceElement.getMethodName()).append("]");
+                .append(traceElement.getFileName()).append("|")
+                .append(traceElement.getLineNumber()).append("|")
+                .append(traceElement.getMethodName()).append("]  ");
         return toStringBuffer.toString();
     }
 
     public static String getLineMethod() {
         StackTraceElement traceElement = ((new Exception()).getStackTrace())[2];
         StringBuffer toStringBuffer = new StringBuffer("[")
-                .append(traceElement.getLineNumber()).append(" | ")
+                .append(traceElement.getLineNumber()).append("|")
                 .append(traceElement.getMethodName()).append("]");
         return toStringBuffer.toString();
     }
@@ -142,11 +158,11 @@ public class LogUtil {
     private static long _time_start = -1;
     private static long _time_end = -1;
 
-    public static void timeStart(){
+    public static void timeStart() {
         _time_start = System.currentTimeMillis();
     }
 
-    public static void timeEnd(String msg, boolean isSeconds){
+    public static void timeEnd(String msg, boolean isSeconds) {
         _time_end = System.currentTimeMillis();
         i("time", msg + " cost time ========>" + (isSeconds ? ((_time_end - _time_start) / 1000) : (_time_end - _time_start)));
         _time_start = -1;
@@ -154,7 +170,7 @@ public class LogUtil {
     }
 
     public static void printStackTraces() {
-        if(DEBUG){
+        if (DEBUG) {
             Throwable ex = new Throwable();
             StackTraceElement[] stackElements = ex.getStackTrace();
             if (stackElements != null) {

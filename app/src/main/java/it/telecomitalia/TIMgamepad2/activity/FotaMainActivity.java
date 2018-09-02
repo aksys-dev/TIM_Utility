@@ -33,6 +33,7 @@ import java.util.Set;
 
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
+import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.fota.FabricController;
 import it.telecomitalia.TIMgamepad2.fota.SPPConnection;
 import it.telecomitalia.TIMgamepad2.fota.UpgradeManager;
@@ -96,13 +97,13 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
         sp = FotaMainActivity.this.getSharedPreferences(CommerHelper.SPNAME, Activity.MODE_PRIVATE);
         displayDefaultBluetoothInfo();
-        intializeBluetoothManager();
+        initializeBluetoothManager();
     }
 
     @Override
     protected void onResume() {
         LogUtil.d(TAG, "onResume called");
-        mGamepadDeviceManager.intializeDevice();
+//        mGamepadDeviceManager.initializeDevice();
         mGamepadDeviceManager.queryDeviceFabricInfo();
 
         //Get the BLuetoothDevice object
@@ -191,7 +192,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
             if (event.equals(BluetoothDeviceManager.EVENTBUS_MSG_QUERY_END) ||
                     event.equals(BluetoothDeviceManager.EVENTBUS_MSG_STAUS_CHANGED)) {
                 LogUtil.d(TAG, "DisplayUpdateInfo");
-                Hashtable<String, BluetoothDeviceManager.DeviceModel> deviceMap = mGamepadDeviceManager.getConnectedDevices();
+                Hashtable<String, DeviceModel> deviceMap = mGamepadDeviceManager.getConnectedDevices();
                 Set<String> keySet = deviceMap.keySet();
                 int index = 0;
 
@@ -199,7 +200,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
                 if (!mInUpgrading) {
                     for (String key : keySet) {
                         mBluetoothItemContainer.removeViewAt(index);
-                        displayBluetoothStatusByPosition(index++, deviceMap.get(key).getmFabricModel());
+                        displayBluetoothStatusByPosition(index++, deviceMap.get(key).getFabricModel());
                     }
                 }
 //                mGamepadDeviceManager.testProtocol();
@@ -217,7 +218,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 //                boolean result = mGamepadDeviceManager.connectBluetooth(device);
 //                LogUtil.d(TAG, "connect result : " + result);
 
-                mGamepadDeviceManager.updateDevice(mCurrentUpgradeModel.getDevice());
+//                mGamepadDeviceManager.updateDevice(mCurrentUpgradeModel.getDevice());
                 mCurrentUpgradeModel = mGamepadDeviceManager.getDeviceModelByAddress(device.getAddress());
                 mHandler.sendEmptyMessage(MSG_RECONNECT_SUCESS);
                 showUpgradeProcess(100);
@@ -303,7 +304,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    private void intializeBluetoothManager() {
+    private void initializeBluetoothManager() {
         LogUtil.d(TAG, "initializeBluetoothManager");
         mGamepadDeviceManager = BluetoothDeviceManager.getDeviceManager();
         mGamepadDeviceManager.initializeDevice(PATH);
@@ -315,20 +316,20 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
      */
     private void startUpgradeByOrder(int index) {
         LogUtil.d(TAG, "Start upgrade : " + index);
-        Hashtable<String, BluetoothDeviceManager.DeviceModel> deviceMap = mGamepadDeviceManager.getConnectedDevices();
+        Hashtable<String, DeviceModel> deviceMap = mGamepadDeviceManager.getConnectedDevices();
         Set<String> keySet = deviceMap.keySet();
 
         for (String key : keySet) {
-            BluetoothDeviceManager.DeviceModel model = deviceMap.get(key);
+            DeviceModel model = deviceMap.get(key);
             LogUtil.d(TAG, "index : " + index + " newIndex : " + model.getIndex());
             if (index == model.getIndex() && !mInUpgrading) {
                 mCurrentUpgradeModel = model;
-                FabricModel fabricModel = deviceMap.get(key).getmFabricModel();
+                FabricModel fabricModel = deviceMap.get(key).getFabricModel();
                 LogUtil.d(TAG, "upgrade check ： " + fabricModel.needUpdate());
                 if (fabricModel.needUpdate()) {
                     mInUpgrading = true;
                     mUpgradeManager.startUpgrade(mCurrentUpgradeModel, mHandler);
-                    notifyUpgradeStatus(mCurrentUpgradeModel.getmFabricModel(), true);
+                    notifyUpgradeStatus(mCurrentUpgradeModel.getFabricModel(), true);
                     displayUpgradeStatus(index, true);
                 } else {
                     startUpgradeByOrder(index + 1);
@@ -360,7 +361,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
     public static final int MSG_SET_PROGRESSBAR = 0x101;
     public static final int MSG_RECONNECT_SUCESS = 0x200;
-    private BluetoothDeviceManager.DeviceModel mCurrentUpgradeModel;
+    private DeviceModel mCurrentUpgradeModel;
 
     private class MainHandler extends Handler {
 
@@ -371,19 +372,19 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
             switch (msg.what) {
                 case MSG_RECONNECT_SUCESS:
                     LogUtil.d(TAG, "Send COMMIT Command");
-                    mCurrentUpgradeModel.getmSPPConnection().fotaOn(SPPConnection.CMD_UPGRADE_SUCCESS);
+                    mCurrentUpgradeModel.getSPPConnection().fotaOn(SPPConnection.CMD_UPGRADE_SUCCESS);
 
                     byte[] reply = new byte[64];
-                    int size = mCurrentUpgradeModel.getmSPPConnection().waitAck(reply);
+                    int size = mCurrentUpgradeModel.getSPPConnection().waitAck(reply);
                     SPPConnection.ReceivedData data = new SPPConnection.ReceivedData(reply, size);
                     LogUtil.d(TAG, "Command : result : " + data.toString());
                     if (data.mCmd == SPPConnection.CMD_UPGRADE_SUCCESS && data.mResult.contains("SUCCESS")) {
-                        notifyUpgradeStatus(mCurrentUpgradeModel.getmFabricModel(), true);
+                        notifyUpgradeStatus(mCurrentUpgradeModel.getFabricModel(), true);
                         mGamepadDeviceManager.updateFabric(mCurrentUpgradeModel.getDevice());
                         mCurrentUpgradeModel = mGamepadDeviceManager.getDeviceModelByAddress(mCurrentUpgradeModel.getDevice().getAddress());
                         displayUpgradeStatus(mCurrentUpgradeModel.getIndex(), false);
                         mBluetoothItemContainer.removeViewAt(mCurrentUpgradeModel.getIndex());
-                        displayBluetoothStatusByPosition(mCurrentUpgradeModel.getIndex(), mCurrentUpgradeModel.getmFabricModel());
+                        displayBluetoothStatusByPosition(mCurrentUpgradeModel.getIndex(), mCurrentUpgradeModel.getFabricModel());
                     }
 
                     //已经升级完了，可以做其他的操作了，比如更新UI，执行下一次升级等
@@ -471,7 +472,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
 
     private void initView() {
-        mBluetoothItemContainer = (LinearLayout) findViewById(R.id.bluetooth_list);
+//        mBluetoothItemContainer = (LinearLayout) findViewById(R.id.bluetooth_list);
 //        tv_currentgamepadver1=(TextView)findViewById(R.id.tv_currentgamepadver1);
 //        tv_gamepadversion1=(TextView)findViewById(R.id.tv_gamepadversion1);
         bt_update = (Button) findViewById(R.id.bt_update);
@@ -479,7 +480,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 //        upgrade_describe_btn = (Button) findViewById(R.id.upgrade_describe_btn);
 //        open_imu_btn = (Button) findViewById(R.id.open_imu_btn);
 //        close_imu_btn = (Button) findViewById(R.id.open_imu_btn);
-//        mVersionText = (TextView) findViewById(R.id.version);
+//        mVersionText = (TextView) findViewById(R.id.version);√
         upgrade_describe_txt = findViewById(R.id.upgrade_describe_txt);
 //        device_name_dis = (TextView) findViewById(R.id.device_name_dis);
 //        device_mac_dis = (TextView) findViewById(R.id.device_mac_dis);

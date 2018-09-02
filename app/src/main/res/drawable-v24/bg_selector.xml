@@ -4,6 +4,4 @@
     <item android:state_pressed="true" android:drawable="@drawable/bg2"/>
     <item android:state_focused="true" android:drawable="@drawable/bg2"/>
     <item android:drawable="@drawable/bg1"/>
-    
-
 </selector>

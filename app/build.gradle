@@ -20,7 +20,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 24
         versionCode 1
-        versionName "2.0"
+        versionName "0.9"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -30,13 +30,13 @@ android {
             applicationVariants.all { variant ->
                 if (variant.buildType.name == ('release')) {
                     variant.outputs.all {
-                        outputFileName = "TIMGamepadV2-release-v${variant.versionName}.apk"
+                        outputFileName = "GamePad_Utility-release-v${defaultConfig.versionName}.apk"
                     }
                 } else if (variant.buildType.name.equals('debug')) {
                     variant.outputs.all { output ->
                         def outputFile = output.outputFile
                         if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                            def fileName = "TIMGamepadV2-debug-v${defaultConfig.versionName}.apk"
+                            def fileName = "GamePad_Utility-debug-v${defaultConfig.versionName}.apk"
                             outputFileName = fileName;
                         }
                     }
