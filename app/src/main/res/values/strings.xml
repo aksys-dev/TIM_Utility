@@ -27,8 +27,8 @@
     <string name="menu_settings">Settings</string>
     <string name="inno_firmware_download">Firmware download</string>
     <string name="inno_gamepad_update">Accessori TIMgames</string>
-    <string name="gamepad_one">Gamepad</string>
-    <string name="gamepad_two">Gamepad 2</string>
+    <string name="gamepad_one">Game Pad</string>
+    <string name="gamepad_two">Game Pad 2</string>
     <string name="dongle">Nano Receiver</string>
     <string name="gampad_unconnected">Disconnesso,accendere li dispositivo</string>
     <string name="Upgrade_All">Aggiorna gli accessori</string>

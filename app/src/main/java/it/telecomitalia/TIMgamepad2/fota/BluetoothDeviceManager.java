@@ -30,7 +30,7 @@ public class BluetoothDeviceManager {
     private static BluetoothDeviceManager mDeviceManager;
     private static volatile boolean mInitialized = false;
 
-//    private Hashtable<String, DeviceModel> mDeviceMap;
+    //    private Hashtable<String, DeviceModel> mDeviceMap;
 //    private Hashtable<String, DeviceModel> mNeedUpgradeDeviceMap;
     private Hashtable<String, DeviceModel> mGamePadMap = new Hashtable<>(4);
     private UpgradeManager mUpgradeManager;
@@ -92,8 +92,9 @@ public class BluetoothDeviceManager {
         if (indicator == DEFAULT_IMU_DEVICE_INDEX) {
             LogUtil.d("Enable imu for game pad: " + gamepad.getMACAddress());
             gamepad.setIMUEnable(true);
+
         } else {
-            LogUtil.d("Not the default ime device, Ignore: " + gamepad.getMACAddress());
+            LogUtil.d("Not the default imu device, Ignore: " + gamepad.getMACAddress());
             gamepad.setIMUEnable(false);
         }
     }
@@ -307,13 +308,13 @@ public class BluetoothDeviceManager {
 //        }).start();
 //    }
 
-    private SPPConnection mTestConnection;
+//    private SPPConnection mTestConnection;
 
-    private void test(String CMD, byte cmd) {
-        LogUtil.d(TAG, "=== TEST " + CMD);
-        SPPConnection.ReceivedData data = mTestConnection.execCMD(cmd);
-        LogUtil.d(TAG, "=== RESULT Send CMD : " + cmd + " Received CMD : " + data.mCmd + " Length: " + data.mLength + "   RETURN : " + data.mResult + "===");
-    }
+//    private void test(String CMD, byte cmd) {
+//        LogUtil.d(TAG, "=== TEST " + CMD);
+//        SPPConnection.ReceivedData data = mTestConnection.execCMD(cmd);
+//        LogUtil.d(TAG, "=== RESULT Send CMD : " + cmd + " Received CMD : " + data.mCmd + " Length: " + data.mLength + "   RETURN : " + data.mResult + "===");
+//    }
 
 
     public boolean isEmpty() {
@@ -336,6 +337,12 @@ public class BluetoothDeviceManager {
             }
         }
         return mGamePadMap;
+    }
+
+
+    public List<DeviceModel> getBondedDevices() {
+        return mDevices;
+
     }
 
 

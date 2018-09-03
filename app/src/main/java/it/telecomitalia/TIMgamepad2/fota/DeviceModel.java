@@ -13,7 +13,7 @@ public class DeviceModel {
     private int mIndex;
 
     private static final int INIT_INDICATOR = -1;
-    private static final String INIT_ADDRESS = "undefined";
+    public static final String INIT_ADDRESS = "undefined";
     private static final boolean INIT_ENABLED = false;
     private static final String INIT_NAME = "undefined";
     private String mGamedName = "undefined";
@@ -54,7 +54,7 @@ public class DeviceModel {
         return mLedIndicator;
     }
 
-    public boolean imuEnabled() {
+    public synchronized boolean imuEnabled() {
         return mIMUEnabled;
     }
 

@@ -128,13 +128,13 @@ public class UpgradeManager {
             newversion = "";
         }
 
-        if (TextUtils.isEmpty(device.getFabricModel().mPreviousVersion)){
-            fmVersion = device.getSPPConnection().getDeviceFirmwareVersion().substring(8,14);
+        if (TextUtils.isEmpty(device.getFabricModel().mPreviousVersion)) {
+            fmVersion = device.getSPPConnection().getDeviceFirmwareVersion();
         }
 
-        if(!TextUtils.isEmpty(newversion)){
-            if (newversion.compareTo(fmVersion)>0){
-                needupdate=true;
+        if (!TextUtils.isEmpty(newversion)) {
+            if (newversion.compareTo(fmVersion) > 0) {
+                needupdate = true;
             }
         }
     }
@@ -150,23 +150,22 @@ public class UpgradeManager {
         if (file.exists()) {
             config = getJsonFromLocal(mFWPath + CONFIG_FILE_NAME_GAMEPAD1);
         }
-        LogUtil.d(TAG,"new version : " + config.getmVersion());
+        LogUtil.d(TAG, "new version : " + config.getmVersion());
         return config;
     }
 
     /**
      * 从服务器获取json信息，并存到本地对应地址
+     *
      * @param path
      * @param name
      */
-    public void getJsonFromeServer(String path, String name)
-    {
-        try
-        {
-            int count=0;
+    public void getJsonFromeServer(String path, String name) {
+        try {
+            int count = 0;
 
             URL url = new URL(path);
-            LogUtil.i(Constant.TAG,"getJsonFromeServer-->path:"+path);
+            LogUtil.i(Constant.TAG, "getJsonFromeServer-->path:" + path);
             HttpURLConnection conection = (HttpURLConnection) url.openConnection();
             conection.connect();
             conection.setConnectTimeout(4000);
@@ -174,7 +173,7 @@ public class UpgradeManager {
             // download the file
             InputStream input = conection.getInputStream();
             File dir = new File(mFWPath);
-            File configFile = new File(mFWPath+ name);
+            File configFile = new File(mFWPath + name);
             if (!dir.exists())
                 dir.mkdir();
             if (configFile.exists())
@@ -184,10 +183,9 @@ public class UpgradeManager {
             OutputStream output = new FileOutputStream(configFile);
 
             byte data[] = new byte[256];
-            do
-            {
+            do {
                 count = input.read(data);
-                if (count==-1) {
+                if (count == -1) {
                     break;
                 }
                 output.write(data, 0, count);
@@ -199,11 +197,10 @@ public class UpgradeManager {
             output.close();
             input.close();
 
-        }catch (ConnectTimeoutException e)
-        {
-            LogUtil.i(Constant.TAG,e.toString());
-        }catch (Exception e) {
-            LogUtil.i(Constant.TAG,e.toString());
+        } catch (ConnectTimeoutException e) {
+            LogUtil.i(Constant.TAG, e.toString());
+        } catch (Exception e) {
+            LogUtil.i(Constant.TAG, e.toString());
         }
     }
 }

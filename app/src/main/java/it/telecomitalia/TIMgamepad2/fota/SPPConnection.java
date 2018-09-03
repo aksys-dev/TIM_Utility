@@ -4,6 +4,7 @@ package it.telecomitalia.TIMgamepad2.fota;
 import android.os.SystemClock;
 
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
+import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.model.Constant.TAG;
@@ -37,7 +38,10 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_MOTOR_ON = (byte) 0x91;
     public static final byte CMD_MOTOR_OFF = (byte) 0x92;
     public static final byte CMD_GET_BAT_V = (byte) 0x93;
-    public static final byte DATA_IMU_HEADER = (byte) 0x22;
+    public static final byte DATA_IMU_HEADER_PREFIX = (byte) 0x00;
+    public static final byte DATA_IMU_HEADER = (byte) 0x55;
+
+    private static final int IMU_FRAME_SIZE = 22;
 
     private BlueToothConnThread mConnectionThread;
     private DeviceModel mInfo;
@@ -139,6 +143,16 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         }
     }
 
+    private void setGamePadIMU() {
+        if (mInfo.imuEnabled()) {
+            LogUtil.d("Enable the IMU actually");
+            mConnectionThread.write(CMD_ENABLE_IMU);
+        } else {
+            LogUtil.d("Disable none predefined device's IMU");
+            mConnectionThread.write(CMD_DISABLE_IMU);
+        }
+    }
+
 
     public String imuSwitch(byte imuData) {
         LogUtil.i(TAG, "sppSend: " + imuData);
@@ -151,22 +165,14 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         return result;
     }
 
-    public ReceivedData execCMD(byte cmd) {
-        byte[] recv = new byte[100];
-        mConnectionThread.write(cmd);
-        int size = mConnectionThread.read(recv);
-        ReceivedData data = new ReceivedData(recv, size);
-        return data;
-    }
-
     public void fotaOn(byte imuData) {
         LogUtil.i(TAG, "SPP Send: " + imuData);
         mConnectionThread.write(imuData);
     }
 
-    public void fotaOn(String cmd) {
-        mConnectionThread.write(cmd.getBytes());
-    }
+//    public void fotaOn(String cmd) {
+//        mConnectionThread.write(cmd.getBytes());
+//    }
 
     public ReceivedData getResultWithoutRequest() {
         byte[] reply = new byte[64];
@@ -214,12 +220,14 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public void onConnectionReady(boolean b) {
         ready = b;
         mConnectionThread.startSPPDataListener();
+        SystemClock.sleep(200);
         setGamePadLedIndicator();
-        SystemClock.sleep(500);
+        SystemClock.sleep(200);
+        setGamePadLedIndicator();
+        SystemClock.sleep(200);
         queryFirmwareVersion();
-        SystemClock.sleep(500);
+        SystemClock.sleep(200);
         queryFirmwareBatteryLevel();
-
     }
 
     public boolean isReady() {
@@ -236,7 +244,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
     @Override
     public void onDataArrived(byte[] data, int size) {
-        LogUtil.d("On " + size + " bytes data arrived");
+//        LogUtil.d("On " + size + " bytes data arrived");
+//        LogUtil.d(CommerHelper.HexToString(data));
         switch (data[0]) {
             case CMD_ENABLE_IMU:
                 LogUtil.d("CMD_ENABLE_IMU");
@@ -251,8 +260,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 LogUtil.d("CMD_SET_CHANNEL");
                 break;
             case CMD_QUERY_FW_VERSION:
-                LogUtil.d("CMD_QUERY_FW_VERSION");
-                mFirmwareVersion = new String(data, 2, size);
+                LogUtil.d("CMD_QUERY_FW_VERSION(" + size + "): " + CommerHelper.HexToString(data));
+                mFirmwareVersion = new String(data, 2, 7);
                 LogUtil.d("Firmware version on device: " + mFirmwareVersion);
                 break;
             case CMD_START_FW_UPGRADE:
@@ -288,10 +297,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 LogUtil.d(TAG, "CMD_GET_BAT_V ");
                 mBatteryVolt = combineHighAndLowByte(data[2], data[3]);
                 LogUtil.d("BatteryVolt: " + mBatteryVolt);
+                //Set IMU status after infor got
+                setGamePadIMU();
                 break;
-            case DATA_IMU_HEADER:
-                LogUtil.d("DATA_IMU_HEADER: " + data[0]);
-                if (checkValid(data, size)) {
+            case DATA_IMU_HEADER_PREFIX:
+                if (data[1] == DATA_IMU_HEADER && size == IMU_FRAME_SIZE) {
                     mProxyManager.send(new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17]});
                 }
                 break;
@@ -322,6 +332,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
 
     private boolean checkValid(byte[] data, int size) {
-        return (size == 22 && data[1] == 0x55);
+        return (size == 22);
     }
 }

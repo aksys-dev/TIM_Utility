@@ -26,10 +26,15 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import it.telecomitalia.TIMgamepad2.GamepadListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadVO;
 import it.telecomitalia.TIMgamepad2.R;
+import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
+import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
+
+import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
 
 public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
@@ -56,12 +61,16 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
 
     int version = 0, update = 1;
 
+    private static BluetoothDeviceManager mDeviceManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fota__v2);
+
+        mDeviceManager = BluetoothDeviceManager.getDeviceManager();
         datas = new ArrayList<>();
 
         EventBus.getDefault().register(this);
@@ -121,22 +130,39 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
     public void SetupGamepadList() {
         GamepadVO g;
         int list = 0;
-        while (datas.size() > 0 && datas.size() >= list) {
-            // TODO Get GAMEPAD Data to List View
-            if (datas.get(list).getGamepadName() == getString(R.string.none_found)) {
-                datas.remove(list);
-                continue;
+
+        List<DeviceModel> models = mDeviceManager.getBondedDevices();
+
+        for (DeviceModel model : models) {
+            if (!model.getMACAddress().equals(INIT_ADDRESS)) {
+                EventAddGamepad(model.getMACAddress());
+                list++;
             }
-            Toast.makeText(this, datas.get(list).getMACAddress(), Toast.LENGTH_SHORT).show();
-            EventAddGamepad(datas.get(list).getMACAddress());
-            list++;
         }
+
         if (datas.size() == 0) {
             // No Gamepad
             g = new GamepadVO();
-            g.setGamepadName(String.format("Gamepad %d", list));
+            g.setGamepadName(String.format("Game Pad %d", list));
             datas.add(g);
         }
+
+//        while (datas.size() > 0 && datas.size() >= list) {
+//            // TODO Get GAMEPAD Data to List View
+//            if (datas.get(list).getGamepadName() == getString(R.string.none_found)) {
+//                datas.remove(list);
+//                continue;
+//            }
+//            Toast.makeText(this, datas.get(list).getMACAddress(), Toast.LENGTH_SHORT).show();
+//            EventAddGamepad(datas.get(list).getMACAddress());
+//            list++;
+//        }
+//        if (datas.size() == 0) {
+//            // No Gamepad
+//            g = new GamepadVO();
+//            g.setGamepadName(String.format("Gamepad %d", list));
+//            datas.add(g);
+//        }
     }
 
     public void RefreshGamepadList() {

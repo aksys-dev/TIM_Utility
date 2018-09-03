@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.util.UUID;
 
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
+import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.model.Constant.TAG;
@@ -166,7 +167,7 @@ public class BlueToothConnThread extends Thread {
 
     private void waitUntilSocketReady() {
         while (mStreamReady != STREAM_READY) {
-            SystemClock.sleep(500);
+            SystemClock.sleep(100);
         }
     }
 
@@ -176,12 +177,7 @@ public class BlueToothConnThread extends Thread {
      * @param buffer The bytes to write
      */
     public void write(byte[] buffer) {
-//        waitUntilSocketReady();
-        String c = "";
-        for (int i = 0; i < buffer.length; i++) {
-            c += Integer.toHexString(buffer[i]) + " ";
-        }
-        LogUtil.d("Send spp data (" + c + ") to game pad");
+        LogUtil.d("Send spp data (" + CommerHelper.HexToString(buffer) + ") to game pad");
         try {
             if (mOS != null) {
                 mOS.write(buffer);
@@ -194,9 +190,8 @@ public class BlueToothConnThread extends Thread {
     }
 
     public void write(byte cmd) {
-//        waitUntilSocketReady();
         try {
-            LogUtil.d("Send spp data (" + Integer.toHexString(cmd) + ") to game pad");
+            LogUtil.d("Send spp data (" +CommerHelper.HexToString(cmd) + ") to game pad");
             if (mOS != null) {
                 mOS.write(cmd);
             } else {

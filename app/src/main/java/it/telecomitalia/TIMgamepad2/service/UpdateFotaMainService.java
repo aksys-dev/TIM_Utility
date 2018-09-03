@@ -6,6 +6,7 @@ import android.app.ActivityManager;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -15,6 +16,7 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -89,9 +91,14 @@ public class UpdateFotaMainService extends Service {
 
                     LogUtil.d(TAG, "isTopActivityGamepad : " + isTopActivityGamepad());
                     //有设备需要升级
+                    LogUtil.d(TAG, "deviceList empty : " + deviceList.isEmpty());
                     if (!deviceList.isEmpty()) {
-                        LogUtil.d(TAG, "deviceList empty : " + deviceList.isEmpty());
-                        FileUtils.compareVersion(config.getmDownUrl(), handler);
+                        try {
+                            FileUtils.compareVersion(config.getmDownUrl(), handler);
+                        } catch (NullPointerException e) {
+                            LogUtil.e(e.getMessage());
+                            e.printStackTrace();
+                        }
                         Intent recommendationIntent = new Intent(mContext, UpdateRecommendationsService.class);
                         mContext.startService(recommendationIntent);
                     }
@@ -134,10 +141,34 @@ public class UpdateFotaMainService extends Service {
         super.onCreate();
         EventBus.getDefault().register(this);
         mContext = this;
+        restartBTAdapter(mContext);
         checkDriver();
         sp = UpdateFotaMainService.this.getSharedPreferences(CommerHelper.SPNAME, Activity.MODE_PRIVATE);
         PATH = mContext.getCacheDir() + "/firmware/";
         registerBTListener();
+    }
+
+    private void restartBTAdapter(Context context) {
+        final BluetoothManager btManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothAdapter btAdapter = btManager.getAdapter();
+
+        if (btAdapter.isEnabled()) {
+            LogUtil.i("Restarting Adapter");
+            btAdapter.disable();
+            BluetoothDevice btdevic;
+            btAdapter.getRemoteDevice("");
+
+            while (btAdapter.getState() != BluetoothAdapter.STATE_OFF) {
+                SystemClock.sleep(100);
+            }
+            btAdapter.enable();
+        } else {
+            btAdapter.enable();
+        }
+        while (btAdapter.getState() != BluetoothAdapter.STATE_ON) {
+            SystemClock.sleep(100);
+        }
+        LogUtil.i("Adapter (Re)started");
     }
 
     private void checkDriver() {
@@ -168,7 +199,8 @@ public class UpdateFotaMainService extends Service {
         }
         mUpgradeManager = mGamepadDeviceManager.getUpgradeManager();
         mUpgradeManager.startServerCycle(handler);
-        return super.onStartCommand(intent, flags, startId);
+//      return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
