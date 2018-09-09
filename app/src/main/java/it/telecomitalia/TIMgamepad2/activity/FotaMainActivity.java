@@ -43,7 +43,6 @@ import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.model.Constant.GAMEPADE;
-import static it.telecomitalia.TIMgamepad2.model.Constant.TAG;
 
 /**
  * Created by czy on 2018/7/24.
@@ -78,7 +77,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        LogUtil.d(TAG, "onCreated called");
+        LogUtil.d("onCreated called");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.usbupdate1);
 //        Fabric.with(this, new Crashlytics());
@@ -102,7 +101,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
     @Override
     protected void onResume() {
-        LogUtil.d(TAG, "onResume called");
+        LogUtil.d("onResume called");
 //        mGamepadDeviceManager.initializeDevice();
         mGamepadDeviceManager.queryDeviceFabricInfo();
 
@@ -191,7 +190,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
             //BluetoothDeviceManager发现新设备或者连接的设备断开后，更新UI
             if (event.equals(BluetoothDeviceManager.EVENTBUS_MSG_QUERY_END) ||
                     event.equals(BluetoothDeviceManager.EVENTBUS_MSG_STAUS_CHANGED)) {
-                LogUtil.d(TAG, "DisplayUpdateInfo");
+                LogUtil.d("DisplayUpdateInfo");
                 Hashtable<String, DeviceModel> deviceMap = mGamepadDeviceManager.getConnectedDevices();
                 Set<String> keySet = deviceMap.keySet();
                 int index = 0;
@@ -216,7 +215,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
                 //手动进入配对模式，系统会自动连接蓝牙手柄，不需要手动去连接
 //                boolean result = mGamepadDeviceManager.connectBluetooth(device);
-//                LogUtil.d(TAG, "connect result : " + result);
+//                LogUtil.d("connect result : " + result);
 
 //                mGamepadDeviceManager.updateDevice(mCurrentUpgradeModel.getDevice());
                 mCurrentUpgradeModel = mGamepadDeviceManager.getDeviceModelByAddress(device.getAddress());
@@ -260,7 +259,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        LogUtil.d(TAG, "OnClick " + v.getId());
+        LogUtil.d("OnClick " + v.getId());
         switch (v.getId()) {
             case R.id.upgrade_describe_btn:
                 //进行升级
@@ -272,11 +271,11 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.open_imu_btn:
 
-                Toast.makeText(mContext, getString(R.string.enable_imu) + mainConnection.imuSwitch(SPPConnection.CMD_ENABLE_UPDATE_MODE), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, getString(R.string.enable_imu) + mainConnection.imuSwitch(SPPConnection.CMD_ENABLE_UPDATE_MODE), Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.close_imu_btn:
-                Toast.makeText(mContext, getString(R.string.disable_imu) + mainConnection.imuSwitch(SPPConnection.CMD_DISABLE_UPDATE_MODE), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, getString(R.string.disable_imu) + mainConnection.imuSwitch(SPPConnection.CMD_DISABLE_UPDATE_MODE), Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.bt_update:
@@ -299,13 +298,13 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
                 String content = new String(reply);
 
                 sp.edit().putBoolean(CommerHelper.IS_COMMIT, false).commit();
-                LogUtil.i(TAG, "进入serivce  commit发送--------" + content);
+                LogUtil.i("进入serivce  commit发送--------" + content);
                 break;
         }
     }
 
     private void initializeBluetoothManager() {
-        LogUtil.d(TAG, "initializeBluetoothManager");
+        LogUtil.d("initializeBluetoothManager");
         mGamepadDeviceManager = BluetoothDeviceManager.getDeviceManager();
         mGamepadDeviceManager.initializeDevice(PATH);
         mUpgradeManager = mGamepadDeviceManager.getUpgradeManager();
@@ -315,17 +314,16 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
      * 按照顺序一个个升级,先升级第一个，如果后面还有，那么就开始升级第二个
      */
     private void startUpgradeByOrder(int index) {
-        LogUtil.d(TAG, "Start upgrade : " + index);
+        LogUtil.d("Start upgrade : " + index);
         Hashtable<String, DeviceModel> deviceMap = mGamepadDeviceManager.getConnectedDevices();
         Set<String> keySet = deviceMap.keySet();
-
         for (String key : keySet) {
             DeviceModel model = deviceMap.get(key);
-            LogUtil.d(TAG, "index : " + index + " newIndex : " + model.getIndex());
+            LogUtil.d("index : " + index + " newIndex : " + model.getIndex());
             if (index == model.getIndex() && !mInUpgrading) {
                 mCurrentUpgradeModel = model;
                 FabricModel fabricModel = deviceMap.get(key).getFabricModel();
-                LogUtil.d(TAG, "upgrade check ： " + fabricModel.needUpdate());
+                LogUtil.d("upgrade check ： " + fabricModel.needUpdate());
                 if (fabricModel.needUpdate()) {
                     mInUpgrading = true;
                     mUpgradeManager.startUpgrade(mCurrentUpgradeModel, mHandler);
@@ -371,13 +369,13 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
             switch (msg.what) {
                 case MSG_RECONNECT_SUCESS:
-                    LogUtil.d(TAG, "Send COMMIT Command");
+                    LogUtil.d("Send COMMIT Command");
                     mCurrentUpgradeModel.getSPPConnection().fotaOn(SPPConnection.CMD_UPGRADE_SUCCESS);
 
                     byte[] reply = new byte[64];
                     int size = mCurrentUpgradeModel.getSPPConnection().waitAck(reply);
                     SPPConnection.ReceivedData data = new SPPConnection.ReceivedData(reply, size);
-                    LogUtil.d(TAG, "Command : result : " + data.toString());
+                    LogUtil.d("Command : result : " + data.toString());
                     if (data.mCmd == SPPConnection.CMD_UPGRADE_SUCCESS && data.mResult.contains("SUCCESS")) {
                         notifyUpgradeStatus(mCurrentUpgradeModel.getFabricModel(), true);
                         mGamepadDeviceManager.updateFabric(mCurrentUpgradeModel.getDevice());
@@ -423,11 +421,11 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
         @Override
         protected Integer doInBackground(BluetoothDeviceManager.DeviceModel... params) {
-            LogUtil.d(TAG, "DoInBackGround");
+            LogUtil.d("DoInBackGround");
             BluetoothDeviceManager.DeviceModel model = params[0];
             String path = FileUtils.downLoadBin(model.getmFabricModel().mFirmwareConfig.getmDownUrl(), mHandler);
 
-            LogUtil.d(TAG, "download success " + path);
+            LogUtil.d("download success " + path);
             SPPConnection mainConnection = model.getmSPPConnection();
             mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
             showUpgradeProcess(30);
@@ -435,7 +433,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
                 FileInputStream fileInputStream = new FileInputStream(new File(path));
                 int len = fileInputStream.available();
-                LogUtil.d(TAG, "file length : " + len);
+                LogUtil.d("file length : " + len);
                 byte[] buffer = new byte[len];
                 int size = fileInputStream.read(buffer);
                 LogUtil.i(TAG,"文件：" + len + " bytes. 将发送：" + size + " bytes. 正在传输数据，请稍后......");
@@ -465,7 +463,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
         @Override
         protected void onPostExecute(Integer result) {
-            LogUtil.d(TAG, "onPostExecute");
+            LogUtil.d("onPostExecute");
             super.onPostExecute(result);
         }
     }*/

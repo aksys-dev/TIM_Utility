@@ -19,7 +19,7 @@ public class ProxyController implements ProxyStatusListener {
         if (ready) {
             LogUtil.e("Core service ready.");
         } else {
-            LogUtil.e("Waiting for the core service ready.");
+//            LogUtil.e("Waiting for the core service ready.");
         }
         serviceReady = ready;
     }

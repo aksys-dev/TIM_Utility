@@ -43,12 +43,12 @@ public class ProxyTransmitter extends Thread {
                     mInput = new DataInputStream(soc.getInputStream());
                     mOutput = new DataOutputStream(soc.getOutputStream());
                 } catch (IOException e) {
-                    LogUtil.e("IOException: " + e.toString());
+//                    LogUtil.e("IOException: " + e.toString());
                     e.printStackTrace();
                     mListener.onProxyConnectionReady(false);
                     mInitiated = false;
                     try {
-                        LogUtil.d("Retrying1......");
+//                        LogUtil.d("Retrying1......");
                         Thread.sleep(3000);
                     } catch (InterruptedException e1) {
                         LogUtil.d("InterruptedException: " + e.toString());

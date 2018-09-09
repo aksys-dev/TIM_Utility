@@ -48,7 +48,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="20dp"
                     android:layout_marginEnd="100dp"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="32dp"
                     android:layout_marginTop="20dp"
                     android:layout_weight="0"
                     android:gravity="right"
@@ -84,233 +84,21 @@
 
             </android.support.constraint.ConstraintLayout>
 
-            <LinearLayout
-                android:id="@+id/menuList"
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/Menus"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_weight="4"
-                android:background="@color/black"
-                android:gravity="center"
-                android:orientation="vertical"
+                android:background="@android:color/black"
                 android:visibility="visible">
 
-                <Button
-                    android:id="@+id/menu_gamepad"
-                    style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_width="match_parent"
-                    android:layout_height="90dp"
-                    android:onClick="onClickMenu"
-                    android:text="@string/menu_gamepad"
-                    android:textAllCaps="false"
-                    android:textSize="30sp" />
-
-                <Button
-                    android:id="@+id/menu_imu"
-                    style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_width="match_parent"
-                    android:layout_height="90dp"
-                    android:onClick="onClickMenu"
-                    android:text="@string/menu_imu"
-                    android:textAllCaps="false"
-                    android:textSize="30sp" />
-
-                <Button
-                    android:id="@+id/menu_about"
-                    style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_width="match_parent"
-                    android:layout_height="90dp"
-                    android:onClick="onClickMenu"
-                    android:text="@string/menu_about"
-                    android:textAllCaps="false"
-                    android:textSize="30sp" />
-            </LinearLayout>
-
-            <ScrollView
-                android:id="@+id/gamepadLists"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="4"
-                android:background="@color/black"
-                android:scrollbarStyle="insideInset"
-                android:visibility="gone">
-
-                <FrameLayout
-                    android:id="@+id/frame_gamepad"
+                <ListView
+                    android:id="@+id/menuListView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_selector"
-                    android:padding="10dp"
-                    android:visibility="visible">
-
-                    <android.support.constraint.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@drawable/bg_selector">
-
-                        <ImageView
-                            android:id="@+id/frame_gamepad_icon"
-                            android:layout_width="50dp"
-                            android:layout_height="50dp"
-                            android:contentDescription="@string/gamepad_one"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:srcCompat="@drawable/gamepad_normal" />
-
-                        <TextView
-                            android:id="@+id/textView2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:text="@string/gamepad_one"
-                            android:textColor="@android:color/white"
-                            android:textSize="24sp"
-                            android:textStyle="bold"
-                            app:layout_constraintStart_toEndOf="@+id/frame_gamepad_icon"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <TableLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:gravity="center_horizontal"
-                            android:orientation="horizontal"
-                            app:layout_constraintStart_toStartOf="@+id/textView2"
-                            app:layout_constraintTop_toBottomOf="@+id/textView2">
-
-                            <TableRow
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent">
-
-                                <TextView
-                                    android:id="@+id/title_mac"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginBottom="5dp"
-                                    android:layout_marginEnd="10dp"
-                                    android:layout_marginTop="5dp"
-                                    android:text="MAC"
-                                    android:textColor="@android:color/white"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:id="@+id/table_mac"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="5dp"
-                                    android:text="00:00:00:00:00:00"
-                                    android:textColor="@android:color/white" />
-                            </TableRow>
-
-                            <TableRow
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent">
-
-                                <TextView
-                                    android:id="@+id/title_battery"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginBottom="5dp"
-                                    android:layout_marginEnd="10dp"
-                                    android:layout_marginTop="5dp"
-                                    android:text="Battery"
-                                    android:textColor="@android:color/white"
-                                    android:textStyle="bold" />
-
-                                <LinearLayout
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="5dp"
-                                    android:orientation="horizontal">
-
-                                    <ImageView
-                                        android:id="@+id/image_battery"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="match_parent"
-                                        android:contentDescription="BatteryIcon"
-                                        android:scaleType="fitStart"
-                                        app:srcCompat="@drawable/battery_max_big" />
-
-                                    <TextView
-                                        android:id="@+id/table_battery"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:layout_weight="1"
-                                        android:text="100%"
-                                        android:textColor="@android:color/white" />
-                                </LinearLayout>
-                            </TableRow>
-
-                            <TableRow
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent">
-
-                                <TextView
-                                    android:id="@+id/title_firmware"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginBottom="5dp"
-                                    android:layout_marginRight="10dp"
-                                    android:layout_marginTop="5dp"
-                                    android:text="Firmware"
-                                    android:textColor="@android:color/white"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:id="@+id/table_firmware"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="5dp"
-                                    android:text="Version: 1.6"
-                                    android:textColor="@android:color/white" />
-                            </TableRow>
-
-                            <TableRow
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:visibility="visible">
-
-                                <TextView
-                                    android:id="@+id/table_firmware2"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginBottom="5dp"
-                                    android:layout_marginRight="10dp"
-                                    android:layout_marginTop="5dp"
-                                    android:text="Firmware"
-                                    android:textColor="@android:color/white"
-                                    android:textStyle="bold"
-                                    android:visibility="gone" />
-
-                                <TextView
-                                    android:id="@+id/table_NewFirmware"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginBottom="5dp"
-                                    android:layout_marginTop="5dp"
-                                    android:text="New Version: 1.6"
-                                    android:textColor="@android:color/white"
-                                    android:visibility="visible" />
-
-                            </TableRow>
-                        </TableLayout>
-
-                        <Button
-                            android:id="@+id/upgradeGamepad"
-                            style="@style/Widget.AppCompat.Button.Borderless"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Upgrade"
-                            android:textAlignment="center"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent" />
-
-                    </android.support.constraint.ConstraintLayout>
-
-                </FrameLayout>
-            </ScrollView>
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </android.support.constraint.ConstraintLayout>
 
             <FrameLayout
                 android:id="@+id/gamepadView2"
@@ -370,14 +158,16 @@
                         android:id="@+id/textSensitibity"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="10dp"
+                        android:layout_marginEnd="32dp"
                         android:layout_marginTop="10dp"
                         android:layout_weight="1"
-                        android:text="0.01"
+                        android:text="1.00"
                         android:textAlignment="viewEnd"
                         android:textSize="18sp"
+                        app:layout_constraintBottom_toBottomOf="@+id/textView8"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="1.0" />
 
                     <SeekBar
                         android:id="@+id/seekBar"
@@ -386,7 +176,7 @@
                         android:layout_marginTop="16dp"
                         android:layout_weight="10"
                         android:max="199"
-                        android:progress="0"
+                        android:progress="99"
                         app:layout_constraintEnd_toEndOf="@+id/textSensitibity"
                         app:layout_constraintStart_toStartOf="@+id/textView8"
                         app:layout_constraintTop_toBottomOf="@+id/textView8" />
@@ -421,7 +211,7 @@
                         android:id="@+id/textView3"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="10dp"
+                        android:layout_marginEnd="32dp"
                         android:layout_marginStart="10dp"
                         android:layout_marginTop="10dp"
                         android:text="@string/Calibration"
@@ -436,13 +226,12 @@
                         android:id="@+id/sw_calibration"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="10dp"
                         android:checked="false"
                         android:switchPadding="20dp"
                         android:text="@string/off"
                         android:textAlignment="viewStart"
                         android:textSize="18sp"
-                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintEnd_toEndOf="@+id/textView3"
                         app:layout_constraintTop_toBottomOf="@+id/textView3"
                         tools:checked="false" />
 
@@ -469,14 +258,34 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
+                        <Button
+                            android:id="@+id/buttonVersionCheck"
+                            style="@style/Widget.AppCompat.Button.Borderless"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginTop="8dp"
+                            android:onClick="onClickVersionCheck"
+                            android:text="Check"
+                            android:textAlignment="center"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp"
+                            android:visibility="gone"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/buttonUpdateVersion"
+                            app:layout_constraintTop_toBottomOf="@+id/tableLayout"
+                            app:layout_constraintVertical_bias="1.0" />
+
                         <TableLayout
                             android:id="@+id/tableLayout"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
                             android:layout_marginStart="10dp"
                             android:layout_marginTop="10dp"
                             android:gravity="center_horizontal"
                             android:orientation="horizontal"
+                            app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.0"
                             app:layout_constraintStart_toStartOf="parent"
@@ -521,14 +330,16 @@
                                     android:layout_marginTop="5dp"
                                     android:layout_weight="1"
                                     android:text="1/2/2018 updated."
-                                    android:textColor="@android:color/white" />
+                                    android:textColor="@android:color/white"
+                                    android:visibility="gone" />
 
                             </TableRow>
 
                             <TableRow
                                 android:id="@+id/tr_newUpdate"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent">
+                                android:layout_height="match_parent"
+                                android:visibility="gone">
 
                                 <TextView
                                     android:id="@+id/title_newVersion"
@@ -553,10 +364,11 @@
                             </TableRow>
 
                             <TableRow
+                                android:id="@+id/tr_updateMessage"
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:orientation="vertical"
-                                android:visibility="visible">
+                                android:visibility="gone">
 
                                 <TextView
                                     android:id="@+id/value_newVersionMessage"
@@ -581,6 +393,7 @@
                             android:textAlignment="center"
                             android:textColor="@android:color/white"
                             android:textSize="12sp"
+                            android:visibility="gone"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toBottomOf="@+id/tableLayout" />

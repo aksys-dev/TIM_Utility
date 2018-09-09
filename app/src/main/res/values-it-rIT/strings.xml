@@ -27,8 +27,8 @@
     <string name="menu_settings">impostazioni</string>
     <string name="inno_firmware_download">Download del firmware</string>
     <string name="inno_gamepad_update">Accessori TIMgames</string>
-    <string name="gamepad_one">Gamepad</string>
-    <string name="gamepad_two">Gamepad 2</string>
+    <string name="gamepad_one">Game Pad</string>
+    <string name="gamepad_two">Game pad 2</string>
     <string name="dongle">Nano ricevitore</string>
     <string name="gampad_unconnected">Disconnesso,accendere li dispositivo</string>
     <string name="Upgrade_All">Aggiorna gli accessori</string>
@@ -64,4 +64,21 @@
     <string name="latest_update">versione aggiornata</string>
     <string name="unknown">Unknown</string>
     <string name="updated">updated</string>
+
+    <string name="online_status">Stato</string>
+
+    <string name="gamepad_online">"in linea"</string>
+    <string name="gamepad_offline">"disconnesso"</string>
+
+    <string name="upgrade_title">Progresso dell\'aggiornamento di GamePad</string>
+    <string name="upgrade_info">" "</string>
+    <string name="upgrade_button_done">Fatto</string>
+    <string name="upgrade_ing">Aggiornamento del Game pad Bluetooth in corso. Si prega di NON spegnere il Skipper</string>
+    <!--
+    <string name="upgrade_done">Bluetooth Game Pad upgrading done. Press Button \"Done\" for continue.</string>
+    -->
+
+    <string name="upgrade_success">Successo!</string>
+    <string name="upgrade_failure">mancato!</string>
+    <string name="no_need_update">" è l'ultima versione"</string>
 </resources>

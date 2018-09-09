@@ -143,6 +143,21 @@ public class CommerHelper {
         return result;
     }
 
+    public static String HexToString(byte[] b, int size) {
+        String result = "";
+        for (int i = 0; i < size; i++) {
+            String hex = Integer.toHexString(b[i] & 0xFF);
+            if (hex.length() == 1) {
+                hex = "0x0" + hex.toUpperCase() + " ";
+            } else {
+                hex = "0x" + hex.toUpperCase() + " ";
+            }
+            result += hex;
+        }
+        return result;
+    }
+
+
     public static String HexToString(byte b) {
         String hex = Integer.toHexString(b & 0xFF);
         if (hex.length() == 1) {

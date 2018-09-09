@@ -79,10 +79,10 @@ public class GamePadModel {
                 "id='" + id + '\'' +
                 ", versionCode='" + versionCode + '\'' +
                 ", versionName='" + versionName + '\'' +
-                ", fileSize='" + fileSize + '\''+
-                ", url='" + url + '\''+
-                ", createdTime='" + createdTime + '\''+
-                ", projectId='" + projectId + '\''+
+                ", fileSize='" + fileSize + '\'' +
+                ", url='" + url + '\'' +
+                ", createdTime='" + createdTime + '\'' +
+                ", projectId='" + projectId + '\'' +
                 ", deviceId='" + deviceId + '\''
                 ;
     }

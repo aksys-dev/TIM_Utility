@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GamePadV2Upgade</string>
+    <string name="app_name">GamePad Utility</string>
 
     <!--  BluetoothChat -->
     <string name="send">Send</string>
@@ -27,7 +27,9 @@
     <string name="menu_settings">Settings</string>
     <string name="inno_firmware_download">Firmware download</string>
     <string name="inno_gamepad_update">Accessori TIMgames</string>
-    <string name="gamepad_one">Game Pad</string>
+    <string name="gamepad_one">"Game Pad "</string>
+    <string name="gamepad_online">"Online"</string>
+    <string name="gamepad_offline">"Offline"</string>
     <string name="gamepad_two">Game Pad 2</string>
     <string name="dongle">Nano Receiver</string>
     <string name="gampad_unconnected">Disconnesso,accendere li dispositivo</string>
@@ -63,5 +65,18 @@
     <string name="latest_update">versione aggiornata</string>
     <string name="unknown">Unknown</string>
     <string name="updated">updated</string>
+
+    <string name="online_status">Status</string>
+    <string name="upgrade_title">GamePad upgrade progress</string>
+    <string name="upgrade_info">" "</string>
+    <string name="upgrade_button_done">Done</string>
+    <string name="upgrade_ing">Bluetooth Game Pad upgrading in progress. Please do NOT power off the Skipper</string>
+    <!--
+<string name="upgrade_done">Bluetooth Game Pad upgrading done. Press Button \"Done\" for continue.</string>
+-->
+
+<string name="upgrade_success">Success!</string>
+<string name="upgrade_failure">Failed!</string>
+<string name="no_need_update">" is the latest version"</string>
 
 </resources>

@@ -27,15 +27,17 @@ public class FabricModel {
     private static final int HIGH = 4200;
 
     public boolean needUpdate() {
-        LogUtil.d("Test", "Compare old : " + mPreviousVersion + " new : " + mUpgradeVersion);
-        if(!TextUtils.isEmpty(mUpgradeVersion)) {
+        LogUtil.d("Compare old : " + mPreviousVersion + " new : " + mUpgradeVersion);
+        if (!TextUtils.isEmpty(mUpgradeVersion)) {
             return mUpgradeVersion.compareTo(mPreviousVersion) > 0;
         }
         return false;
     }
 
     public boolean needUpdate(String newVersion) {
-        if(!TextUtils.isEmpty(newVersion) && !TextUtils.isEmpty(mPreviousVersion)) {
+        LogUtil.d("Compare old : " + mPreviousVersion + " new : " + newVersion);
+        if (!TextUtils.isEmpty(newVersion) && !TextUtils.isEmpty(mPreviousVersion)) {
+            mUpgradeVersion = newVersion;
             return newVersion.compareTo(mPreviousVersion) > 0;
         }
         return false;
@@ -43,9 +45,9 @@ public class FabricModel {
 
     public int getBatteryLevel() {
         int level = BATTERY_LOW;
-        if(mBattery > MIDDLE && mBattery < HIGH) {
+        if (mBattery > MIDDLE && mBattery < HIGH) {
             level = BATTERY_MIDDLE;
-        } else if(mBattery > HIGH) {
+        } else if (mBattery > HIGH) {
             level = BATTERY_HIGH;
         }
         return level;

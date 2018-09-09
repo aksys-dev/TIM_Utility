@@ -10,11 +10,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
-import static it.telecomitalia.TIMgamepad2.model.Constant.TAG;
 
 /**
  * Created by D on 2018/1/18 0018.
@@ -36,29 +34,21 @@ public class BlueToothConnThread extends Thread {
     private int mStreamReady = STREAM_UNINITIATED; //-1=uninitialized,  0=ready , 1=busy, 2=failed
     private SPPDataListener mCb;
     private ConnectionReadyListener mListener;
-    private boolean firstRun = true;
 
-    private ProxyManager mProxy = ProxyManager.getInstance();
     private Thread SPPDataThread = new Thread(new Runnable() {
 
         @Override
         public void run() {
 
             int bytes;
-            byte[] recv = new byte[64];
+            byte[] recv = new byte[22];
             // Keep listening to the InputStream while connected
             while (sppRunning) {
                 try {
-                    if (firstRun) {
-                        LogUtil.d("IMU:" + getName() + " ");
-                        firstRun = false;
-                    }
                     // Read from the InputStream
                     if (mIS != null) {
                         bytes = mIS.read(recv);
                         mCb.onDataArrived(recv, bytes);
-                    } else {
-                        LogUtil.e("Input stream socket has been closed");
                     }
                 } catch (IOException e) {
                     LogUtil.e("disconnected\n", e.toString());
@@ -67,7 +57,6 @@ public class BlueToothConnThread extends Thread {
             }
         }
     });
-
 
     BlueToothConnThread(DeviceModel info, SPPDataListener cb, ConnectionReadyListener listener) {
         mDeviceInfo = info;
@@ -176,8 +165,8 @@ public class BlueToothConnThread extends Thread {
      *
      * @param buffer The bytes to write
      */
-    public void write(byte[] buffer) {
-        LogUtil.d("Send spp data (" + CommerHelper.HexToString(buffer) + ") to game pad");
+    public synchronized void write(byte[] buffer) {
+        LogUtil.d("Send spp data (" + buffer.length + ") to game pad");
         try {
             if (mOS != null) {
                 mOS.write(buffer);
@@ -189,9 +178,9 @@ public class BlueToothConnThread extends Thread {
         }
     }
 
-    public void write(byte cmd) {
+    public synchronized void write(byte cmd) {
         try {
-            LogUtil.d("Send spp data (" +CommerHelper.HexToString(cmd) + ") to game pad");
+            LogUtil.d("Send spp data (" + CommerHelper.HexToString(cmd) + ") to game pad");
             if (mOS != null) {
                 mOS.write(cmd);
             } else {
@@ -209,38 +198,13 @@ public class BlueToothConnThread extends Thread {
             // Read from the InputStream
             if (mIS != null) {
                 size = mIS.read(recv);
-                LogUtil.i(TAG, "Received " + size + " bytes");
+                LogUtil.i("Received " + size + " bytes");
             } else {
-                LogUtil.i(TAG, "Input stream socket has been closed");
+                //LogUtil.i("Input stream socket has been closed");
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return size;
     }
-
-//    public SPPData read() {
-//        waitUntilSocketReady();
-//        int size;
-//        byte[] recv = new byte[22];
-//        try {
-//            // Read from the InputStream
-//            if (mIS != null) {
-//                size = mIS.read(recv);
-//                LogUtil.d("Received " + size + " bytes");
-//                if (checkValid(recv, size)) {
-//                    return new SPPData(size, recv);
-//                } else {
-//                    LogUtil.e("Wrong data received!");
-//                }
-//            } else {
-//                LogUtil.e("Input stream socket has been closed");
-//            }
-//        } catch (IOException e) {
-//            LogUtil.e("disconnected\n", e.toString());
-//        }
-//        return null;
-//    }
-
-
 }

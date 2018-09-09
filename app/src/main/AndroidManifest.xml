@@ -23,7 +23,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activity.FOTA_V2"
+            android:name=".activity.BackDoor"
+
             android:configChanges="keyboardHidden|orientation|mcc|mnc|uiMode|locale|keyboard">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -37,6 +38,11 @@
             android:name=".activity.DialogActivity"
             android:theme="@style/MyDialog" />
 
+        <activity android:name=".activity.UpgradeUIActivity" />
+        <activity android:name=".activity.FotaMainActivity" />
+        <activity android:name=".activity.FOTA_V2" />
+
+
         <receiver android:name=".service.UpdatePowerOnReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -45,7 +51,7 @@
 
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="fe796fed4d29e64bb2283808cff74f6c9b0e6a77" />
+            android:value="5a27c151bacefaa8caa914c829eb7df326cd1d8b" />
 
         <service android:name=".service.UpdateFotaMainService"></service>
         <service android:name=".service.UpdateRecommendationsService"></service>

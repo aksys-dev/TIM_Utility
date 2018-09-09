@@ -32,6 +32,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import it.telecomitalia.TIMgamepad2.R;
+import it.telecomitalia.TIMgamepad2.activity.FOTA_V2;
 import it.telecomitalia.TIMgamepad2.activity.FotaMainActivity;
 import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
@@ -91,7 +92,7 @@ public class UpdateRecommendationsService extends IntentService {
     }
 
     private Intent buildPendingIntent( ) {
-        Intent detailsIntent = new Intent(this, FotaMainActivity.class);
+        Intent detailsIntent = new Intent(this, FOTA_V2.class);
         return detailsIntent;
     }
 

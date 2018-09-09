@@ -1,6 +1,5 @@
 package it.telecomitalia.TIMgamepad2.utils;
 
-import android.content.Context;
 import android.os.Handler;
 
 import org.apache.http.conn.ConnectTimeoutException;
@@ -18,7 +17,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
-import it.telecomitalia.TIMgamepad2.model.Constant;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
 
 import static it.telecomitalia.TIMgamepad2.model.Constant.GAMEPADE;
@@ -29,29 +27,28 @@ import static it.telecomitalia.TIMgamepad2.model.Constant.GAMEPADE;
 
 public class FileUtils {
 
-    private static  String PATH;
+    private static String PATH;
 
 
     static {
-        PATH = GamePadV2UpgadeApplication.getContext().getCacheDir()+"/firmware/";
+        PATH = GamePadV2UpgadeApplication.getContext().getCacheDir() + "/firmware/";
     }
 
     /**
      * 把保存到本地的json信息（从服务器获取的），读取出来转换成json，并存到FirmwareConfig对象里面
+     *
      * @param path
      * @return
      */
-    public static FirmwareConfig getJsonFromLocal(String path)
-    {
+    public static FirmwareConfig getJsonFromLocal(String path) {
         FirmwareConfig mConfigs = new FirmwareConfig();
-        try
-        {
-            InputStream inputStream= InputStreamHelper.getInputStream(path);
-            byte[] buffer=new byte[inputStream.available()];
+        try {
+            InputStream inputStream = InputStreamHelper.getInputStream(path);
+            byte[] buffer = new byte[inputStream.available()];
             inputStream.read(buffer);
-            String json=new String(buffer);
+            String json = new String(buffer);
 
-            JSONObject jsonObject=new JSONObject(json);
+            JSONObject jsonObject = new JSONObject(json);
 
 
             mConfigs.setmVersion(jsonObject.optString("versionCode"));
@@ -67,17 +64,16 @@ public class FileUtils {
 
     /**
      * 从服务器获取json信息，并存到本地对应地址
+     *
      * @param path
      * @param name
      */
-    public static void getJsonFromeServer(String path, String name, Handler handler)
-    {
-        try
-        {
-            int count=0;
+    public static void getJsonFromeServer(String path, String name, Handler handler) {
+        try {
+            int count = 0;
 
             URL url = new URL(path);
-            LogUtil.i(Constant.TAG,"getJsonFromeServer-->path:"+path);
+            LogUtil.i("getJsonFromeServer-->path:" + path);
             HttpURLConnection conection = (HttpURLConnection) url.openConnection();
             conection.connect();
             conection.setConnectTimeout(4000);
@@ -85,7 +81,7 @@ public class FileUtils {
             // download the file
             InputStream input = conection.getInputStream();
             File dir = new File(PATH);
-            File configFile = new File(PATH+ name);
+            File configFile = new File(PATH + name);
             if (!dir.exists())
                 dir.mkdir();
             if (configFile.exists())
@@ -95,10 +91,9 @@ public class FileUtils {
             OutputStream output = new FileOutputStream(configFile);
 
             byte data[] = new byte[256];
-            do
-            {
+            do {
                 count = input.read(data);
-                if (count==-1) {
+                if (count == -1) {
                     break;
                 }
                 output.write(data, 0, count);
@@ -112,13 +107,12 @@ public class FileUtils {
             //服务器请求json并下载到本地完成，发送handler
             handler.sendEmptyMessage(1);
 
-        }catch (ConnectTimeoutException e)
-        {
+        } catch (ConnectTimeoutException e) {
 //            sendErrorCode(Constant.TIMEOUTERROR,handler);
-           LogUtil.i(Constant.TAG,e.toString());
-        }catch (Exception e) {
+            LogUtil.i(e.toString());
+        } catch (Exception e) {
 //            sendErrorCode(Constant.TIMEOUTERROR,handler);
-            LogUtil.i(Constant.TAG,e.toString());
+            LogUtil.i(e.toString());
         }
 
     }
@@ -127,24 +121,22 @@ public class FileUtils {
     /**
      * 对比下载下来的xml文件的版本号和新下载的newremote.bin以及newdongle.bin文件中的版本号，
      * 如果版本号一致则将新bin文件的内容复制到旧的bin文件中（remote.bin和dongle.bin）
+     *
      * @param dowondUrl
      * @param handler
      */
 
-    public static void compareVersion(final String dowondUrl, final Handler handler)
-    {
-        new Thread(new Runnable()
-        {
+    public static void compareVersion(final String dowondUrl, final Handler handler) {
+        new Thread(new Runnable() {
             public void run()
 
             {
 
-                try
-                {
+                try {
                     Thread.sleep(100);
                     try {
                         //一、先下载固件
-                        downLoadBin(dowondUrl,handler);
+                        downLoadBin(dowondUrl, handler);
 
 						/*
 						二、
@@ -194,8 +186,7 @@ public class FileUtils {
                     } catch (Exception e) {
 //                        sendErrorCode(e.toString(),handler);
                     }
-                } catch (InterruptedException e)
-                {
+                } catch (InterruptedException e) {
 //                    sendErrorCode(e.toString(),handler);
                 }
             }
@@ -206,13 +197,12 @@ public class FileUtils {
 
     /**
      * 下载固件
+     *
      * @param downurl
      */
-    public static String downLoadBin(String downurl,Handler handler)
-    {
-        try
-        {
-            int count=0;
+    public static String downLoadBin(String downurl, Handler handler) {
+        try {
+            int count = 0;
             URL url = new URL(downurl);
 
             HttpURLConnection conection = (HttpURLConnection) url.openConnection();
@@ -230,7 +220,7 @@ public class FileUtils {
             InputStream input = conection.getInputStream();
             File dir = new File(PATH);
             File file = null;
-                file = new File(PATH+GAMEPADE);
+            file = new File(PATH + GAMEPADE);
             if (!dir.exists())
                 dir.mkdir();
             if (file.exists())
@@ -239,10 +229,9 @@ public class FileUtils {
             OutputStream output = new FileOutputStream(file);
 
             byte data[] = new byte[256];
-            do
-            {
+            do {
                 count = input.read(data);
-                if (count==-1) {
+                if (count == -1) {
                     break;
                 }
                 output.write(data, 0, count);
@@ -253,27 +242,27 @@ public class FileUtils {
             output.close();
             input.close();
             handler.sendEmptyMessage(2);
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
 
         }
-        return PATH+GAMEPADE;
+        return PATH + GAMEPADE;
     }
 
 
     /**
      * 获得指定文件的byte数组
+     *
      * @param filePath
      * @return
      */
-    public static byte[] getBytes(String filePath){
+    public static byte[] getBytes(String filePath) {
         byte[] buffer = null;
         try {
             File file = new File(filePath);
-            long size=file.length();
+            long size = file.length();
             FileInputStream fis = new FileInputStream(file);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream((int)size);
-            byte[] b = new byte[(int)size];
+            ByteArrayOutputStream bos = new ByteArrayOutputStream((int) size);
+            byte[] b = new byte[(int) size];
             int n;
             while ((n = fis.read(b)) != -1) {
                 bos.write(b, 0, n);

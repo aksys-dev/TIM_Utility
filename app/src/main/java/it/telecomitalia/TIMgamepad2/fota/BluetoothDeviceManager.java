@@ -25,13 +25,11 @@ public class BluetoothDeviceManager {
     private static final String GAMEPAD_NAME_RELEASE = "TIMGamepad";
     public static final String EVENTBUS_MSG_QUERY_END = "QueryDeviceEnd";
     public static final String EVENTBUS_MSG_NEED_UPGRADE = "NeedUpgrade";
+    public static final String EVENTBUS_MSG_UPGRADE_SUCCESS = "UpgradeSuccess";
     public static final String EVENTBUS_MSG_STAUS_CHANGED = "StatusChanged";
 
     private static BluetoothDeviceManager mDeviceManager;
     private static volatile boolean mInitialized = false;
-
-    //    private Hashtable<String, DeviceModel> mDeviceMap;
-//    private Hashtable<String, DeviceModel> mNeedUpgradeDeviceMap;
     private Hashtable<String, DeviceModel> mGamePadMap = new Hashtable<>(4);
     private UpgradeManager mUpgradeManager;
     private int mTargetDeviceCount = 0;
@@ -69,19 +67,6 @@ public class BluetoothDeviceManager {
             mDevices.add(new DeviceModel());
         }
     }
-
-
-//    public void initializeDevice() {
-//        mDeviceMap.clear();
-//        int index = 0;
-//        for (BluetoothDevice device : getTargetDevices()) {
-//            DeviceModel model = createDeviceModel(device, index);
-//            if (model != null) {
-//                mDeviceMap.put(device.getAddress(), model);
-//                index++;
-//            }
-//        }
-//    }
 
     private boolean invalidGamePad(BluetoothDevice device) {
         return (device.getName() == null) || !(device.getName().contains(GAMEPAD_NAME_RELEASE));
@@ -122,19 +107,19 @@ public class BluetoothDeviceManager {
     }
 
 
-    private void processNewDevice(byte seat, BluetoothDevice device) {
+    private void processNewDevice(byte seat, BluetoothDevice device, GamePadListener listener) {
         DeviceModel gp = mDevices.get(seat);
         gp.setLedIndicator(seat);
         gp.setGamePadName(device.getName());
         gp.setAddress(device.getAddress());
         gp.setBlueToothDevice(device);
         enableSensor(gp);
-        gp.setSPPConnection(new SPPConnection(gp));
+        gp.setSPPConnection(new SPPConnection(gp, listener));
         gp.getSPPConnection().start();
         gp.print();
         DeviceLocalCache.getInstance().save(mDevices); //update the local cache
         FabricModel model = gp.getFabricModel();
-        FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_DISCONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
+        FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_CONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
         gp.setFabricModel(model);
     }
 
@@ -147,10 +132,11 @@ public class BluetoothDeviceManager {
         return null;
     }
 
-    public void notifyConnectedDevice(BluetoothDevice device) {
+    public void notifyConnectedDevice(BluetoothDevice device, GamePadListener listener) {
         LogUtil.l();
         if (invalidGamePad(device)) {
             LogUtil.e("Not valid tim game pad, Abort");
+            listener.onSetupSuccessfully(false, device);
             return;
         }
 
@@ -159,23 +145,23 @@ public class BluetoothDeviceManager {
             LogUtil.d("GamePad " + gamepad.getIndicator() + "/" + gamepad.getGamePadName() + "/" + gamepad.getMACAddress() + " existed!");
             gamepad.setBlueToothDevice(device);
             enableSensor(gamepad);
-            gamepad.setSPPConnection(new SPPConnection(gamepad));
+            gamepad.setSPPConnection(new SPPConnection(gamepad, listener));
             gamepad.getSPPConnection().start();
             FabricModel model = gamepad.getFabricModel();
-            FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_DISCONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
+            FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_CONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
             gamepad.setFabricModel(model);
         } else {
             LogUtil.d("New game pad added");
             byte seat = findFreeSeat(mDevices);
             if (seat != -1) {
                 LogUtil.l();
-                processNewDevice(seat, device);
+                processNewDevice(seat, device, listener);
             } else {
                 LogUtil.l();
                 seat = findIdleSeat(mDevices);
                 if (seat != -1) {
                     LogUtil.l();
-                    processNewDevice(seat, device);
+                    processNewDevice(seat, device, listener);
                 } else {
                     LogUtil.e("This should never happened, Fault!!!");
                 }
@@ -183,49 +169,12 @@ public class BluetoothDeviceManager {
         }
     }
 
-//    public void notifyAddDevice(BluetoothDevice device, boolean old) {
-//        DeviceModel model = createDeviceModel(device, 0);
-//        if (model != null) {
-//
-//            String firmwareVersion = model.getSPPConnection().getDeviceFirmwareVersion().substring(0, 7);
-//            FabricController.getInstance().gamepadConnection(1, "connected", "V2", firmwareVersion);
-//        }
-//    }
-
-//    public void updateDevice(BluetoothDevice device) {
-//        LogUtil.d(TAG, "update Device : " + device.getAddress() + " contains : " + mDeviceMap.containsKey(device.getAddress()) + " size : " + mDeviceMap.size());
-//        if (mDeviceMap.containsKey(device.getAddress())) {
-//            DeviceModel oldModel = mDeviceMap.get(device.getAddress());
-//            int index = oldModel.mIndex;
-//            DeviceModel model = createDeviceModel(device, index);
-//            if (model != null) {
-//                model.mFabricModel = oldModel.mFabricModel;
-//                mDeviceMap.put(device.getAddress(), model);
-//            }
-//        }
-//
-//        DeviceModel model = getTarget(device.getAddress());
-//        if (model != null) {
-//            model.setFabricModel(model.getFabricModel());
-//        }
-//    }
-
     public void updateFabric(BluetoothDevice device) {
-//        if (mDeviceMap.containsKey(device.getAddress())) {
-//            DeviceModel oldModel = mDeviceMap.get(device.getAddress());
-//            FabricModel fabricModel = oldModel.getmFabricModel();
-//            oldModel.mFabricModel.mPreviousVersion = oldModel.mSPPConnection.getDeviceFirmwareVersion().substring(0, 7);
-//            LogUtil.d(TAG, "newFirmwareVersion : " + fabricModel.mPreviousVersion);
-//            LogUtil.d(TAG, "version : " + fabricModel.mUpgradeVersion);
-//            oldModel.mFabricModel = fabricModel;
-//            mDeviceMap.put(device.getAddress(), oldModel);
-//        }
-
         DeviceModel model = getTarget(device.getAddress());
         if (model != null) {
             FabricModel fabricModel = model.getFabricModel();
-            model.getFabricModel().mPreviousVersion = model.getSPPConnection().getDeviceFirmwareVersion();
-            LogUtil.d(TAG, "newFirmwareVersion : " + fabricModel.mPreviousVersion + "； version : " + fabricModel.mUpgradeVersion);
+            model.getFabricModel().mPreviousVersion = model.getFWVersion();
+            LogUtil.d("newFirmwareVersion : " + fabricModel.mPreviousVersion + "； version : " + fabricModel.mUpgradeVersion);
             model.setFabricModel(fabricModel);
         }
     }
@@ -274,49 +223,6 @@ public class BluetoothDeviceManager {
         LogUtil.e("This should never happened, Fault");
     }
 
-//
-//    //测试协议是否成功
-//    public void testProtocol() {
-//        LogUtil.d(TAG, "testProtocol");
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (!mDeviceMap.isEmpty()) {
-//                    DeviceModel model = mDeviceMap.get(mDeviceMap.keySet().iterator().next());
-//                    mTestConnection = model.getmSPPConnection();
-//
-//                    test("CMD_MOTOR_ON", SPPConnection.CMD_MOTOR_ON);
-//                    /* test("CMD_ENABLE_IMU", SPPConnection.CMD_ENABLE_IMU);
-//                    test("CMD_DISABLE_IMU", SPPConnection.CMD_DISABLE_IMU);
-//                    test("CMD_QUERY_IMU", SPPConnection.CMD_QUERY_IMU);
-//                    test("CMD_SET_CHANNEL", SPPConnection.CMD_SET_CHANNEL);
-//                    test("CMD_QUERY_FW_VERSION", SPPConnection.CMD_QUERY_FW_VERSION);
-//
-//                    test("CMD_START_FW_UPGRADE", SPPConnection.CMD_START_FW_UPGRADE);
-//                   test("CMD_SET_MODE_PC", SPPConnection.CMD_SET_MODEL_PC);
-//                     test("CMD_GET_MODEL_PC", SPPConnection.CMD_GET_MODEL_PC);
-//                    test("CMD_SET_MODEL_GAME", SPPConnection.CMD_SET_MODEL_GAME);
-//                    test("CMD_SET_MODEL_ANDROID", SPPConnection.CMD_SET_MODEL_ANDROID)
-//                    test("CMD_GET_MODEL_CTV_SUMSUNG", SPPConnection.CMD_GET_MODEL_CTV_SUMSUNG);
-//                    /*test("CMD_GET_MODEL_CTV_LG", SPPConnection.CMD_GET_MODEL_CTV_LG);
-//                    test("CMD_GET_MODEL_CTV", SPPConnection.CMD_GET_MODEL_CTV);
-//                    test("CMD_ENABLE_UPDATE_MODE", SPPConnection.CMD_ENABLE_UPDATE_MODE);
-//                    test("CMD_DISABLE_UPDATE_MODE", SPPConnection.CMD_DISABLE_UPDATE_MODE);
-//                    test("CMD_UPGRADE_FAILED", SPPConnection.CMD_UPGRADE_FAILED);*/
-//                }
-//            }
-//        }).start();
-//    }
-
-//    private SPPConnection mTestConnection;
-
-//    private void test(String CMD, byte cmd) {
-//        LogUtil.d(TAG, "=== TEST " + CMD);
-//        SPPConnection.ReceivedData data = mTestConnection.execCMD(cmd);
-//        LogUtil.d(TAG, "=== RESULT Send CMD : " + cmd + " Received CMD : " + data.mCmd + " Length: " + data.mLength + "   RETURN : " + data.mResult + "===");
-//    }
-
-
     public boolean isEmpty() {
         return mTargetDeviceCount == 0;
     }
@@ -339,10 +245,17 @@ public class BluetoothDeviceManager {
         return mGamePadMap;
     }
 
+    public List<DeviceModel> getConnectedDevicesList() {
+        return  mDevices;
+    }
+
+//    public List<DeviceModel> getConnectedDevices() {
+//        return mDevices;
+//    }
+
 
     public List<DeviceModel> getBondedDevices() {
         return mDevices;
-
     }
 
 
@@ -357,33 +270,6 @@ public class BluetoothDeviceManager {
         return deviceList;
     }
 
-//    public void queryDeviceFabricInfo(boolean old) {
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                LogUtil.d(TAG, "queryDeviceFabricInfo");
-//                Set<String> keySet = mDeviceMap.keySet();
-//                for (String key : keySet) {
-//                    DeviceModel model = mDeviceMap.get(key);
-//                    FabricModel fabricModel = new FabricModel();
-//                    FirmwareConfig firmwareConfig = mUpgradeManager.getNewVersion();
-//
-//                    fabricModel.connectStatus = true;
-//                    String version = model.mSPPConnection.getDeviceFirmwareVersion();
-//                    fabricModel.mPreviousVersion = version != null && version.length() > 7 ? version.substring(0, 7) : "";
-//                    fabricModel.mUpgradeVersion = firmwareConfig.getmVersion();
-//                    fabricModel.mFirmwareConfig = firmwareConfig;
-//                    fabricModel.mGamepadHWVersion = "V2";
-//                    fabricModel.mBattery = model.getmSPPConnection().getDeviceBattery();
-//                    LogUtil.d(TAG, "battery : " + fabricModel.mBattery);
-//                    model.mFabricModel = fabricModel;
-//                }
-//
-//                //notify FotaMainActivity fresh UI.
-//                EventBus.getDefault().post(EVENTBUS_MSG_QUERY_END);
-//            }
-//        }).start();
-//    }
 
     public void queryDeviceFabricInfo() {
         new Thread(new Runnable() {
@@ -394,14 +280,12 @@ public class BluetoothDeviceManager {
                 for (DeviceModel model : mDevices) {
                     FabricModel fabricModel = new FabricModel();
                     FirmwareConfig firmwareConfig = mUpgradeManager.getNewVersion();
-
                     fabricModel.connectStatus = true;
-                    String version = model.getSPPConnection().getDeviceFirmwareVersion();
-                    fabricModel.mPreviousVersion = version != null && version.length() > 7 ? version.substring(0, 7) : "";
+                    fabricModel.mPreviousVersion = model.getFWVersion();
                     fabricModel.mUpgradeVersion = firmwareConfig.getmVersion();
                     fabricModel.mFirmwareConfig = firmwareConfig;
                     fabricModel.mGamepadHWVersion = "V2";
-                    fabricModel.mBattery = model.getSPPConnection().getDeviceBattery();
+                    fabricModel.mBattery = model.getBatterVolt();
                     LogUtil.d(TAG, "battery : " + fabricModel.mBattery);
                     model.setFabricModel(fabricModel);
                 }
@@ -455,32 +339,6 @@ public class BluetoothDeviceManager {
         return false;
     }
 
-
-//    public boolean isBluetoothConnected(BluetoothDevice btDevice) {
-//
-//        Class<BluetoothAdapter> bluetoothAdapterClass = BluetoothAdapter.class;//得到BluetoothAdapter的Class对象
-//        try {//得到蓝牙状态的方法
-//            Method method = bluetoothAdapterClass.getDeclaredMethod("getConnectionState", (Class[]) null);
-//            //打开权限
-//            method.setAccessible(true);
-//            int state = (int) method.invoke(_bluetoothAdapter, (Object[]) null);
-//
-//            if (state == BluetoothAdapter.STATE_CONNECTED) {
-//
-//                LogUtil.i("BluetoothAdapter.STATE_CONNECTED");
-//
-//                Method isConnectedMethod = BluetoothDevice.class.getDeclaredMethod("isConnected", (Class[]) null);
-//                method.setAccessible(true);
-//                return (boolean) isConnectedMethod.invoke(btDevice, (Object[]) null);
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return false;
-//    }
-
     private BluetoothAdapter _bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
     public boolean isConnected(BluetoothDevice device) {
@@ -494,10 +352,7 @@ public class BluetoothDeviceManager {
 
             if (state == BluetoothAdapter.STATE_CONNECTED) {
 
-//                LogUtil.i("BluetoothAdapter.STATE_CONNECTED");
-
                 Set<BluetoothDevice> devices = _bluetoothAdapter.getBondedDevices();
-//                LogUtil.i("devices:" + devices.size());
 
                 if (devices.contains(device)) {
                     LogUtil.i("Target device found:" + device.getAddress());
@@ -513,22 +368,15 @@ public class BluetoothDeviceManager {
                         return false;
                     }
                 }
-//                for (BluetoothDevice dev : devices) {
-//                    Method isConnectedMethod = BluetoothDevice.class.getDeclaredMethod("isConnected", (Class[]) null);
-//                    method.setAccessible(true);
-//                    boolean isConnected = (boolean) isConnectedMethod.invoke(dev, (Object[]) null);
-//
-//                    if (isConnected && dev.getAddress().equals(device.getAddress())) {
-//                        LogUtil.i("Target connected:" + dev.getAddress());
-//                        return true;
-//                    } else {
-//                        LogUtil.d("Other device: " + dev.getAddress() + " connected");
-//                    }
-//                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void generateException() {
+        List<String> inits = new ArrayList<>(1) ;
+        LogUtil.d(""+inits.get(2));
     }
 }

@@ -3,18 +3,15 @@ package it.telecomitalia.TIMgamepad2.fota;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.text.TextUtils;
-
-import org.apache.http.conn.ConnectTimeoutException;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Timer;
@@ -28,7 +25,6 @@ import it.telecomitalia.TIMgamepad2.utils.FileUtils;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.model.Constant.CONFIG_FILE_NAME_GAMEPAD1;
-import static it.telecomitalia.TIMgamepad2.model.Constant.TAG;
 import static it.telecomitalia.TIMgamepad2.utils.FileUtils.getJsonFromLocal;
 
 /**
@@ -50,9 +46,8 @@ public class UpgradeManager {
             mTimer = new Timer();
         } else {
             mTimer.schedule(new TimerTask() {
-
                 public void run() {
-                    LogUtil.i(TAG, "进入来了");
+                    LogUtil.i("Start upgrade manager");
                     FirmwareConfig config = getNewVersion();
                     Message msg = handler.obtainMessage();
                     Bundle data = new Bundle();
@@ -61,7 +56,7 @@ public class UpgradeManager {
                     msg.what = 1;
                     handler.sendMessage(msg);
                 }
-            }, 2000, 300000);
+            }, 2000, 5 * 60 * 1000);
         }
     }
 
@@ -69,47 +64,82 @@ public class UpgradeManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                LogUtil.d(TAG, "Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
+                LogUtil.d("Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
                 String path = FileUtils.downLoadBin(model.getFabricModel().mFirmwareConfig.getmDownUrl(), handler);
 
-                LogUtil.d(TAG, "download success " + path);
+                LogUtil.d("download success " + path);
                 SPPConnection mainConnection = model.getSPPConnection();
                 mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
                 Message msg = handler.obtainMessage();
                 msg.what = FotaMainActivity.MSG_SET_PROGRESSBAR;
                 msg.arg1 = 30;
                 handler.sendMessage(msg);
-                try {
-
-                    FileInputStream fileInputStream = new FileInputStream(new File(path));
-                    int len = fileInputStream.available();
-                    LogUtil.d(TAG, "file length : " + len);
-                    byte[] buffer = new byte[len];
-                    int size = fileInputStream.read(buffer);
-                    LogUtil.i(TAG, "文件：" + len + " bytes. 将发送：" + size + " bytes. 正在传输数据，请稍后......");
-                    fileInputStream.close();
-                    mainConnection.sendData(buffer);
+                LogUtil.d("now update the UI to 30%");
+                for (int i = 0; i < 2; i++) {
+                    try {
+                        FileInputStream fileInputStream = new FileInputStream(new File(path));
+                        int len = fileInputStream.available();
+                        LogUtil.d("file length : " + len);
+                        byte[] buffer = new byte[len];
+                        int size = fileInputStream.read(buffer);
+                        LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
+                        fileInputStream.close();
+                        mainConnection.sendData(buffer);
+                        LogUtil.d("Data send finished");
+                    /*
                     byte[] reply = new byte[64];
-
                     while ((mainConnection.waitAck(reply)) > 0) {
                         String content = new String(reply);
-
                         if (content.contains("Reboot in 1 second")) {
-                            LogUtil.i(TAG, "升级完成...");
+                            LogUtil.i("Upgrade completed...");
                             Message msg2 = handler.obtainMessage();
                             msg2.arg1 = 90;
-                            msg2.what = FotaMainActivity.MSG_SET_PROGRESSBAR;
+                            msg2.what = UpgradeUIActivity.MSG_SET_PROGRESSBAR;
                             handler.sendMessage(msg2);
                             break;
                         }
                         Array.setByte(reply, 0, (byte) 0);
                     }
-                    LogUtil.d(TAG, "update end");
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
+                    */
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    SystemClock.sleep(1100);
                 }
+            }
+        }).start();
+    }
+
+    public void startUpgradeLocal(final DeviceModel model, final Handler handler, final String localPath) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                LogUtil.d("Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
+//                String path = FileUtils.downLoadBin(model.getFabricModel().mFirmwareConfig.getmDownUrl(), handler);
+
+                LogUtil.d("download success " + localPath);
+                SPPConnection mainConnection = model.getSPPConnection();
+                mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
+                Message msg = handler.obtainMessage();
+                msg.what = FotaMainActivity.MSG_SET_PROGRESSBAR;
+                msg.arg1 = 30;
+                handler.sendMessage(msg);
+
+                LogUtil.d("now update the UI to 30%");
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(new File(localPath));
+                    int len = fileInputStream.available();
+                    LogUtil.d("file length : " + len);
+                    byte[] buffer = new byte[len];
+                    int size = fileInputStream.read(buffer);
+                    LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
+                    mainConnection.sendData(buffer);
+                    LogUtil.d("Data send finished");
+//                        fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                SystemClock.sleep(1100);
             }
         }).start();
     }
@@ -146,11 +176,11 @@ public class UpgradeManager {
         File file = new File(mFWPath + CONFIG_FILE_NAME_GAMEPAD1);
         FirmwareConfig config = new FirmwareConfig();
 
-        LogUtil.d(TAG, "file exits " + file.exists());
+        LogUtil.d("file exits " + file.exists());
         if (file.exists()) {
             config = getJsonFromLocal(mFWPath + CONFIG_FILE_NAME_GAMEPAD1);
         }
-        LogUtil.d(TAG, "new version : " + config.getmVersion());
+        LogUtil.d("new version : " + config.getmVersion());
         return config;
     }
 
@@ -165,7 +195,7 @@ public class UpgradeManager {
             int count = 0;
 
             URL url = new URL(path);
-            LogUtil.i(Constant.TAG, "getJsonFromeServer-->path:" + path);
+            LogUtil.i("getJsonFromeServer-->path:" + path);
             HttpURLConnection conection = (HttpURLConnection) url.openConnection();
             conection.connect();
             conection.setConnectTimeout(4000);
@@ -197,10 +227,8 @@ public class UpgradeManager {
             output.close();
             input.close();
 
-        } catch (ConnectTimeoutException e) {
-            LogUtil.i(Constant.TAG, e.toString());
         } catch (Exception e) {
-            LogUtil.i(Constant.TAG, e.toString());
+            LogUtil.i(e.toString());
         }
     }
 }

@@ -41,8 +41,8 @@ public class FabricController {
     }
 
     public static FabricController getInstance() {
-        if(mController == null) {
-            if(mController == null) {
+        if (mController == null) {
+            if (mController == null) {
                 mController = new FabricController();
             }
         }

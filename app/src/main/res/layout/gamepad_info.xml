@@ -67,6 +67,7 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/battery_row"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -104,6 +105,7 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/firmware_row"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -124,6 +126,31 @@
                 android:layout_marginBottom="10dp"
                 android:layout_marginEnd="10dp"
                 android:text="Version: 1.6"
+                android:textColor="@android:color/white" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/online_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="10dp"
+                android:text="@string/online_status"
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/table_online"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="10dp"
+                android:text="@string/gamepad_offline"
                 android:textColor="@android:color/white" />
         </TableRow>
 

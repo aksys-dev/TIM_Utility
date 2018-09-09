@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.service.UpdateFotaMainService;
+import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 /**
  * Created by czy on 2017/3/8.
@@ -28,21 +29,18 @@ public class DialogActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        Intent intent = getIntent();
-        final String action = intent.getExtras().getString(EXTRA_UPGRADE_BACKGROUND, "");
-
         setContentView(R.layout.activity_dialog);
-        dialog_ok=(Button)findViewById(R.id.dialog_ok);
-        dialog_cancel=(Button)findViewById(R.id.dialog_cancel);
-        dialog_txt=(TextView)findViewById(R.id.dialog_txt);
+        dialog_ok = (Button) findViewById(R.id.dialog_ok);
+        dialog_cancel = (Button) findViewById(R.id.dialog_cancel);
+        dialog_txt = (TextView) findViewById(R.id.dialog_txt);
         dialog_ok.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View view) {
-
-                Intent intentBroadcast= new Intent();
+                LogUtil.d("OK button clicked");
+                Intent intentBroadcast = new Intent();
                 intentBroadcast.setAction(UpdateFotaMainService.DIALOG_OK_BROADCAST);
                 sendBroadcast(intentBroadcast);
-
                 finish();
             }
         });
@@ -50,14 +48,10 @@ public class DialogActivity extends Activity {
         dialog_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(action == EXTRA_UPGRADE_BACKGROUND) {
-
-                } else {
-                    Intent intent = new Intent();
-                    intent.setAction(UpdateFotaMainService.DIALOG_CANCEL_BROADCAST);
-                    sendBroadcast(intent);
-                    finish();
-                }
+                Intent intent = new Intent();
+                intent.setAction(UpdateFotaMainService.DIALOG_CANCEL_BROADCAST);
+                sendBroadcast(intent);
+                finish();
             }
         });
     }

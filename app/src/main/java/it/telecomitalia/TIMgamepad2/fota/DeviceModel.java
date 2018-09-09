@@ -23,14 +23,9 @@ public class DeviceModel {
     private boolean mIMUEnabled = false;
     private boolean sppReady = false;
 
-    private String mDeviceFWVersion = null;
+    private int mBatteryVolt = -1;
 
-    DeviceModel(BluetoothDevice device, SPPConnection connection, int index) {
-        mDevice = device;
-        mSPPConnection = connection;
-        mFabricModel = new FabricModel();
-        mIndex = index;
-    }
+    private String mDeviceFWVersion = null;
 
     DeviceModel() {
         mDevice = null;
@@ -73,6 +68,14 @@ public class DeviceModel {
 
     public String getFWVersion() {
         return mDeviceFWVersion;
+    }
+
+    public void setFirmwareVersion(String version) {
+        mDeviceFWVersion = version;
+    }
+
+    public boolean online() {
+        return mSPPConnection != null;
     }
 
     public synchronized void setLedIndicator(byte indicator) {
@@ -118,6 +121,14 @@ public class DeviceModel {
 
     public int getIndex() {
         return mIndex;
+    }
+
+    public void setBatteryVolt(int volt) {
+        mBatteryVolt = volt;
+    }
+
+    public int getBatterVolt() {
+        return mBatteryVolt;
     }
 
     public void print() {
