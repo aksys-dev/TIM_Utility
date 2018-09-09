@@ -13,12 +13,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -49,9 +47,7 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
     ConstraintLayout menulist;
     ListView menulistView;
 
-    Button menuGamepad, menuIMU, menuAbout;
     FrameLayout gamepadView;
-    ScrollView gamepadLists;
     ListView gamepadList2;
     LinearLayout imuoptionLists;
     LinearLayout aboutLists;
@@ -73,13 +69,7 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
     TextView activityTitle;
     LinearLayout menuButtons;
 
-    //int version = 0, update = 1;
-
     private static BluetoothDeviceManager mDeviceManager;
-
-    private boolean isshowndialog = false;
-
-//    private int[] mMagicKeys = new int[]{102, 103, 21, 19, 20, 22};
 
     private MagicKey[] mMagicKeys = new MagicKey[]{new MagicKey(102, 0), new MagicKey(103, 1), new MagicKey(21, 2), new MagicKey(19, 3), new MagicKey(20, 4), new MagicKey(22, 5),};
 
@@ -184,7 +174,7 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
         menulistView.setAdapter(adapter);
     }
 
-    public void SetupGamepadList() {
+    public void SetupGamePadList() {
         GamepadVO g;
         int list = 0;
         datas.clear();
@@ -224,7 +214,7 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
 
     private GamepadListAdapter adapter;
 
-    public void RefreshGamepadList() {
+    public void RefreshGamePadList() {
         adapter = new GamepadListAdapter(this, R.layout.gamepad_info, datas);
         gamepadList2.setAdapter(adapter);
     }
@@ -316,8 +306,8 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
             switch (position) {
                 case 0:
                     // Gamepad Menu
-                    SetupGamepadList();
-                    RefreshGamepadList();
+                    SetupGamePadList();
+                    RefreshGamePadList();
                     gamepadList2.setOnItemClickListener(this);
                     gamepadView.setVisibility(View.VISIBLE);
                     activityTitle.setText(R.string.menu_gamepad);
@@ -334,23 +324,6 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
                     break;
             }
         }
-        // Gamepad Selected.
-//        Toast.makeText(this, datas.get(position).getGamepadName(), Toast.LENGTH_SHORT).show();
-////        FirmwareConfig config = (FirmwareConfig) msg.getData().getSerializable(UpdateFotaMainService.KEY_MSG_FIRMWARE);
-//        FirmwareConfig config = mUpgradeManager.getNewVersion();
-//        ArrayList<DeviceModel> deviceList = mGamePadDeviceManager.getNeedUpgradedDevice(config);
-//
-//        LogUtil.d("UI empty : " + deviceList.isEmpty());
-//        if (!deviceList.isEmpty()) {
-//            try {
-//                FileUtils.compareVersion(config.getmDownUrl(), handler);
-//            } catch (NullPointerException e) {
-//                LogUtil.e(e.getMessage());
-//                e.printStackTrace();
-//            }
-//            Intent recommendationIntent = new Intent(FOTA_V2.this, UpdateRecommendationsService.class);
-//            FOTA_V2.this.startService(recommendationIntent);
-//        }
 
         if (gamepadView.getVisibility() == View.VISIBLE) {
             FirmwareConfig config = mUpgradeManager.getNewVersion();
@@ -365,12 +338,9 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
             }
             if (found) {
                 LogUtil.d("Need upgrade ");
-                if (!isshowndialog) {
-                    Intent dialogIntent = new Intent(FOTA_V2.this, DialogActivity.class);
-                    dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(dialogIntent);
-                    isshowndialog = true;
-                }
+                Intent dialogIntent = new Intent(FOTA_V2.this, DialogActivity.class);
+                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(dialogIntent);
             } else {
                 Toast.makeText(FOTA_V2.this, datas.get(position).getGamepadName() + getString(R.string.no_need_update), Toast.LENGTH_LONG).show();
             }
@@ -398,8 +368,6 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
     }
 
     public void EventAddGamepad(DeviceModel model) {
-//        if (macAddress == getString(R.string.unknown)) return;
-//        GamepadVO g = new GamepadVO(macAddress);
         GamepadVO g = new GamepadVO(getString(R.string.gamepad_one) + (model.getIndicator() + 1), model.getMACAddress(), model.getBatterVolt(), model.getFWVersion(), model.online());
         datas.add(g);
     }

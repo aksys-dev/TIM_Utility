@@ -51,8 +51,8 @@
     <string name="gamepads">Gamepads</string>
     <string name="Calibration">calibrazione sensore inerziale</string>
     <string name="menu_gamepad">stato del TIM gamepad</string>
-    <string name="menu_imu">IMU Setting</string>
-    <string name="menu_about">About Application</string>
+    <string name="menu_imu">Impostazione IMU</string>
+    <string name="menu_about">Informazioni sull\'applicazione</string>
     <string name="new_firmware">Premi qui per ottenere una nuova versione.</string>
     <string name="battery">batteria</string>
     <string name="on">acceso</string>
@@ -62,8 +62,8 @@
     <string name="imu_sensitivity">sensibilità sensore di inerziale</string>
     <string name="current_version">versione corrente</string>
     <string name="latest_update">versione aggiornata</string>
-    <string name="unknown">Unknown</string>
-    <string name="updated">updated</string>
+    <string name="unknown">ignoto</string>
+    <string name="updated">aggiornato</string>
 
     <string name="online_status">Stato</string>
 
@@ -77,8 +77,16 @@
     <!--
     <string name="upgrade_done">Bluetooth Game Pad upgrading done. Press Button \"Done\" for continue.</string>
     -->
+    <string name="upgrade_download">Download del firmware ......</string>
+    <string name="upgrade_flash">Trasmettere il firmware ......</string>
+
+    <string name="upgrade_done">Aggiornamento del gamepad Bluetooth fatto. Premi il pulsante \ "Fatto \" per continuare.</string>
 
     <string name="upgrade_success">Successo!</string>
     <string name="upgrade_failure">mancato!</string>
     <string name="no_need_update">" è l'ultima versione"</string>
+
+    <string name="toast_upgrade_success">"Aggiorna con successo"</string>
+
+    <string name="toast_upgrade_failed">"Aggiornamento non riuscito"</string>
 </resources>

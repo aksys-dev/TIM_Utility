@@ -38,10 +38,13 @@ import it.telecomitalia.TIMgamepad2.fota.SPPConnection;
 import it.telecomitalia.TIMgamepad2.fota.UpgradeManager;
 import it.telecomitalia.TIMgamepad2.model.FabricModel;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
+import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.model.UpdateModel;
 import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.FileUtils;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
+
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_DOWNLOADING;
 
 
 /**
@@ -141,7 +144,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         super.onCreate();
         EventBus.getDefault().register(this);
         mContext = this;
-//        restartBTAdapter(mContext);
+        restartBTAdapter(mContext);
         checkDriver();
         sp = UpdateFotaMainService.this.getSharedPreferences(CommerHelper.SPNAME, Activity.MODE_PRIVATE);
         PATH = mContext.getCacheDir() + "/firmware/";
@@ -384,121 +387,17 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 startActivity(intents);
                 /*UpdateModel updateModel = new UpdateModel(mainConnection,true);
                 EventBus.getDefault().post(updateModel);*/
-                LogUtil.d("EVENTBUS_MSG_NEED_UPGRADE");
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         SystemClock.sleep(1000);
                         EventBus.getDefault().post(BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE);
+                        SystemClock.sleep(1000);
+                        EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_DOWNLOADING, null, 0));
                     }
                 }).start();
 
             }
         }
     };
-
-     /*
-    private void setupDevice() {
-
-       String name = device.getName();
-        if (isBlutoothConnected(device)) {
-            isConnect=true;
-            DeviceInfo info = new DeviceInfo(device, device.getAddress());
-
-            LogUtil.d("Target device: " + name + " found!");
-
-            if (mainConnection == null) {
-                mainConnection = new SPPConnection(info);
-                mainConnection.init();
-            }
-
-            if (mTimer == null) {
-                mTimer = new Timer();
-            } else {
-                mTimer.schedule(new TimerTask() {
-
-                    public void run() {
-                        LogUtil.i("进入来了");
-                        downLoadJson();
-                    }
-                }, 2000, 300000);
-            }
-            EventBus.getDefault().postSticky(mainConnection);
-            EventBus.getDefault().postSticky(device);
-
-
-            if(sp.getBoolean(CommerHelper.IS_COMMIT, false)){
-                //设备升级完之后重连之后需要发送这个命令才可以把新固件写入
-
-                mainConnection.fotaOn(SPPConnection.CMD_UPGRADE_SUCCESS);
-
-                byte[] reply = new byte[64];
-                mainConnection.waitAck(reply);
-                String content = new String(reply);
-
-                sp.edit().putBoolean(CommerHelper.IS_COMMIT,false).commit();
-                LogUtil.i(TAG,"进入serivce  commit发送--------"+content);
-
-            }
-           }
-        }*/
-
-    /**
-     * 从服务器获取json信息，并存到本地对应地址
-     */
-/*    private void downLoadJson() {
-        LogUtil.i(TAG,"UpdateFotaMainService进入到了downLoadJson");
-        new Thread(new Runnable() {
-            public void run()
-
-            {
-                try {
-                    Thread.sleep(100);
-                    try {
-
-                        getJsonFromeServer(Constant.REMOTE_CONFIG_URL_GAMEPAD1_NEW, CONFIG_FILE_NAME_GAMEPAD1, handler);
-
-                    } catch (Exception e) {
-//                        sendErrorCode(e.toString(),handler);
-                    }
-                } catch (InterruptedException e) {
-//                    sendErrorCode(e.toString(),handler);
-                }
-            }
-        }).start();
-    }*/
-
-    /**
-     * 判断是否需要升级
-     */
-   /* private boolean isToUpgrade() {
-        String newversion = "";
-        boolean needupdate = false;
-        //把本地从服务器下载的json文件读取出来，获取里面的版本号
-        File file = new File(PATH + CONFIG_FILE_NAME_GAMEPAD1);
-        if (file.exists()) {
-            FirmwareConfig mConfigs = getJsonFromLocal(PATH + CONFIG_FILE_NAME_GAMEPAD1);
-            newversion = mConfigs.getmVersion();
-            gamepadDownLoadUrl=mConfigs.getmDownUrl();
-        } else {
-            newversion = "";
-        }
-
-        if (TextUtils.isEmpty(firmwareVersion)){
-            firmwareVersion = mainConnection.getDeviceFirmwareVersion().substring(8,14);
-        }
-
-        if(!TextUtils.isEmpty(newversion)){
-            if (newversion.compareTo(firmwareVersion)>0){
-                needupdate=true;
-            }
-        }
-        LogUtil.i(TAG,"硬件的版本号:"+firmwareVersion+"---->服务器版本号"+newversion);
-        EventBus.getDefault().post("FirmwareVersion"+firmwareVersion);
-        EventBus.getDefault().post("ServerVersion"+newversion);
-
-        mFabricModel.mPreviousVersion = firmwareVersion;
-        mFabricModel.mUpgradeVersion = newversion;
-        return needupdate;
-    }*/
 }

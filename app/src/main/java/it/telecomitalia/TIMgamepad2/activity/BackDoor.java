@@ -56,6 +56,7 @@ public class BackDoor extends Activity implements View.OnClickListener {
         mButton = findViewById(R.id.button1);
 
         mButton.setOnClickListener(this);
+        mButton.setVisibility(View.GONE);
 
         LogUtil.d("Now start BT connection status receiver");
 

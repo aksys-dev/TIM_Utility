@@ -1,12 +1,11 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
+import android.os.SystemClock;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -31,8 +30,12 @@ import it.telecomitalia.TIMgamepad2.model.FabricModel;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
-import static it.telecomitalia.TIMgamepad2.fota.SPPConnection.CMD_UPGRADE_FAILED;
-import static it.telecomitalia.TIMgamepad2.fota.SPPConnection.CMD_UPGRADE_SUCCESS;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_DOWNLOADING;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_FAILURE;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_SUCCESS;
 
 public class UpgradeUIActivity extends Activity {
     private Context mContext;
@@ -44,7 +47,9 @@ public class UpgradeUIActivity extends Activity {
     private UpgradeManager mUpgradeManager;
     private Button mDoneButton;
     private TextView mDetailTv;
-    private TextView mResultText;
+    private TextView mProgressText;
+
+    private static int mCurrentDevice = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +61,7 @@ public class UpgradeUIActivity extends Activity {
 
         EventBus.getDefault().register(this);
         mContext = this;
-        mHandler = new MainHandler();
+//        mHandler = new MainHandler();
         PATH = mContext.getCacheDir() + "/firmware/";
         initUI();
         initializeBluetoothManager();
@@ -64,12 +69,17 @@ public class UpgradeUIActivity extends Activity {
 
     private void initUI() {
         mUpdateProgressBar = findViewById(R.id.upgrade_progressbar);
-        mResultText = findViewById(R.id.upgrade_result);
+        mUpdateProgressBar.setMax(120);
+        mUpdateProgressBar.setProgress(0);
+        mProgressText = findViewById(R.id.upgrade_progress);
         mDoneButton = findViewById(R.id.upgrade_done);
         mDetailTv = findViewById(R.id.upgrade_details);
         mDetailTv.setText(R.string.upgrade_ing);
-        mDoneButton.setVisibility(View.INVISIBLE);
+        mProgressText.setText(R.string.upgrade_download);
+        mUpdateProgressBar.setProgress(0);
         mDoneButton.setOnClickListener(listener);
+        mDoneButton.setClickable(false);
+        mDoneButton.setVisibility(View.GONE);
     }
 
     @Override
@@ -79,19 +89,45 @@ public class UpgradeUIActivity extends Activity {
 
     private boolean mInUpgrading = false;
 
-    private void displayUpgradeStatus(boolean upgrade) {
-//        mUpdateProgressBar.setVisibility(upgrade ? View.VISIBLE : View.GONE);
-        mDetailTv.setText(getString(R.string.upgrade_ing));
-//        mUpdateProgressBar.setVisibility(View.GONE);
-        mResultText.setText(R.string.upgrade_success);
-        mDoneButton.setVisibility(View.INVISIBLE);
+    private void displayUpgradeStatus(FotaEvent event) {
+        switch (event.getEventName()) {
+            case FOTA_STAUS_DOWNLOADING:
+                mProgressText.setText(R.string.upgrade_download);
+                mUpdateProgressBar.setProgress(10);
+                startUpgradeByOrder(0);
+                break;
+            case FOTA_STAUS_FLASHING:
+//                LogUtil.d("status " + event.getStatus());
+                mProgressText.setText(R.string.upgrade_flash);
+                mUpdateProgressBar.setProgress(20 + event.getStatus());
+                break;
+            case FOTA_STATUS_DONE:
+                mProgressText.setText("");
+                mProgressText.setText(R.string.upgrade_done);
+                mUpdateProgressBar.setProgress(120);
+                switch (event.getStatus()) {
+                    case FOTA_UPGRADE_SUCCESS:
+                        mProgressText.setText(R.string.upgrade_success);
+                        Toast.makeText(UpgradeUIActivity.this, R.string.toast_upgrade_success, Toast.LENGTH_LONG).show();
+                        break;
+                    case FOTA_UPGRADE_FAILURE:
+                        mProgressText.setText(R.string.upgrade_failure);
+                        Toast.makeText(UpgradeUIActivity.this, R.string.toast_upgrade_failed, Toast.LENGTH_LONG).show();
+                        break;
+                }
+                SystemClock.sleep(1000);
+//                mDoneButton.setClickable(true);
+//                mDoneButton.setVisibility(View.VISIBLE);
+
+                finish();
+                break;
+        }
     }
 
 
     private View.OnClickListener listener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-//            mHandler.sendEmptyMessage(MSG_RECONNECT_SUCCESS);
             finish();
         }
     };
@@ -99,7 +135,6 @@ public class UpgradeUIActivity extends Activity {
     private void initializeBluetoothManager() {
         LogUtil.d("initializeBluetoothManager");
         mGamePadDeviceManager = BluetoothDeviceManager.getDeviceManager();
-//        mGamePadDeviceManager.initializeDevice(PATH);
         mUpgradeManager = mGamePadDeviceManager.getUpgradeManager();
     }
 
@@ -130,48 +165,12 @@ public class UpgradeUIActivity extends Activity {
                     mInUpgrading = true;
                     mUpgradeManager.startUpgrade(mCurrentUpgradeModel, mHandler);
                     notifyUpgradeStatus(mCurrentUpgradeModel.getFabricModel(), true);
-                    displayUpgradeStatus(true);
                 } else {
                     LogUtil.d("No Need upgrade, Next");
                     startUpgradeByOrder(index + 1);
                 }
                 break;
             }
-        }
-
-//        List<DeviceModel> models = mGamePadDeviceManager.getConnectedDevices();
-//        for (DeviceModel model : models) {
-//            LogUtil.d(TAG, "Device: " + model.getMACAddress());
-//            if (!mInUpgrading) {
-//                mCurrentUpgradeModel = model;
-//                FabricModel fabricModel = model.getFabricModel();
-//                LogUtil.d(TAG, "upgrade check ： " + fabricModel.needUpdate());
-//                if (fabricModel.needUpdate()) {
-//                    mInUpgrading = true;
-//                    mUpgradeManager.startUpgrade(mCurrentUpgradeModel, mHandler);
-//                    notifyUpgradeStatus(mCurrentUpgradeModel.getFabricModel(), true);
-//                    displayUpgradeStatus(true);
-//                } else {
-//                    startUpgradeByOrder();
-//                }
-//                break;
-//            }
-//        }
-    }
-
-    /**
-     * 下载完数据，显示30%；
-     * 传送升级包到手柄，显示90%
-     * 发送COMMIT命令到手柄端，获取返回SUCCESS，显示100%
-     */
-    private void showUpgradeProcess(int percent) {
-        mUpdateProgressBar.setProgress(percent);
-        if (percent == 100) {
-            Toast.makeText(UpgradeUIActivity.this, "Upgrade successfully", Toast.LENGTH_LONG).show();
-            finish();
-        } else if (percent == 0) {
-//            mUpdateProgressBar.setVisibility(View.GONE);
-            mResultText.setText(R.string.upgrade_failure);
         }
     }
 
@@ -190,40 +189,38 @@ public class UpgradeUIActivity extends Activity {
     public static final int MSG_RECONNECT_SUCCESS = 0x200;
     private DeviceModel mCurrentUpgradeModel;
 
-    private class MainHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-
-            switch (msg.what) {
-                case MSG_RECONNECT_SUCCESS:
-                    LogUtil.d("Send COMMIT Command");
-                    notifyUpgradeStatus(mCurrentUpgradeModel.getFabricModel(), true);
-                    mGamePadDeviceManager.updateFabric(mCurrentUpgradeModel.getDevice());
-                    mCurrentUpgradeModel = mGamePadDeviceManager.getDeviceModelByAddress(mCurrentUpgradeModel.getDevice().getAddress());
-                    displayUpgradeStatus(false);
-                    //已经升级完了，可以做其他的操作了，比如更新UI，执行下一次升级等
-                    mInUpgrading = false;
-                    //开始下一个蓝牙设备升级
-                    int nextIndex = mCurrentUpgradeModel.getIndicator() + 1;
-                    startUpgradeByOrder(nextIndex);
-                    break;
-                case MSG_SET_PROGRESSBAR:
-                    showUpgradeProcess(msg.arg1);
-                    break;
-            }
-        }
-    }
+//    private class MainHandler extends Handler {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            super.handleMessage(msg);
+//
+//            switch (msg.what) {
+//                case MSG_RECONNECT_SUCCESS:
+//                    LogUtil.d("Send COMMIT Command");
+//                    notifyUpgradeStatus(mCurrentUpgradeModel.getFabricModel(), true);
+//                    mGamePadDeviceManager.updateFabric(mCurrentUpgradeModel.getDevice());
+//                    mCurrentUpgradeModel = mGamePadDeviceManager.getDeviceModelByAddress(mCurrentUpgradeModel.getDevice().getAddress());
+//                    //已经升级完了，可以做其他的操作了，比如更新UI，执行下一次升级等
+//                    mInUpgrading = false;
+//                    //开始下一个蓝牙设备升级
+//                    int nextIndex = mCurrentUpgradeModel.getIndicator() + 1;
+//                    startUpgradeByOrder(nextIndex);
+//                    break;
+//                case MSG_SET_PROGRESSBAR:
+//                    break;
+//            }
+//        }
+//    }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void getEvent(final Object object) {
         if (object instanceof String) {
             String event = (String) object;
-            if (event.equals(BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE)) {
+            if (event.equals(EVENTBUS_MSG_NEED_UPGRADE)) {
                 //启动来自UpdateFotaMainService的升级请求。
-                startUpgradeByOrder(0);
+                LogUtil.d("EVENTBUS_MSG_NEED_UPGRADE");
             } else if (event.equals(BluetoothDeviceManager.EVENTBUS_MSG_QUERY_END)) {
-                LogUtil.d("DisplayUpdateInfo");
+//                LogUtil.d("DisplayUpdateInfo");
 //                startUpgradeByOrder(0);
             }
 //        } else if (object instanceof BluetoothDevice) {
@@ -235,22 +232,7 @@ public class UpgradeUIActivity extends Activity {
 //                showUpgradeProcess(100);
 //            }
         } else if (object instanceof FotaEvent) {
-            FotaEvent event = (FotaEvent) object;
-            byte eventName = event.getEventName();
-            BluetoothDevice device = event.getDevice();
-            switch (eventName) {
-                case CMD_UPGRADE_SUCCESS:
-                    LogUtil.d("CMD_UPGRADE_SUCCESS");
-                    mCurrentUpgradeModel = mGamePadDeviceManager.getDeviceModelByAddress(device.getAddress());
-                    showUpgradeProcess(100);
-                    break;
-                case CMD_UPGRADE_FAILED:
-                    LogUtil.d("CMD_UPGRADE_FAILED");
-                    mCurrentUpgradeModel = mGamePadDeviceManager.getDeviceModelByAddress(device.getAddress());
-                    showUpgradeProcess(0);
-                    break;
-
-            }
+            displayUpgradeStatus((FotaEvent) object);
 
         }
     }

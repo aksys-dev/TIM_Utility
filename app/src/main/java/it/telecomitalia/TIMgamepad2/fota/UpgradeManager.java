@@ -6,6 +6,8 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,14 +19,15 @@ import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import it.telecomitalia.TIMgamepad2.activity.FotaMainActivity;
 import it.telecomitalia.TIMgamepad2.model.Constant;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
+import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.service.UpdateFotaMainService;
 import it.telecomitalia.TIMgamepad2.utils.FileUtils;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.model.Constant.CONFIG_FILE_NAME_GAMEPAD1;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
 import static it.telecomitalia.TIMgamepad2.utils.FileUtils.getJsonFromLocal;
 
 /**
@@ -70,22 +73,17 @@ public class UpgradeManager {
                 LogUtil.d("download success " + path);
                 SPPConnection mainConnection = model.getSPPConnection();
                 mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
-                Message msg = handler.obtainMessage();
-                msg.what = FotaMainActivity.MSG_SET_PROGRESSBAR;
-                msg.arg1 = 30;
-                handler.sendMessage(msg);
-                LogUtil.d("now update the UI to 30%");
-                for (int i = 0; i < 2; i++) {
-                    try {
-                        FileInputStream fileInputStream = new FileInputStream(new File(path));
-                        int len = fileInputStream.available();
-                        LogUtil.d("file length : " + len);
-                        byte[] buffer = new byte[len];
-                        int size = fileInputStream.read(buffer);
-                        LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
-                        fileInputStream.close();
-                        mainConnection.sendData(buffer);
-                        LogUtil.d("Data send finished");
+                EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, model.getDevice(), 0));
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(new File(path));
+                    int len = fileInputStream.available();
+                    LogUtil.d("file length : " + len);
+                    byte[] buffer = new byte[len];
+                    int size = fileInputStream.read(buffer);
+                    LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
+//                        fileInputStream.close();
+                    mainConnection.sendData(buffer);
+                    LogUtil.d("Data send finished");
                     /*
                     byte[] reply = new byte[64];
                     while ((mainConnection.waitAck(reply)) > 0) {
@@ -101,11 +99,10 @@ public class UpgradeManager {
                         Array.setByte(reply, 0, (byte) 0);
                     }
                     */
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    SystemClock.sleep(1100);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+                SystemClock.sleep(1100);
             }
         }).start();
     }
@@ -120,12 +117,8 @@ public class UpgradeManager {
                 LogUtil.d("download success " + localPath);
                 SPPConnection mainConnection = model.getSPPConnection();
                 mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
-                Message msg = handler.obtainMessage();
-                msg.what = FotaMainActivity.MSG_SET_PROGRESSBAR;
-                msg.arg1 = 30;
-                handler.sendMessage(msg);
+                EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, model.getDevice(), 0));
 
-                LogUtil.d("now update the UI to 30%");
                 try {
                     FileInputStream fileInputStream = new FileInputStream(new File(localPath));
                     int len = fileInputStream.available();
@@ -135,11 +128,10 @@ public class UpgradeManager {
                     LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
                     mainConnection.sendData(buffer);
                     LogUtil.d("Data send finished");
-//                        fileInputStream.close();
+//                    fileInputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                SystemClock.sleep(1100);
             }
         }).start();
     }

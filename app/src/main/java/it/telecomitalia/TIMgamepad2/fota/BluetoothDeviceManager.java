@@ -26,7 +26,7 @@ public class BluetoothDeviceManager {
     public static final String EVENTBUS_MSG_QUERY_END = "QueryDeviceEnd";
     public static final String EVENTBUS_MSG_NEED_UPGRADE = "NeedUpgrade";
     public static final String EVENTBUS_MSG_UPGRADE_SUCCESS = "UpgradeSuccess";
-    public static final String EVENTBUS_MSG_STAUS_CHANGED = "StatusChanged";
+    public static final String EVENTBUS_MSG_STAUS_CHANGED = "status_changed";
 
     private static BluetoothDeviceManager mDeviceManager;
     private static volatile boolean mInitialized = false;
@@ -246,7 +246,7 @@ public class BluetoothDeviceManager {
     }
 
     public List<DeviceModel> getConnectedDevicesList() {
-        return  mDevices;
+        return mDevices;
     }
 
 //    public List<DeviceModel> getConnectedDevices() {
@@ -376,7 +376,7 @@ public class BluetoothDeviceManager {
     }
 
     public void generateException() {
-        List<String> inits = new ArrayList<>(1) ;
-        LogUtil.d(""+inits.get(2));
+        List<String> inits = new ArrayList<>(1);
+        LogUtil.d("" + inits.get(2));
     }
 }

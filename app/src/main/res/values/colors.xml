@@ -7,4 +7,5 @@
     <color name="icon_alt_background">#2A2F51</color>
     <color name="dialog_grey">#666666</color>
     <color name="black">#000000</color>
+    <color name="write">#FFFFFF</color>
 </resources>

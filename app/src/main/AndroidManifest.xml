@@ -23,7 +23,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activity.BackDoor"
+            android:name=".activity.FOTA_V2"
 
             android:configChanges="keyboardHidden|orientation|mcc|mnc|uiMode|locale|keyboard">
             <intent-filter>
@@ -36,11 +36,14 @@
 
         <activity
             android:name=".activity.DialogActivity"
+            android:launchMode="singleTask"
             android:theme="@style/MyDialog" />
 
-        <activity android:name=".activity.UpgradeUIActivity" />
+        <activity
+            android:name=".activity.UpgradeUIActivity"
+            android:launchMode="singleTask" />
         <activity android:name=".activity.FotaMainActivity" />
-        <activity android:name=".activity.FOTA_V2" />
+        <activity android:name=".activity.BackDoor" />
 
 
         <receiver android:name=".service.UpdatePowerOnReceiver">

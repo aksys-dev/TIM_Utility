@@ -7,8 +7,12 @@ import org.greenrobot.eventbus.EventBus;
 
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
-import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
+
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_FAILURE;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_SUCCESS;
 
 
 /**
@@ -188,12 +192,16 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mConnectionThread.write(CMD_OTA_INTENT_REBOOT);
     }
 
+    private float sentDataSize = 0;
+
+    private final static float TOTAL_SIZE = 91374;
+
     @Override
     public void onDataArrived(byte[] data, int size) {
-        if (size != 22) {
-            LogUtil.d("On " + size + " bytes data arrived");
-            LogUtil.d(CommerHelper.HexToString(data, size));
-        }
+//        if (size != 22) {
+//            LogUtil.d("On " + size + " bytes data arrived");
+//            LogUtil.d(CommerHelper.HexToString(data, size));
+//        }
         switch (data[INDEX_CMD]) {
             case CMD_ENABLE_IMU:
                 LogUtil.d("CMD_ENABLE_IMU");
@@ -227,6 +235,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             case CMD_ENABLE_UPDATE_MODE:
                 LogUtil.d("CMD_ENABLE_UPDATE_MODE");
+                sentDataSize = 0;
 //                mGamepadListener.onUpgradeMode(true, mInfo.getDevice());
                 break;
             case CMD_DISABLE_UPDATE_MODE:
@@ -235,11 +244,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             case CMD_UPGRADE_SUCCESS:
                 LogUtil.d("CMD_UPGRADE_SUCCESS");
-                EventBus.getDefault().post(new FotaEvent(CMD_UPGRADE_SUCCESS, mInfo.getDevice()));
+//                EventBus.getDefault().post(new FotaEvent(CMD_UPGRADE_SUCCESS, mInfo.getDevice()));
                 break;
             case CMD_UPGRADE_FAILED:
                 LogUtil.d("CMD_UPGRADE_FAILED");
-                EventBus.getDefault().post(new FotaEvent(CMD_UPGRADE_FAILED, mInfo.getDevice()));
+//                EventBus.getDefault().post(new FotaEvent(CMD_UPGRADE_FAILED, mInfo.getDevice()));
                 break;
             case CMD_MOTOR_ON:
                 LogUtil.d("CMD_MOTOR_ON");
@@ -260,12 +269,18 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             case CMD_PARTITION_VERIFY_FAIL:
                 LogUtil.d("CMD_PARTITION_VERIFY_FAIL");
+                EventBus.getDefault().post(new FotaEvent(FOTA_STATUS_DONE, mInfo.getDevice(), FOTA_UPGRADE_FAILURE));
                 break;
             case CMD_PARTITION_VERIFY_SUCCESS:
                 LogUtil.d("CMD_PARTITION_VERIFY_SUCCESS");
+                EventBus.getDefault().post(new FotaEvent(FOTA_STATUS_DONE, mInfo.getDevice(), FOTA_UPGRADE_SUCCESS));
+                sentDataSize = 0;
                 break;
             case CMD_OTA_WRITTEN_BYTES:
-                LogUtil.d("CMD_OTA_WRITTEN_BYTES: ");
+                sentDataSize += combineHighAndLowByte(data[2], data[3]);
+                int percent = (int) ((sentDataSize / TOTAL_SIZE) * 100);
+                LogUtil.d("CMD_OTA_WRITTEN_BYTES: percent = " + percent);
+                EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, mInfo.getDevice(), percent));
                 break;
             case CMD_OTA_DATA_RECEVIED:
                 LogUtil.d("CMD_OTA_END_TAG");

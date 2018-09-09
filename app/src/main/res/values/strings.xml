@@ -71,12 +71,16 @@
     <string name="upgrade_info">" "</string>
     <string name="upgrade_button_done">Done</string>
     <string name="upgrade_ing">Bluetooth Game Pad upgrading in progress. Please do NOT power off the Skipper</string>
-    <!--
-<string name="upgrade_done">Bluetooth Game Pad upgrading done. Press Button \"Done\" for continue.</string>
--->
 
-<string name="upgrade_success">Success!</string>
-<string name="upgrade_failure">Failed!</string>
-<string name="no_need_update">" is the latest version"</string>
+    <string name="upgrade_download">Downloading the firmware......</string>
+    <string name="upgrade_flash">Transmitting the firmware......</string>
+
+    <string name="upgrade_done">Bluetooth Game Pad upgrading done. Press Button \"Done\" for continue.</string>
+
+    <string name="upgrade_success">Success!</string>
+    <string name="upgrade_failure">Failed!</string>
+    <string name="no_need_update">" is the latest version"</string>
+    <string name="toast_upgrade_success">"Upgrade successfully"</string>
+    <string name="toast_upgrade_failed">"Upgrade Failed"</string>
 
 </resources>
