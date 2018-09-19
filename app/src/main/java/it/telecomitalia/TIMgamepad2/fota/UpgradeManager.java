@@ -3,7 +3,6 @@ package it.telecomitalia.TIMgamepad2.fota;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.SystemClock;
 import android.text.TextUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -38,6 +37,8 @@ import static it.telecomitalia.TIMgamepad2.utils.FileUtils.getJsonFromLocal;
 public class UpgradeManager {
     private String mFWPath;
     private Timer mTimer;
+
+    public static final int EVENT_UGPRADE_FILE_HEADER_ERROR = 0x01;
 
     public UpgradeManager(String path) {
         mFWPath = path;
@@ -74,47 +75,16 @@ public class UpgradeManager {
                 SPPConnection mainConnection = model.getSPPConnection();
                 mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
                 EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, model.getDevice(), 0));
-                try {
-                    FileInputStream fileInputStream = new FileInputStream(new File(path));
-                    int len = fileInputStream.available();
-                    LogUtil.d("file length : " + len);
-                    byte[] buffer = new byte[len];
-                    int size = fileInputStream.read(buffer);
-                    LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
-//                        fileInputStream.close();
-                    mainConnection.sendData(buffer);
-                    LogUtil.d("Data send finished");
-                    /*
-                    byte[] reply = new byte[64];
-                    while ((mainConnection.waitAck(reply)) > 0) {
-                        String content = new String(reply);
-                        if (content.contains("Reboot in 1 second")) {
-                            LogUtil.i("Upgrade completed...");
-                            Message msg2 = handler.obtainMessage();
-                            msg2.arg1 = 90;
-                            msg2.what = UpgradeUIActivity.MSG_SET_PROGRESSBAR;
-                            handler.sendMessage(msg2);
-                            break;
-                        }
-                        Array.setByte(reply, 0, (byte) 0);
-                    }
-                    */
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                SystemClock.sleep(1100);
+                mainConnection.startUpgrade(path);
             }
         }).start();
     }
 
-    public void startUpgradeLocal(final DeviceModel model, final Handler handler, final String localPath) {
+    public void startUpgradeLocal(final DeviceModel model, final String localPath) {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                LogUtil.d("Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
-//                String path = FileUtils.downLoadBin(model.getFabricModel().mFirmwareConfig.getmDownUrl(), handler);
-
-                LogUtil.d("download success " + localPath);
+                LogUtil.d("Start Local Upgrade: " + model.getDevice().getAddress() + ";Index: " + model.getIndex() + "; Path: " + localPath);
                 SPPConnection mainConnection = model.getSPPConnection();
                 mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
                 EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, model.getDevice(), 0));
@@ -126,9 +96,9 @@ public class UpgradeManager {
                     byte[] buffer = new byte[len];
                     int size = fileInputStream.read(buffer);
                     LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
-                    mainConnection.sendData(buffer);
+                    mainConnection.startUpgradeProcess(buffer);
                     LogUtil.d("Data send finished");
-//                    fileInputStream.close();
+                    fileInputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

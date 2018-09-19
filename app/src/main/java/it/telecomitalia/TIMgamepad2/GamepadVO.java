@@ -11,7 +11,7 @@ public class GamepadVO {
     boolean NeedUpdate;
     boolean mOnLine = false;
 
-    private static final float MIN_BAT = 3200;
+    private static final float MIN_BAT = 3000;
     private static final float MAX_BAT = 4250;
 
     public GamepadVO(String name, String mac, int batt, String firm, boolean online) {

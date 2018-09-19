@@ -143,7 +143,7 @@ public class BackDoor extends Activity implements View.OnClickListener {
 //                } else {
 //                    Toast.makeText(this, "请先将升级文件发送到设备", Toast.LENGTH_LONG).show();
 //                }
-                upgradeManager.startUpgradeLocal(mDevices.get(0), mTHisHandler, startDirectory);
+                upgradeManager.startUpgradeLocal(mDevices.get(0), startDirectory);
                 break;
             case R.id.exit:
                 finish();

@@ -35,8 +35,8 @@ public class FirmwareConfig implements Serializable {
 
     public String getmVersion() {
 
-        return mVersion;
-//        return "181010";
+//        return mVersion;
+        return "181010";
     }
 
     public void setmVersion(String mVersion) {

@@ -5,6 +5,10 @@ import android.os.SystemClock;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
@@ -50,7 +54,9 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_PARTITION_VERIFY_SUCCESS = (byte) 0x95;
     public static final byte CMD_OTA_WRITTEN_BYTES = (byte) 0x96;
     public static final byte CMD_OTA_DATA_RECEVIED = (byte) 0x97;
-    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
+    //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
+    public static final byte CMD_ERROR_HEADER = (byte) 0x98;
+//    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
 
     private static final int IMU_FRAME_SIZE = 22;
 
@@ -155,6 +161,33 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mConnectionThread.write(data);
     }
 
+
+    public void startUpgradeProcess(byte[] data) {
+        byte[] firmware = data.clone();
+        sendData(firmware);
+    }
+
+    private String mPath = "";
+
+    public synchronized void startUpgrade(String path) {
+        try {
+            LogUtil.d("Start upgrade process");
+            mPath = path;
+            FileInputStream fileInputStream = new FileInputStream(new File(path));
+            int len = fileInputStream.available();
+            LogUtil.d("file length : " + len);
+            byte[] buffer = new byte[len];
+            int size = fileInputStream.read(buffer);
+            LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
+            startUpgradeProcess(buffer);
+            LogUtil.d("Data send finished");
+            fileInputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public int waitAck(byte[] reply) {
         LogUtil.d("waitAck Called");
         return mConnectionThread.read(reply);
@@ -188,9 +221,9 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mConnectionThread.write(CMD_GET_BAT_V);
     }
 
-    private void rebootDeviceForFota() {
-        mConnectionThread.write(CMD_OTA_INTENT_REBOOT);
-    }
+//    private void rebootDeviceForFota() {
+//        mConnectionThread.write(CMD_OTA_INTENT_REBOOT);
+//    }
 
     private float sentDataSize = 0;
 
@@ -284,6 +317,17 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             case CMD_OTA_DATA_RECEVIED:
                 LogUtil.d("CMD_OTA_END_TAG");
+                break;
+            case CMD_ERROR_HEADER:
+                LogUtil.d("CMD_ERROR_HEADER, Try to send the data again");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemClock.sleep(2000);
+                        startUpgrade(mPath);
+                    }
+                }).start();
+
                 break;
             default:
                 LogUtil.e("Unknown command!");
