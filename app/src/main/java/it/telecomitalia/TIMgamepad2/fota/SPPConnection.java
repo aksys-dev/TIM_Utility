@@ -1,6 +1,8 @@
 package it.telecomitalia.TIMgamepad2.fota;
 
 
+import android.os.Build;
+import android.os.Handler;
 import android.os.SystemClock;
 
 import org.greenrobot.eventbus.EventBus;
@@ -13,6 +15,8 @@ import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
+import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_CONNECTION_ERROR;
+import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_TIMEOUT;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_FAILURE;
@@ -157,20 +161,35 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mConnectionThread.write(cmd);
     }
 
-    public void sendData(byte[] data) {
-        mConnectionThread.write(data);
+    private boolean sendData(byte[] data) {
+        return mConnectionThread.write(data);
     }
 
 
-    public void startUpgradeProcess(byte[] data) {
+    public synchronized boolean startUpgradeProcess(byte[] data) {
         byte[] firmware = data.clone();
-        sendData(firmware);
+        return sendData(firmware);
     }
 
     private String mPath = "";
 
-    public synchronized void startUpgrade(String path) {
+    private Handler mHandler;
+    private int retries = 0;
+
+    public synchronized void startUpgrade(String path, final Handler handler, boolean internal) {
+        if (internal) {
+            retries++;
+            if (retries >= 30) {
+                mHandler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
+                retries = 0;
+            }
+        } else {
+//            mTimerThread = new TimerThread(30, handler);
+//            mTimerThread.start();
+            retries = 0;
+        }
         try {
+            mHandler = handler;
             LogUtil.d("Start upgrade process");
             mPath = path;
             FileInputStream fileInputStream = new FileInputStream(new File(path));
@@ -178,8 +197,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             LogUtil.d("file length : " + len);
             byte[] buffer = new byte[len];
             int size = fileInputStream.read(buffer);
-            LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
-            startUpgradeProcess(buffer);
+            LogUtil.i("File：" + len + " bytes. Will send：" + buffer.length + "(" + size + ") bytes. Transmitting, Please wait......");
+            if (!startUpgradeProcess(buffer)) {
+                if (handler != null)
+                    handler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
+            }
             LogUtil.d("Data send finished");
             fileInputStream.close();
         } catch (IOException e) {
@@ -187,6 +209,43 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         }
     }
 
+    class TimerThread extends Thread {
+        private int mTimeout;
+        private boolean run;
+        private int counter = 0;
+        private Handler mHandler;
+        private static final int TIMES_PER_SECOND = 10;
+
+        TimerThread(int time, Handler handler) {
+            this.mTimeout = time * TIMES_PER_SECOND;
+            this.mHandler = handler;
+            this.run = true;
+        }
+
+        public void setCancel() {
+            run = false;
+        }
+
+        @Override
+        public void run() {
+            while (run) {
+                SystemClock.sleep(1000 / TIMES_PER_SECOND);
+                counter++;
+                if (counter >= mTimeout) {
+                    LogUtil.d("Waiting response from gamepad time out, abort!");
+                    mHandler.sendEmptyMessage(UPGRADE_TIMEOUT);
+                    counter = 0;
+                    break;
+                }
+            }
+        }
+
+        private TimerThread() {
+
+        }
+    }
+
+//    private TimerThread mTimerThread = null;
 
     public int waitAck(byte[] reply) {
         LogUtil.d("waitAck Called");
@@ -196,17 +255,21 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     @Override
     public void onConnectionReady(boolean b) {
         ready = b;
-        mConnectionThread.startSPPDataListener();
-        mConnectionThread.write(CMD_UPGRADE_SUCCESS);
-        SystemClock.sleep(200);
-        setGamePadLedIndicator();
-        SystemClock.sleep(200);
-        setGamePadLedIndicator();
-        SystemClock.sleep(200);
-        queryFirmwareVersion();
-        SystemClock.sleep(200);
-        queryBatteryLevel();
-        mGamepadListener.onSetupSuccessfully(true, mInfo.getDevice());
+        if (mConnectionThread != null) {
+            mConnectionThread.startSPPDataListener();
+            mConnectionThread.write(CMD_UPGRADE_SUCCESS);
+            SystemClock.sleep(200);
+            setGamePadLedIndicator();
+            SystemClock.sleep(200);
+            setGamePadLedIndicator();
+            SystemClock.sleep(200);
+            queryFirmwareVersion();
+            SystemClock.sleep(200);
+            queryBatteryLevel();
+        } else {
+            mGamepadListener.onSetupSuccessfully(false, mInfo.getDevice());
+        }
+
     }
 
     public boolean isReady() {
@@ -228,6 +291,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private float sentDataSize = 0;
 
     private final static float TOTAL_SIZE = 91374;
+
 
     @Override
     public void onDataArrived(byte[] data, int size) {
@@ -293,7 +357,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 mBatteryVolt = combineHighAndLowByte(data[INDEX_DATA_START], data[INDEX_DATA_START + 1]);
                 LogUtil.d("BatteryVolt: " + mBatteryVolt);
                 mInfo.setBatteryVolt(mBatteryVolt);
-                setGamePadIMU();
+                mGamepadListener.onSetupSuccessfully(true, mInfo.getDevice());
+                //DO NOTHING for Android 7
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+                    setGamePadIMU();
+                }
                 break;
             case DATA_IMU_HEADER_PREFIX:
                 if (data[1] == DATA_IMU_HEADER && size == IMU_FRAME_SIZE) {
@@ -310,24 +378,27 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 sentDataSize = 0;
                 break;
             case CMD_OTA_WRITTEN_BYTES:
+//                if (mTimerThread != null) {
+//                    mTimerThread.setCancel();
+//                }
                 sentDataSize += combineHighAndLowByte(data[2], data[3]);
                 int percent = (int) ((sentDataSize / TOTAL_SIZE) * 100);
-                LogUtil.d("CMD_OTA_WRITTEN_BYTES: percent = " + percent);
                 EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, mInfo.getDevice(), percent));
+                if (percent % 20 == 0) {
+                    LogUtil.d("CMD_OTA_WRITTEN_BYTES: percent = " + percent);
+                }
                 break;
             case CMD_OTA_DATA_RECEVIED:
                 LogUtil.d("CMD_OTA_END_TAG");
                 break;
             case CMD_ERROR_HEADER:
                 LogUtil.d("CMD_ERROR_HEADER, Try to send the data again");
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        SystemClock.sleep(2000);
-                        startUpgrade(mPath);
-                    }
-                }).start();
-
+//                if (mTimerThread != null) {
+//                    mTimerThread.setCancel();
+//                }
+                SystemClock.sleep(800);
+                startUpgrade(mPath, mHandler, true);
+//                mHandler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
                 break;
             default:
                 LogUtil.e("Unknown command!");

@@ -1,86 +1,117 @@
 <resources>
-    <string name="app_name">GamePad Utility</string>
+    <string name="app_name">Utilità Gamepad</string>
 
     <!--  BluetoothChat -->
-    <string name="send">Send</string>
-    <string name="not_connected">You are not connected to a device</string>
-    <string name="bt_not_enabled_leaving">Bluetooth was not enabled. Leaving Bluetooth Chat.</string>
-    <string name="title_connecting">connecting...</string>
-    <string name="title_connected_to">connected: </string>
-    <string name="title_not_connected">not connected</string>
+    <string name="send">Inviare</string>
+    <string name="not_connected">Non sei connesso a un dispositivo</string>
+    <string name="bt_not_enabled_leaving">Bluetooth non è stato abilitato. Lasciando la chat Bluetooth.</string>
+    <string name="title_connecting">collegamento...</string>
+    <string name="title_connected_to">collegato: </string>
+    <string name="title_not_connected">non collegata</string>
 
     <!--  DeviceListActivity -->
-    <string name="scanning">scanning for devices...</string>
-    <string name="select_device">select a device to connect</string>
-    <string name="none_paired">No devices have been paired</string>
-    <string name="none_found">No devices found</string>
-    <string name="title_paired_devices">Paired Devices</string>
-    <string name="title_other_devices">Other Available Devices</string>
-    <string name="button_scan">Scan for devices</string>
+    <string name="scanning">scansione per dispositivi...</string>
+    <string name="select_device">seleziona un dispositivo da connettere</string>
+    <string name="none_paired">Nessun dispositivo è stato abbinato</string>
+    <string name="none_found">Nessun dispositivo trovato</string>
+    <string name="title_paired_devices">Dispositivi accoppiati</string>
+    <string name="title_other_devices">Altri dispositivi disponibili</string>
+    <string name="button_scan">Cerca dispositivi</string>
 
     <!-- Options Menu -->
-    <string name="connect">Connect a device</string>
-    <string name="discoverable">Make discoverable</string>
-    <string name="note_str">Press &quot;Menu&quot; to set the data format</string>
+    <string name="connect">Collegare un dispositivo</string>
+    <string name="discoverable">Rendilo visibile</string>
+    <string name="note_str">stampa &quot;Menu&quot; per impostare il formato dei dati</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
-    <string name="inno_firmware_download">Firmware download</string>
+    <string name="hello_world">Ciao mondo!</string>
+    <string name="menu_settings">impostazioni</string>
+    <string name="inno_firmware_download">Download del firmware</string>
     <string name="inno_gamepad_update">Accessori TIMgames</string>
-    <string name="gamepad_one">"Game Pad "</string>
-    <string name="gamepad_online">"Online"</string>
-    <string name="gamepad_offline">"Offline"</string>
-    <string name="gamepad_two">Game Pad 2</string>
-    <string name="dongle">Nano Receiver</string>
+    <string name="gamepad_one">"Gamepad "</string>
+    <string name="gamepad_two">Gamepad 2</string>
+    <string name="dongle">Nano ricevitore</string>
     <string name="gampad_unconnected">Disconnesso,accendere li dispositivo</string>
     <string name="Upgrade_All">Aggiorna gli accessori</string>
 
-    <string name="guidedstep_first_title">Guided Step First Page</string>
-    <string name="guidedstep_first_description">First step of guided sequence</string>
-    <string name="guidedstep_first_breadcrumb">Guided Steps: 1</string>
-    <string name="guidedstep_continue">Continue</string>
-    <string name="guidedstep_letsdoit">Let\'s do it</string>
-    <string name="guidedstep_nevermind">Never mind</string>
-    <string name="guidedstep_cancel">Cancel</string>
-    <string name="no_target_device">Target Device not connected, Please connect the gamepad at first!</string>
-    <string name="not_support_bt">This device not support BlueTooth</string>
-    <string name="select_upgrade_file">Please select the firmware file for upgrade game pad</string>
-    <string name="enable_imu">Enable IMU</string>
-    <string name="disable_imu">Disable IMU</string>
+    <string name="guidedstep_first_title">Primo passo guidato</string>
+    <string name="guidedstep_first_description">Primo passo della sequenza guidata</string>
+    <string name="guidedstep_first_breadcrumb">Passi guidati: 1</string>
+    <string name="guidedstep_continue">Continua</string>
+    <string name="guidedstep_letsdoit">Facciamolo</string>
+    <string name="guidedstep_nevermind">Non importa</string>
+    <string name="guidedstep_cancel">Annulla</string>
+    <string name="no_target_device">Dispositivo di destinazione non connesso, si prega di collegare il gamepad in un primo momento!</string>
+    <string name="not_support_bt">Questo dispositivo non supporta BlueTooth</string>
+    <string name="select_upgrade_file">Selezionare il file del firmware per l\'aggiornamento del game pad</string>
+    <string name="enable_imu">Abilita IMU</string>
+    <string name="disable_imu">Disabilita IMU</string>
+
     <!-- Custom String -->
     <string name="title_gamepad_advanced">opzioni avanzate gamepad</string>
     <string name="gamepads">Gamepads</string>
-    <string name="Calibration">calibrazione sensore inerziale</string>
-    <string name="menu_gamepad">stato del TIM gamepad</string>
-    <string name="menu_imu">IMU Setting</string>
-    <string name="menu_about">About Application</string>
+    <string name="Calibration">Calibrazione</string>
+    <string name="menu_gamepad">Dettagli</string>
+    <string name="menu_imu">Sensori</string>
+    <string name="menu_about">Versione</string>
     <string name="new_firmware">Premi qui per ottenere una nuova versione.</string>
-    <string name="battery">batteria</string>
+    <string name="battery">Batteria</string>
     <string name="on">acceso</string>
     <string name="off">spento</string>
     <string name="firmware">Firmware</string>
+    <string name="latest_firmware">Ultimo firmware</string>
     <string name="verision">versione</string>
-    <string name="imu_sensitivity">sensibilità sensore di inerziale</string>
+    <string name="imu_sensitivity">Sensibilità</string>
     <string name="current_version">versione corrente</string>
     <string name="latest_update">versione aggiornata</string>
-    <string name="unknown">Unknown</string>
-    <string name="updated">updated</string>
+    <string name="unknown">ignoto</string>
+    <string name="updated">aggiornato</string>
 
-    <string name="online_status">Status</string>
-    <string name="upgrade_title">GamePad upgrade progress</string>
+    <string name="online_status">Stato</string>
+
+    <string name="gamepad_online">"in linea"</string>
+    <string name="gamepad_offline">"disconnesso"</string>
+
+    <string name="upgrade_title">Progresso dell\'aggiornamento Gamepad</string>
     <string name="upgrade_info">" "</string>
-    <string name="upgrade_button_done">Done</string>
-    <string name="upgrade_ing">Bluetooth Game Pad upgrading in progress. Please do NOT power off the Skipper</string>
+    <string name="upgrade_button_done">Fatto</string>
+    <!--
+    <string name="upgrade_ing">Aggiornamento del Game pad Bluetooth in corso. Si prega di NON spegnere il TIMvision</string>
+    -->
+    <string name="upgrade_ing">Aggiornamento in corso, non spegnere il decoder.</string>
 
-    <string name="upgrade_download">Downloading the firmware......</string>
-    <string name="upgrade_flash">Transmitting the firmware......</string>
-
+    <!--
     <string name="upgrade_done">Bluetooth Game Pad upgrading done. Press Button \"Done\" for continue.</string>
+    -->
+    <string name="upgrade_download">Download del firmware ......</string>
+    <!--
+    <string name="upgrade_flash">Trasmettere il firmware ......</string>
+    -->
+    <string name="upgrade_flash">Installazione dell’aggiornamento…</string>
 
-    <string name="upgrade_success">Success!</string>
-    <string name="upgrade_failure">Failed!</string>
-    <string name="no_need_update">" is the latest version"</string>
-    <string name="toast_upgrade_success">"Upgrade successfully"</string>
-    <string name="toast_upgrade_failed">"Upgrade Failed"</string>
+    <string name="upgrade_done">Aggiornamento del gamepad Bluetooth fatto. Premi il pulsante \ "Fatto \" per continuare.</string>
 
+    <string name="upgrade_success">Successo!</string>
+    <string name="upgrade_failure">mancato!</string>
+    <string name="no_need_update">" è l'ultima versione"</string>
+    <!--
+        <string name="toast_upgrade_success">"Aggiorna con successo"</string>
+    -->
+    <string name="toast_upgrade_success">"Installazione completata"</string>
+
+    <string name="toast_upgrade_failed">"Aggiornamento non riuscito"</string>
+    <string name="gamepad_v2">TIM Gamepad v2</string>
+    <string name="gamepad_v1">TIM Gamepad v1</string>
+    <string name="gamepad_v2_description">hai questo gamepad se è connesso al TIM Box\ntramite Bluetooth.</string>
+    <string name="gamepad_v1_description">hai questo gamepad se è connesso al TIM Box\ntramite chiavetta USB nano receiver.</string>
+    <string name="imu_description">I giochi TIMGAMES sono progettati per funzionare al meglio\ncon le impostazioni base dei sensori.\n\nPuoi attivare la calibrazione del gamepad e modificare la sensibilità dei\nsensori con un valore compreso tra 0.01 (poco sensibile) e 2 (molto sensibile)\nin base al tuo stile di gioco.</string>
+    <string name="lastupdate">19/09/2018</string>
+    <string name="app_version">1.0</string>
+    <string name="title_gamepad">Dettagli gamepad</string>
+    <string name="no_gamepad_connected">Non è collegato nessun gamepad</string>
+    <string name="lastest_fw_version">" Ultima versione: "</string>
+    <string name="upgrading_gamepad_disconnected">L\'handle da aggiornare è stato disconnesso, Per favore, smetti e riprova</string>
+    <string name="upgrading_gamepad_failed">Aggiornamento fallito, Per favore, smetti e riprova</string>
+    <string name="upgrading_connection_failed">Si è verificato un errore durante la comunicazione con i dati del gamepad. Reimposta il gamepad e riprova.</string>
+    <string name="upgrading_connection_timeout">La richiesta di aggiornamento è scaduta, riprova più tardi.</string>
+    <string name="dailog_tips">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare.</string>
 </resources>

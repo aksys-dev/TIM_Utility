@@ -30,6 +30,7 @@ import java.util.Timer;
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.activity.DialogActivity;
+import it.telecomitalia.TIMgamepad2.activity.FOTA_V2;
 import it.telecomitalia.TIMgamepad2.activity.UpgradeUIActivity;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
@@ -44,6 +45,11 @@ import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.FileUtils;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
+import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
+import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
+import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
+import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.GAMEPAD_DEVICE_CONNECTED;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_DOWNLOADING;
 
 
@@ -125,6 +131,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                         if (!isshowndialog) {
                             Intent dialogIntent = new Intent(UpdateFotaMainService.this, DialogActivity.class);
                             dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            dialogIntent.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
                             startActivity(dialogIntent);
                             isshowndialog = true;
                         }
@@ -194,7 +201,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         mGamepadDeviceManager = BluetoothDeviceManager.getDeviceManager();
 
         if (!mGamepadDeviceManager.isInitialized()) {
-            mGamepadDeviceManager.initializeDevice(PATH);
+            mGamepadDeviceManager.initializeDevice(PATH, UpdateFotaMainService.this);
 
         }
         mUpgradeManager = mGamepadDeviceManager.getUpgradeManager();
@@ -269,9 +276,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     }
 
     private boolean isTopActivityGamepad() {
-        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-        return cn.getPackageName().equals("it.telecomitalia.TIMgamepad2");
+//        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+//        ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+//        return cn.getPackageName().equals("it.telecomitalia.TIMgamepad2");
+        return false;
     }
 
     @Override
@@ -280,9 +288,20 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
             LogUtil.i("Device (" + device.getName() + ") setup successfully");
             EventBus.getDefault().post("BlueTooth_Connected");
             EventBus.getDefault().post(device);
+            Intent intentBroadcast = new Intent();
+            intentBroadcast.setAction(GAMEPAD_DEVICE_CONNECTED);
+            sendBroadcast(intentBroadcast);
         } else {
             LogUtil.w("Device (" + device.getName() + " setup failed");
+            gotoGamepadList();
         }
+    }
+
+    private void gotoGamepadList() {
+        Intent intents = new Intent(UpdateFotaMainService.this, FOTA_V2.class);
+        intents.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
+        intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intents);
     }
 
 //    private BluetoothDevice mUpgradeDevice;
@@ -382,21 +401,25 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 isshowndialog = false;
             } else if (action.equals(DIALOG_OK_BROADCAST)) {
                 isshowndialog = true;
-                Intent intents = new Intent(UpdateFotaMainService.this, UpgradeUIActivity.class);
-                intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intents);
-                /*UpdateModel updateModel = new UpdateModel(mainConnection,true);
-                EventBus.getDefault().post(updateModel);*/
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        SystemClock.sleep(1000);
-                        EventBus.getDefault().post(BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE);
-                        SystemClock.sleep(1000);
-                        EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_DOWNLOADING, null, 0));
-                    }
-                }).start();
 
+                String from = intent.getStringExtra(INTENT_KEY);
+                if (from.equals(INTENT_FROM_USER)) {
+                    String macAddress = intent.getStringExtra(INTENT_MAC);
+                    LogUtil.d("Device " + macAddress + ": intent to be upgraded");
+                    Intent intents = new Intent(UpdateFotaMainService.this, UpgradeUIActivity.class);
+                    intents.putExtra(INTENT_MAC, macAddress);
+                    intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intents);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            SystemClock.sleep(1000);
+                            EventBus.getDefault().post(BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE);
+                            SystemClock.sleep(1000);
+                            EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_DOWNLOADING, null, 0));
+                        }
+                    }).start();
+                }
             }
         }
     };

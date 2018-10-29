@@ -10,19 +10,37 @@ public class GamepadVO {
     protected String Firmware;
     boolean NeedUpdate;
     boolean mOnLine = false;
+    protected String latestFWVersion = "";
 
+    //On gamepad side, Minimal battery is 3400
     private static final float MIN_BAT = 3000;
-    private static final float MAX_BAT = 4250;
+    private static final float MAX_BAT = 4150;
 
-    public GamepadVO(String name, String mac, int batt, String firm, boolean online) {
-        GamepadName = name;
-        MACAddress = mac;
-
-        Battery = ((batt - MIN_BAT) / (MAX_BAT - MIN_BAT)) * 100;
-        Firmware = firm;
-        NeedUpdate = false;
-        mOnLine = online;
+    public GamepadVO(String name, String mac, int batt, String firm, boolean online, String latestFWVersion) {
+        this.GamepadName = name;
+        this.MACAddress = mac;
+        LogUtil.d("battery is :" + batt);
+        float validBattery = calibrateBattery(batt);
+        LogUtil.d("Calibrated battery: " + validBattery);
+        this.Battery = ((validBattery - MIN_BAT) / (MAX_BAT - MIN_BAT)) * 100;
+        this.Firmware = firm;
+        this.NeedUpdate = false;
+        this.mOnLine = online;
+        this.latestFWVersion = latestFWVersion;
         log();
+    }
+
+    private float calibrateBattery(int raw) {
+        float coded = raw;
+        if (raw > MAX_BAT) {
+            coded = MAX_BAT;
+        }
+
+        if (raw < MIN_BAT) {
+            coded = MIN_BAT;
+        }
+
+        return coded;
     }
 
     private void log() {
@@ -75,5 +93,13 @@ public class GamepadVO {
 
     public String getFirmware() {
         return Firmware;
+    }
+
+    public String getLatestFWVersion() {
+        return latestFWVersion;
+    }
+
+    public boolean onLine() {
+        return mOnLine;
     }
 }

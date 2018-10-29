@@ -75,7 +75,7 @@ public class GamePadModel {
 
     @Override
     public String toString() {
-        return "GamePadModel{" +
+        return "GamepadModel{" +
                 "id='" + id + '\'' +
                 ", versionCode='" + versionCode + '\'' +
                 ", versionName='" + versionName + '\'' +

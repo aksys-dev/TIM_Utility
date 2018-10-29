@@ -8,14 +8,6 @@
     tools:context=".activity.FOTA_V2">
 
 
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:cropToPadding="false"
-        android:scaleType="fitXY"
-        app:srcCompat="@drawable/bg" />
-
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -39,48 +31,25 @@
                 android:id="@+id/AppTitle"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="3"
+                android:layout_weight="1"
                 android:visibility="visible">
 
                 <TextView
                     android:id="@+id/ActivityTitle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
-                    android:layout_marginEnd="100dp"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="20dp"
-                    android:layout_weight="0"
-                    android:gravity="right"
-                    android:maxLines="5"
-                    android:minLines="1"
-                    android:singleLine="false"
-                    android:text="@string/title_gamepad_advanced"
-                    android:textAlignment="viewEnd"
-                    android:textColor="@android:color/white"
-                    android:textSize="36sp"
-                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="128dp"
+                    android:layout_marginTop="16dp"
+                    android:gravity="fill_vertical"
+                    android:text="@string/gamepad_v2"
+                    android:textSize="30sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <ImageView
-                    android:id="@+id/ActivityImage"
-                    android:layout_width="@dimen/title_icon_size"
-                    android:layout_height="@dimen/title_icon_size"
-                    android:layout_gravity="end"
-                    android:layout_marginBottom="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_weight="0"
-                    android:baselineAlignBottom="false"
-                    android:contentDescription="@string/title_gamepad_advanced"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/gamepad_big" />
 
             </android.support.constraint.ConstraintLayout>
 
@@ -88,16 +57,43 @@
                 android:id="@+id/Menus"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:background="@android:color/black"
+                android:layout_weight="2"
+                android:background="@color/list_background"
                 android:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="85dp"
+                    android:background="@drawable/_title"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/SelectMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:layout_marginStart="16dp"
+                    android:text="Info gamepad"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/imageView"
+                    app:layout_constraintStart_toStartOf="@+id/imageView" />
 
                 <ListView
                     android:id="@+id/menuListView"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:layout_marginTop="16dp"
+                    android:footerDividersEnabled="false"
+                    android:headerDividersEnabled="false"
+                    android:scrollbars="none"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/imageView" />
+
             </android.support.constraint.ConstraintLayout>
 
             <FrameLayout
@@ -105,28 +101,85 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
-                android:layout_weight="4"
-                android:background="@color/black"
+                android:layout_weight="2"
+                android:background="@color/list_background"
                 android:visibility="gone">
 
                 <ListView
                     android:id="@+id/gamepadListView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="4"
-                    android:background="@color/black"
-                    android:visibility="visible"
                     android:layout_gravity="center"
                     android:foregroundGravity="center"
-                    />
+                    android:visibility="visible" />
             </FrameLayout>
+
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/IMU_Title"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:visibility="gone">
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/IMUTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginTop="16dp"
+                        android:gravity="fill_vertical"
+                        android:text="@string/menu_imu"
+                        android:textSize="30sp"
+                        app:layout_constraintBottom_toTopOf="@+id/IMUDesc"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/IMUImage"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/IMUDesc"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:text="@string/imu_description"
+                        android:visibility="visible"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/IMUImage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingEnd="16dp"
+                        android:visibility="visible"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:srcCompat="@drawable/gamepad_ico" />
+                </android.support.constraint.ConstraintLayout>
+
+
+            </android.support.constraint.ConstraintLayout>
 
             <LinearLayout
                 android:id="@+id/imuoptionLists"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:background="@color/black"
+                android:layout_weight="2"
+                android:background="@color/list_background"
                 android:gravity="center_vertical"
                 android:orientation="vertical"
                 android:visibility="gone">
@@ -142,7 +195,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="10dp"
-                        android:layout_marginStart="10dp"
+                        android:layout_marginStart="24dp"
                         android:layout_marginTop="10dp"
                         android:layout_weight="3"
                         android:text="@string/imu_sensitivity"
@@ -173,12 +226,14 @@
                         android:id="@+id/seekBar"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginStart="8dp"
                         android:layout_marginTop="16dp"
                         android:layout_weight="10"
-                        android:max="199"
-                        android:progress="99"
-                        app:layout_constraintEnd_toEndOf="@+id/textSensitibity"
-                        app:layout_constraintStart_toStartOf="@+id/textView8"
+                        android:max="200"
+                        android:progress="100"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/textView8" />
 
                     <TextView
@@ -187,7 +242,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="0.01"
-                        app:layout_constraintStart_toStartOf="@+id/seekBar"
+                        app:layout_constraintStart_toStartOf="@+id/textView8"
                         app:layout_constraintTop_toBottomOf="@+id/seekBar" />
 
                     <TextView
@@ -196,7 +251,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="2.00"
-                        app:layout_constraintEnd_toEndOf="@+id/seekBar"
+                        app:layout_constraintEnd_toEndOf="@+id/textSensitibity"
                         app:layout_constraintTop_toBottomOf="@+id/seekBar" />
 
                 </android.support.constraint.ConstraintLayout>
@@ -212,8 +267,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="32dp"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="8dp"
                         android:text="@string/Calibration"
                         android:textSize="24sp"
                         android:textStyle="bold"
@@ -239,169 +294,60 @@
 
             </LinearLayout>
 
-            <LinearLayout
+            <android.support.constraint.ConstraintLayout
                 android:id="@+id/aboutLists"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_weight="4"
-                android:background="@color/black"
+                android:layout_weight="2"
+                android:background="@color/list_background"
                 android:gravity="center_vertical"
-                android:orientation="vertical"
                 android:visibility="gone">
 
-                <FrameLayout
-                    android:layout_width="match_parent"
+
+                <android.support.constraint.ConstraintLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_selector">
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
-                    <android.support.constraint.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/value_currentVersion"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="15dp"
+                        android:text="1.6"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp"
+                        app:layout_constraintBottom_toTopOf="@+id/value_updateDay"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-                        <Button
-                            android:id="@+id/buttonVersionCheck"
-                            style="@style/Widget.AppCompat.Button.Borderless"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:layout_marginTop="8dp"
-                            android:onClick="onClickVersionCheck"
-                            android:text="Check"
-                            android:textAlignment="center"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp"
-                            android:visibility="gone"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@+id/buttonUpdateVersion"
-                            app:layout_constraintTop_toBottomOf="@+id/tableLayout"
-                            app:layout_constraintVertical_bias="1.0" />
+                    <TextView
+                        android:id="@+id/value_updateDay"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_marginStart="16dp"
+                        android:text="1/2/2018"
+                        android:textColor="@android:color/white"
+                        android:visibility="visible"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="parent" />
+                </android.support.constraint.ConstraintLayout>
 
-                        <TableLayout
-                            android:id="@+id/tableLayout"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="10dp"
-                            android:layout_marginStart="10dp"
-                            android:layout_marginTop="10dp"
-                            android:gravity="center_horizontal"
-                            android:orientation="horizontal"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0.0"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent">
 
-                            <TableRow
-                                android:id="@+id/tr_currentVersion"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent">
-
-                                <TextView
-                                    android:id="@+id/title_currentVsersion"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginBottom="5dp"
-                                    android:layout_marginEnd="10dp"
-                                    android:layout_marginTop="5dp"
-                                    android:text="@string/current_version"
-                                    android:textColor="@android:color/white"
-                                    android:textSize="24sp"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:id="@+id/value_currentVersion"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="5dp"
-                                    android:text="1.6"
-                                    android:textColor="@android:color/white"
-                                    android:textSize="24sp" />
-                            </TableRow>
-
-                            <TableRow
-                                android:id="@+id/tr_lastUpdate"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent">
-
-                                <TextView
-                                    android:id="@+id/value_updateDay"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="5dp"
-                                    android:layout_weight="1"
-                                    android:text="1/2/2018 updated."
-                                    android:textColor="@android:color/white"
-                                    android:visibility="gone" />
-
-                            </TableRow>
-
-                            <TableRow
-                                android:id="@+id/tr_newUpdate"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:visibility="gone">
-
-                                <TextView
-                                    android:id="@+id/title_newVersion"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginBottom="5dp"
-                                    android:layout_marginRight="10dp"
-                                    android:layout_marginTop="5dp"
-                                    android:text="@string/latest_update"
-                                    android:textColor="?attr/colorAccent"
-                                    android:textSize="24sp"
-                                    android:textStyle="bold" />
-
-                                <TextView
-                                    android:id="@+id/value_newVersion"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="5dp"
-                                    android:text="1.7"
-                                    android:textColor="?attr/colorAccent"
-                                    android:textSize="24sp" />
-                            </TableRow>
-
-                            <TableRow
-                                android:id="@+id/tr_updateMessage"
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:visibility="gone">
-
-                                <TextView
-                                    android:id="@+id/value_newVersionMessage"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginBottom="5dp"
-                                    android:layout_marginTop="5dp"
-                                    android:text="@string/new_firmware"
-                                    android:textColor="?attr/colorAccent" />
-
-                            </TableRow>
-                        </TableLayout>
-
-                        <Button
-                            android:id="@+id/buttonUpdateVersion"
-                            style="@style/Widget.AppCompat.Button.Borderless"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:onClick="onClickVersionCheck"
-                            android:text="Update"
-                            android:textAlignment="center"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp"
-                            android:visibility="gone"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/tableLayout" />
-
-                    </android.support.constraint.ConstraintLayout>
-                </FrameLayout>
-
-            </LinearLayout>
+            </android.support.constraint.ConstraintLayout>
 
         </LinearLayout>
     </android.support.constraint.ConstraintLayout>

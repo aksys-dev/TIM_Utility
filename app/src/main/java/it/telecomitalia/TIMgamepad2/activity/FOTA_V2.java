@@ -1,8 +1,12 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +32,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,9 +45,17 @@ import it.telecomitalia.TIMgamepad2.fota.UpgradeManager;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
+import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
+import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
+import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
+import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.GAMEPAD_DEVICE_CONNECTED;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.GAMEPAD_DEVICE_DISCONNECTED;
 import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
 
 public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClickListener {
+
+    ConstraintLayout MainTitle, IMUSensorTitle;
 
     ConstraintLayout menulist;
     ListView menulistView;
@@ -50,7 +63,7 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
     FrameLayout gamepadView;
     ListView gamepadList2;
     LinearLayout imuoptionLists;
-    LinearLayout aboutLists;
+    ConstraintLayout aboutLists;
 
     ArrayList<GamepadVO> datas;
 
@@ -67,7 +80,6 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
     TextView lastUpdateDay;
 
     TextView activityTitle;
-    LinearLayout menuButtons;
 
     private static BluetoothDeviceManager mDeviceManager;
 
@@ -84,15 +96,45 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
             this.mIndex = index;
         }
 
-        public int getKeyCode() {
+        int getKeyCode() {
             return mKeyCode;
         }
 
-        public int getIndex() {
+        int getIndex() {
             return mIndex;
         }
     }
 
+    private IntentFilter makeFilter() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(GAMEPAD_DEVICE_CONNECTED);
+        intentFilter.addAction(BluetoothDeviceManager.GAMEPAD_DEVICE_DISCONNECTED);
+        return intentFilter;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mReceiver, makeFilter());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mReceiver);
+    }
+
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null) {
+                if (action.equals(GAMEPAD_DEVICE_CONNECTED) || action.equals(GAMEPAD_DEVICE_DISCONNECTED)) {
+                    gotoGamepadsListView(false);
+                }
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +142,9 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fota__v2);
+
+        MainTitle = findViewById(R.id.AppTitle);
+        IMUSensorTitle = findViewById(R.id.IMU_Title);
 
         mDeviceManager = BluetoothDeviceManager.getDeviceManager();
         datas = new ArrayList<>();
@@ -138,20 +183,29 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
 
         currentVersion = findViewById(R.id.value_currentVersion);
         lastUpdateDay = findViewById(R.id.value_updateDay);
-        updateVersion = findViewById(R.id.value_newVersion);
 
         try {
-            currentVersion.setText(this.getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+            android.content.pm.PackageInfo packageInfo = this.getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_META_DATA);
+            java.util.Date updateDate = new java.util.Date(packageInfo.lastUpdateTime);
+            SimpleDateFormat dmySlash = new SimpleDateFormat("dd/MM/yyyy");
+
+            currentVersion.setText(packageInfo.versionName);
+            lastUpdateDay.setText(dmySlash.format(updateDate));
         } catch (PackageManager.NameNotFoundException e) {
-            currentVersion.setText("1.0");
+            currentVersion.setText(R.string.app_version);
+            lastUpdateDay.setText(R.string.lastupdate);
         }
-        updateVersion.setText("1.0");
 
         seekBarSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             // IMU Sensitivity Source
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                sensitivityValue = (float) ((progress + 1) / 100.0);
+                if (progress < 1) {
+                    seekBar.setProgress(1);
+                    progress = 1;
+                }
+
+                sensitivityValue = (float) ((progress) / 100.0);
                 textSeekBarValue.setText(String.valueOf(sensitivityValue));
             }
 
@@ -166,12 +220,59 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
 
         mGamePadDeviceManager = BluetoothDeviceManager.getDeviceManager();
         mUpgradeManager = mGamePadDeviceManager.getUpgradeManager();
+
+        String from = getIntent().getStringExtra(INTENT_KEY);
+        if (from != null) {
+            if (from.equals(INTENT_FROM_SERVICE)) {
+                gotoGamepadsListView(true);
+            }
+        }
+    }
+
+    private void gotoGamepadsListView(boolean directly) {
+        if (directly) {
+            menulist.setVisibility(View.GONE);
+            gamepadView.setVisibility(View.GONE);
+            imuoptionLists.setVisibility(View.GONE);
+            aboutLists.setVisibility(View.GONE);
+
+            SetupGamePadList();
+            RefreshGamePadList();
+            gamepadList2.setOnItemClickListener(mGamepadListListener);
+            gamepadView.setVisibility(View.VISIBLE);
+            activityTitle.setText(R.string.title_gamepad);
+        } else {
+            if (gamepadView.getVisibility() == View.VISIBLE) {
+                menulist.setVisibility(View.GONE);
+                gamepadView.setVisibility(View.GONE);
+                imuoptionLists.setVisibility(View.GONE);
+                aboutLists.setVisibility(View.GONE);
+                SetupGamePadList();
+                RefreshGamePadList();
+                gamepadList2.setOnItemClickListener(mGamepadListListener);
+                gamepadView.setVisibility(View.VISIBLE);
+                activityTitle.setText(R.string.title_gamepad);
+            } else {
+                SetupGamePadList();
+                RefreshGamePadList();
+                gamepadList2.setOnItemClickListener(mGamepadListListener);
+            }
+        }
     }
 
     public void SetMenuData() {
-        String[] menulists = {getString(R.string.menu_gamepad), getString(R.string.menu_imu), getString(R.string.menu_about)};
+        String[] menulists;
+        if (shouldShowIMUMenu())
+            menulists = new String[]{getString(R.string.menu_gamepad), getString(R.string.menu_imu), getString(R.string.menu_about)};
+        else
+            menulists = new String[]{getString(R.string.menu_gamepad), getString(R.string.menu_about)};
+
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, menulists);
         menulistView.setAdapter(adapter);
+    }
+
+    private boolean shouldShowIMUMenu() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     public void SetupGamePadList() {
@@ -179,37 +280,25 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
         int list = 0;
         datas.clear();
         List<DeviceModel> models = mDeviceManager.getBondedDevices();
-
-        for (DeviceModel model : models) {
-            if (!model.getMACAddress().equals(INIT_ADDRESS)) {
-                EventAddGamepad(model);
-                list++;
+        if (models == null || models.size() == 0) {
+            LogUtil.w("No gamepad connected or service not running...");
+            g = new GamepadVO();
+            g.setGamepadName(String.format("Gamepad %d", list));
+            datas.add(g);
+        } else {
+            for (DeviceModel model : models) {
+                if (!model.getMACAddress().equals(INIT_ADDRESS)) {
+                    EventAddGamepad(model);
+                    list++;
+                }
+            }
+            if (datas.size() == 0) {
+                // No Gamepad
+                g = new GamepadVO();
+                g.setGamepadName(String.format("Gamepad %d", list));
+                datas.add(g);
             }
         }
-
-        if (datas.size() == 0) {
-            // No Gamepad
-            g = new GamepadVO();
-            g.setGamepadName(String.format("Game Pad %d", list));
-            datas.add(g);
-        }
-
-//        while (datas.size() > 0 && datas.size() >= list) {
-//            // TODO Get GAMEPAD Data to List View
-//            if (datas.get(list).getGamepadName() == getString(R.string.none_found)) {
-//                datas.remove(list);
-//                continue;
-//            }
-//            Toast.makeText(this, datas.get(list).getMACAddress(), Toast.LENGTH_SHORT).show();
-//            EventAddGamepad(datas.get(list).getMACAddress());
-//            list++;
-//        }
-//        if (datas.size() == 0) {
-//            // No Gamepad
-//            g = new GamepadVO();
-//            g.setGamepadName(String.format("Gamepad %d", list));
-//            datas.add(g);
-//        }
     }
 
     private GamepadListAdapter adapter;
@@ -227,7 +316,10 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
             imuoptionLists.setVisibility(View.GONE);
             aboutLists.setVisibility(View.GONE);
 
-            activityTitle.setText(R.string.title_gamepad_advanced);
+            IMUSensorTitle.setVisibility(View.GONE);
+            MainTitle.setVisibility(View.VISIBLE);
+
+            activityTitle.setText(R.string.gamepad_v2);
             menulist.setVisibility(View.VISIBLE);
         } else finish();
     }
@@ -236,62 +328,6 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
         super.onDestroy();
-    }
-
-//    Deprecated Source
-//    public void onClickMenu(View view) {
-//        gamepadLists.setVisibility(View.GONE);
-//        gamepadView.setVisibility(View.GONE);
-//        imuoptionLists.setVisibility(View.GONE);
-//        aboutLists.setVisibility(View.GONE);
-//        switch (view.getId()) {
-//            case R.id.menu_gamepad:
-//                SetupGamepadList();
-//                RefreshGamepadList();
-//                gamepadList2.setOnItemClickListener(this);
-//                gamepadView.setVisibility(View.VISIBLE);
-//                activityTitle.setText(R.string.menu_gamepad);
-//                break;
-//            case R.id.menu_imu:
-//                imuoptionLists.setVisibility(View.VISIBLE);
-//                activityTitle.setText(R.string.menu_imu);
-//                break;
-//            case R.id.menu_about:
-//                aboutLists.setVisibility(View.VISIBLE);
-//                activityTitle.setText(R.string.menu_about);
-//                break;
-//        }
-//        menuButtons.setVisibility(View.GONE);
-//    }
-
-    public void onClickVersionCheck(View view) {
-        // Deprecated Source
-//        switch ( view.getId() ) {
-//            case R.id.buttonVersionCheck:
-//                // Check new Application Version
-//                if (version != update) {
-//                    // Now Version != New Version
-//                    findViewById( R.id.buttonUpdateVersion ).setVisibility( View.VISIBLE );
-//                    findViewById( R.id.tr_newUpdate ).setVisibility( View.VISIBLE );
-//                    findViewById( R.id.tr_updateMessage ).setVisibility( View.VISIBLE );
-//                } else {
-//                    // Now Version == New Version
-//                    findViewById( R.id.buttonUpdateVersion ).setVisibility( View.GONE );
-//                    findViewById( R.id.tr_newUpdate ).setVisibility( View.GONE );
-//                    findViewById( R.id.tr_updateMessage ).setVisibility( View.GONE );
-//                }
-//                break;
-//            case R.id.buttonUpdateVersion:
-//                // Application Version Update Code Here
-//                findViewById( R.id.buttonUpdateVersion ).setVisibility( View.GONE );
-//                findViewById( R.id.tr_newUpdate ).setVisibility( View.GONE );
-//                findViewById( R.id.tr_updateMessage ).setVisibility( View.GONE );
-//                currentVersion.setText( updateVersion.getText() );
-//                // If you can check Update Server, Delete this . Please.
-//                version = update++;
-//                updateVersion.setText( new StringBuilder().append( "1." ).append( String.valueOf( update ) ).toString() ); // New Version Name
-//                break;
-//        }
     }
 
     @Override
@@ -305,47 +341,81 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
 
             switch (position) {
                 case 0:
-                    // Gamepad Menu
-                    SetupGamePadList();
-                    RefreshGamePadList();
-                    gamepadList2.setOnItemClickListener(this);
-                    gamepadView.setVisibility(View.VISIBLE);
-                    activityTitle.setText(R.string.menu_gamepad);
+                    OpenGamepadMenu();
                     break;
                 case 1:
-                    // IMU Setting
-                    imuoptionLists.setVisibility(View.VISIBLE);
-                    activityTitle.setText(R.string.menu_imu);
+                    if (shouldShowIMUMenu()) OpenIMUMenu();
+                    else OpenAboutVersion();
                     break;
                 case 2:
-                    // About App
-                    aboutLists.setVisibility(View.VISIBLE);
-                    activityTitle.setText(R.string.menu_about);
+                    OpenAboutVersion();
                     break;
-            }
-        }
-
-        if (gamepadView.getVisibility() == View.VISIBLE) {
-            FirmwareConfig config = mUpgradeManager.getNewVersion();
-            ArrayList<DeviceModel> deviceList = mGamePadDeviceManager.getNeedUpgradedDevice(config);
-            boolean found = false;
-
-            for (DeviceModel model : deviceList) {
-                if (datas.get(position).getMACAddress().equals(model.getMACAddress())) {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) {
-                LogUtil.d("Need upgrade ");
-                Intent dialogIntent = new Intent(FOTA_V2.this, DialogActivity.class);
-                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(dialogIntent);
-            } else {
-                Toast.makeText(FOTA_V2.this, datas.get(position).getGamepadName() + getString(R.string.no_need_update), Toast.LENGTH_LONG).show();
             }
         }
     }
+
+    void OpenGamepadMenu() {
+        // Gamepad Menu
+        SetupGamePadList();
+        RefreshGamePadList();
+        gamepadList2.setOnItemClickListener(mGamepadListListener);
+        gamepadView.setVisibility(View.VISIBLE);
+        activityTitle.setText(R.string.title_gamepad);
+    }
+
+    void OpenIMUMenu() {
+        // IMU Setting
+        imuoptionLists.setVisibility(View.VISIBLE);
+        MainTitle.setVisibility(View.GONE);
+        IMUSensorTitle.setVisibility(View.VISIBLE);
+    }
+
+    void OpenAboutVersion() {
+        // About App
+        aboutLists.setVisibility(View.VISIBLE);
+        activityTitle.setText(R.string.menu_about);
+    }
+
+    private ListView.OnItemClickListener mGamepadListListener = new ListView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            showGamepadsInfo(position);
+        }
+    };
+
+    private void showGamepadsInfo(int position) {
+        List<DeviceModel> models = mDeviceManager.getBondedDevices();
+        if (models != null && models.size() != 0 && mUpgradeManager != null) {
+            if (gamepadView.getVisibility() == View.VISIBLE) {
+                FirmwareConfig config = mUpgradeManager.getNewVersion();
+                ArrayList<DeviceModel> deviceList = mGamePadDeviceManager.getNeedUpgradedDevice(config);
+                boolean online = false;
+
+                for (DeviceModel model : deviceList) {
+                    LogUtil.d("Device online? " + model.online());
+                    if (datas.get(position).getMACAddress().equals(model.getMACAddress()) && model.online()) {
+                        online = true;
+                        targetDeviceMac = model.getMACAddress();
+                        break;
+                    } else {
+                        targetDeviceMac = "none";
+                    }
+                }
+                if (!online) {
+                    LogUtil.d("Device not online");
+                    return;
+                }
+                LogUtil.d("Need upgrade");
+                Intent dialogIntent = new Intent(FOTA_V2.this, DialogActivity.class);
+                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                dialogIntent.putExtra(INTENT_KEY, INTENT_FROM_USER);
+                dialogIntent.putExtra(INTENT_MAC, targetDeviceMac);
+                startActivity(dialogIntent);
+            }
+        }
+    }
+
+    private String targetDeviceMac = "none";
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void getEvent(final Object object) {
@@ -363,12 +433,13 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
         if (macAddress == getString(R.string.unknown)) return;
         GamepadVO g = new GamepadVO(macAddress);
 //        Toast.makeText(this, "Detected Bluetooth: " + macAddress, Toast.LENGTH_SHORT).show();
-        g.setGamepadName(String.format("Game Pad %d"));
+        g.setGamepadName(String.format("Gamepad %d"));
         datas.add(g);
     }
 
     public void EventAddGamepad(DeviceModel model) {
-        GamepadVO g = new GamepadVO(getString(R.string.gamepad_one) + (model.getIndicator() + 1), model.getMACAddress(), model.getBatterVolt(), model.getFWVersion(), model.online());
+        UpgradeManager mgr = mDeviceManager.getUpgradeManager();
+        GamepadVO g = new GamepadVO(getString(R.string.gamepad_one)+ (model.getIndicator() + 1), model.getMACAddress(), model.getBatterVolt(), model.getFWVersion(), model.online(), mgr.getNewVersion().getmVersion());
         datas.add(g);
     }
 

@@ -306,7 +306,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
     private void initializeBluetoothManager() {
         LogUtil.d("initializeBluetoothManager");
         mGamepadDeviceManager = BluetoothDeviceManager.getDeviceManager();
-        mGamepadDeviceManager.initializeDevice(PATH);
+        mGamepadDeviceManager.initializeDevice(PATH, FotaMainActivity.this);
         mUpgradeManager = mGamepadDeviceManager.getUpgradeManager();
     }
 

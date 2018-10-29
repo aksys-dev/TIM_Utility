@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/gamepad_normal" />
+        app:srcCompat="@drawable/gamepad_big" />
 
     <TextView
         android:id="@+id/textView2"
@@ -27,7 +27,7 @@
         android:layout_marginTop="10dp"
         android:text="@string/gamepad_one"
         android:textColor="@android:color/white"
-        android:textSize="24sp"
+        android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/frame_gamepad_icon"
         app:layout_constraintTop_toTopOf="parent" />
@@ -47,22 +47,22 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/title_mac"
+                android:id="@+id/online_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:layout_marginEnd="10dp"
-                android:text="MAC"
+                android:text="@string/online_status"
                 android:textColor="@android:color/white"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/table_mac"
+                android:id="@+id/table_online"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:layout_marginEnd="10dp"
-                android:text="00:00:00:00:00:00"
+                android:text="@string/gamepad_offline"
                 android:textColor="@android:color/white" />
         </TableRow>
 
@@ -131,26 +131,51 @@
         </TableRow>
 
         <TableRow
+            android:id="@+id/latest_firmware_row"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/online_status"
+                android:id="@+id/latest_title_firmware"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:layout_marginEnd="10dp"
-                android:text="@string/online_status"
+                android:text="@string/latest_firmware"
                 android:textColor="@android:color/white"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/table_online"
+                android:id="@+id/latest_table_firmware"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:layout_marginEnd="10dp"
-                android:text="@string/gamepad_offline"
+                android:textColor="@color/colorAccent" />
+        </TableRow>
+
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/title_mac"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="10dp"
+                android:text="MAC"
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/table_mac"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginEnd="10dp"
+                android:text="00:00:00:00:00:00"
                 android:textColor="@android:color/white" />
         </TableRow>
 

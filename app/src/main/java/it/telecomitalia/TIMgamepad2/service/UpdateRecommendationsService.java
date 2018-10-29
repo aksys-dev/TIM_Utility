@@ -16,25 +16,20 @@
 
 package it.telecomitalia.TIMgamepad2.service;
 
-import android.app.Activity;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.app.recommendation.ContentRecommendation;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.widget.Toast;
 
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.activity.FOTA_V2;
-import it.telecomitalia.TIMgamepad2.activity.FotaMainActivity;
-import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 //import android.content.res.Resources;
@@ -59,9 +54,8 @@ public class UpdateRecommendationsService extends IntentService {
             if (mNotifManager == null) {
                 mNotifManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             }
-        }catch (Exception e)
-        {
-            Toast.makeText(UpdateRecommendationsService.this,e.toString(), Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(UpdateRecommendationsService.this, e.toString(), Toast.LENGTH_LONG).show();
         }
 
     }
@@ -77,21 +71,21 @@ public class UpdateRecommendationsService extends IntentService {
         }*/
         LogUtil.d(TAG, "add recommendation");
         ContentRecommendation.Builder builder = new ContentRecommendation.Builder().setBadgeIcon(R.drawable.ic_launcher);
-        int id=0;
-        builder.setIdTag("0").setTitle("Gamepad FOTA").setText("\n" +
+        int id = 0;
+        builder.setIdTag("0").setTitle(getString(R.string.app_name)).setText("\n" +
                 "Nuovo aggiornamento disponibile").
-                setContentIntentData(ContentRecommendation.INTENT_TYPE_ACTIVITY,buildPendingIntent(),0,null);
+                setContentIntentData(ContentRecommendation.INTENT_TYPE_ACTIVITY, buildPendingIntent(), 0, null);
 //        Drawable drawable=UpdateRecommendationsService.this.getResources().getDrawable(R.drawable.ic_launcher);
-        Drawable drawable= ContextCompat.getDrawable(this, R.drawable.ic_recommendation2);
-        BitmapDrawable bitmapDrawable=(BitmapDrawable)drawable;
-        Bitmap bitmap=bitmapDrawable.getBitmap();
+        Drawable drawable = ContextCompat.getDrawable(this, R.drawable.ic_recommendation2);
+        BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+        Bitmap bitmap = bitmapDrawable.getBitmap();
         builder.setContentImage(bitmap);
-        ContentRecommendation rec=builder.build();
-        Notification notification=rec.getNotificationObject(getApplicationContext());
-        mNotifManager.notify(id,notification);
+        ContentRecommendation rec = builder.build();
+        Notification notification = rec.getNotificationObject(getApplicationContext());
+        mNotifManager.notify(id, notification);
     }
 
-    private Intent buildPendingIntent( ) {
+    private Intent buildPendingIntent() {
         Intent detailsIntent = new Intent(this, FOTA_V2.class);
         return detailsIntent;
     }

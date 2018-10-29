@@ -40,7 +40,7 @@ public class UpgradeManager {
 
     public static final int EVENT_UGPRADE_FILE_HEADER_ERROR = 0x01;
 
-    public UpgradeManager(String path) {
+    UpgradeManager(String path) {
         mFWPath = path;
         mTimer = new Timer();
     }
@@ -69,16 +69,33 @@ public class UpgradeManager {
             @Override
             public void run() {
                 LogUtil.d("Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
-                String path = FileUtils.downLoadBin(model.getFabricModel().mFirmwareConfig.getmDownUrl(), handler);
-
-                LogUtil.d("download success " + path);
-                SPPConnection mainConnection = model.getSPPConnection();
-                mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
-                EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, model.getDevice(), 0));
-                mainConnection.startUpgrade(path);
+                if (model != null && model.getFabricModel() != null && model.getFabricModel().mFirmwareConfig != null) {
+                    String url = model.getFabricModel().mFirmwareConfig.getmDownUrl();
+                    if (url != null) {
+                        String path = FileUtils.downLoadBin(url, handler);
+                        LogUtil.d("download success " + path);
+                        SPPConnection mainConnection = model.getSPPConnection();
+                        if (mainConnection != null) {
+                            mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
+                            EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, model.getDevice(), 0));
+                            mainConnection.startUpgrade(path, handler, false);
+                        } else {
+                            handler.sendEmptyMessage(UPGRADE_FAILED);
+                        }
+                    } else {
+                        handler.sendEmptyMessage(UPGRADE_FAILED);
+                    }
+                } else {
+                    handler.sendEmptyMessage(UPGRADE_FAILED);
+                }
             }
         }).start();
     }
+
+    public static final int UPGRADE_FAILED = 3;
+    public static final int UPGRADE_CONNECTION_ERROR = 4;
+    public static final int UPGRADE_TIMEOUT = 5;
+
 
     public void startUpgradeLocal(final DeviceModel model, final String localPath) {
         new Thread(new Runnable() {

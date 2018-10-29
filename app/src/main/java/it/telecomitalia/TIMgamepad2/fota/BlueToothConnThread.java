@@ -66,13 +66,6 @@ public class BlueToothConnThread extends Thread {
         mCb = cb;
     }
 
-    BlueToothConnThread(DeviceModel info, ConnectionReadyListener listener) {
-        mDeviceInfo = info;
-        mListener = listener;
-        setName("BTConnThread-" + info.getIndicator());
-        LogUtil.d("" + getName() + " ");
-    }
-
     @Override
     public void run() {
         mStreamReady = STREAM_BUSY;
@@ -90,7 +83,7 @@ public class BlueToothConnThread extends Thread {
                     mSocket = mDeviceInfo.getDevice().createRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
                 }
                 mSocket.connect();
-            } catch (IOException e) {
+            } catch (IOException | NullPointerException e) {
                 LogUtil.e("unable to connect() socket, tries again\n" + e.getMessage());
                 // Close the socket
                 try {
@@ -165,7 +158,7 @@ public class BlueToothConnThread extends Thread {
      *
      * @param buffer The bytes to write
      */
-    public synchronized void write(byte[] buffer) {
+    public synchronized boolean write(byte[] buffer) {
         LogUtil.d("Send spp data (" + buffer.length + ") to game pad");
         try {
             if (mOS != null) {
@@ -175,7 +168,9 @@ public class BlueToothConnThread extends Thread {
             }
         } catch (IOException e) {
             LogUtil.e("Exception during write\n" + e.getMessage());
+            return false;
         }
+        return true;
     }
 
     public synchronized void write(byte cmd) {
