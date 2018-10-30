@@ -11,16 +11,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
+import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_CONNECTION_ERROR;
-import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_TIMEOUT;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_FAILURE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_SUCCESS;
+import static it.telecomitalia.TIMgamepad2.utils.CommerHelper.HexToString;
 
 
 /**
@@ -28,9 +28,6 @@ import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_SUCCESS;
  */
 
 public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
-
-    private static final int CMD_HEADER = 0;
-    private static final int CMD_PAYLOAD = 1;
 
     public static final byte CMD_ENABLE_IMU = (byte) 0x80;
     public static final byte CMD_DISABLE_IMU = (byte) 0x81;
@@ -60,26 +57,30 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_OTA_DATA_RECEVIED = (byte) 0x97;
     //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
     public static final byte CMD_ERROR_HEADER = (byte) 0x98;
-//    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
-
+    private static final int CMD_HEADER = 0;
+    private static final int CMD_PAYLOAD = 1;
+    //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
     private static final int IMU_FRAME_SIZE = 22;
 
     private static final int INDEX_CMD = 0;
     private static final int INDEX_STATUS = 1;
     private static final int INDEX_LENGTH = 2;
     private static final int INDEX_DATA_START = 3;
-
+    private static final String UNKNOWN = "unknown";
+    private final static float TOTAL_SIZE = 91374;
+    boolean checked = false;
     private BlueToothConnThread mConnectionThread;
     private DeviceModel mInfo;
     private boolean ready;
-    private ProxyManager mProxyManager = ProxyManager.getInstance();
-
-    private static final String UNKNOWN = "unknown";
-
+    private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
+    //    private ProxyManager mProxyManager = ProxyManager.getInstance();
     private String mFirmwareVersion = UNKNOWN;
     private int mBatteryVolt = -1;
-
     private GamePadListener mGamepadListener;
+    private String mPath = "";
+    private Handler mHandler;
+    private int retries = 0;
+    private float sentDataSize = 0;
 
     SPPConnection(DeviceModel info, GamePadListener listener) {
         LogUtil.d("SPPConnection : " + info.getDevice().getName());
@@ -100,7 +101,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mConnectionThread.cancel();
         mConnectionThread = null;
     }
-
 
     public String getDeviceFirmwareVersion() {
         return mFirmwareVersion;
@@ -134,30 +134,22 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         }
     }
 
+//    public ReceivedData getResultWithoutRequest() {
+//        byte[] reply = new byte[64];
+//        int size = waitAck(reply);
+//        return new ReceivedData(reply, size);
+//    }
+//
+//    public void startFirmwareUpgrade() {
+//        mConnectionThread.write(CMD_START_FW_UPGRADE);
+//    }
+//
+//    public void getIMUstate() {
+//        mConnectionThread.write(CMD_QUERY_IMU);
+//    }
+
     public void fotaOn(byte cmd) {
         LogUtil.i("SPP Send: " + cmd);
-        mConnectionThread.write(cmd);
-    }
-
-    public ReceivedData getResultWithoutRequest() {
-        byte[] reply = new byte[64];
-        int size = waitAck(reply);
-        return new ReceivedData(reply, size);
-    }
-
-    public void startFirmwareUpgrade() {
-        mConnectionThread.write(CMD_START_FW_UPGRADE);
-    }
-
-
-    public void getIMUstate() {
-        mConnectionThread.write(CMD_QUERY_IMU);
-    }
-
-    public void setDeviceChannel(byte channel) {
-        byte[] cmd = new byte[2];
-        cmd[0] = CMD_SET_CHANNEL;
-        cmd[1] = channel;
         mConnectionThread.write(cmd);
     }
 
@@ -165,16 +157,10 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         return mConnectionThread.write(data);
     }
 
-
     public synchronized boolean startUpgradeProcess(byte[] data) {
         byte[] firmware = data.clone();
         return sendData(firmware);
     }
-
-    private String mPath = "";
-
-    private Handler mHandler;
-    private int retries = 0;
 
     public synchronized void startUpgrade(String path, final Handler handler, boolean internal) {
         if (internal) {
@@ -184,8 +170,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 retries = 0;
             }
         } else {
-//            mTimerThread = new TimerThread(30, handler);
-//            mTimerThread.start();
             retries = 0;
         }
         try {
@@ -208,44 +192,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             e.printStackTrace();
         }
     }
-
-    class TimerThread extends Thread {
-        private int mTimeout;
-        private boolean run;
-        private int counter = 0;
-        private Handler mHandler;
-        private static final int TIMES_PER_SECOND = 10;
-
-        TimerThread(int time, Handler handler) {
-            this.mTimeout = time * TIMES_PER_SECOND;
-            this.mHandler = handler;
-            this.run = true;
-        }
-
-        public void setCancel() {
-            run = false;
-        }
-
-        @Override
-        public void run() {
-            while (run) {
-                SystemClock.sleep(1000 / TIMES_PER_SECOND);
-                counter++;
-                if (counter >= mTimeout) {
-                    LogUtil.d("Waiting response from gamepad time out, abort!");
-                    mHandler.sendEmptyMessage(UPGRADE_TIMEOUT);
-                    counter = 0;
-                    break;
-                }
-            }
-        }
-
-        private TimerThread() {
-
-        }
-    }
-
-//    private TimerThread mTimerThread = null;
 
     public int waitAck(byte[] reply) {
         LogUtil.d("waitAck Called");
@@ -272,10 +218,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
     }
 
-    public boolean isReady() {
-        return ready;
-    }
-
     private void queryFirmwareVersion() {
         mConnectionThread.write(CMD_QUERY_FW_VERSION);
     }
@@ -284,21 +226,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mConnectionThread.write(CMD_GET_BAT_V);
     }
 
-//    private void rebootDeviceForFota() {
-//        mConnectionThread.write(CMD_OTA_INTENT_REBOOT);
-//    }
-
-    private float sentDataSize = 0;
-
-    private final static float TOTAL_SIZE = 91374;
-
-
     @Override
     public void onDataArrived(byte[] data, int size) {
-//        if (size != 22) {
-//            LogUtil.d("On " + size + " bytes data arrived");
-//            LogUtil.d(CommerHelper.HexToString(data, size));
-//        }
         switch (data[INDEX_CMD]) {
             case CMD_ENABLE_IMU:
                 LogUtil.d("CMD_ENABLE_IMU");
@@ -358,14 +287,24 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 LogUtil.d("BatteryVolt: " + mBatteryVolt);
                 mInfo.setBatteryVolt(mBatteryVolt);
                 mGamepadListener.onSetupSuccessfully(true, mInfo.getDevice());
-                //DO NOTHING for Android 7
+                //Enable IMU if android 7 or higher version
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
                     setGamePadIMU();
                 }
                 break;
             case DATA_IMU_HEADER_PREFIX:
                 if (data[1] == DATA_IMU_HEADER && size == IMU_FRAME_SIZE) {
-                    mProxyManager.send(new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17]});
+                    //Use binder instead of socket on android 8 or higher version
+                    byte[] event = new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17]};
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        if (!checked) {
+                            checked = true;
+                            LogUtil.d("First frame: " + HexToString(event));
+                        }
+                        mBinderProxy.send(event);
+                    } else {
+//                        mProxyManager.send(event);
+                    }
                 }
                 break;
             case CMD_PARTITION_VERIFY_FAIL:
@@ -378,9 +317,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 sentDataSize = 0;
                 break;
             case CMD_OTA_WRITTEN_BYTES:
-//                if (mTimerThread != null) {
-//                    mTimerThread.setCancel();
-//                }
                 sentDataSize += combineHighAndLowByte(data[2], data[3]);
                 int percent = (int) ((sentDataSize / TOTAL_SIZE) * 100);
                 EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, mInfo.getDevice(), percent));
@@ -393,9 +329,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             case CMD_ERROR_HEADER:
                 LogUtil.d("CMD_ERROR_HEADER, Try to send the data again");
-//                if (mTimerThread != null) {
-//                    mTimerThread.setCancel();
-//                }
                 SystemClock.sleep(800);
                 startUpgrade(mPath, mHandler, true);
 //                mHandler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
@@ -406,10 +339,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         }
     }
 
+
     public static class ReceivedData {
         public byte mCmd;
-        public byte mLength;
         public String mResult;
+        private byte mLength;
 
         public ReceivedData(byte[] data, int size) {
             mCmd = data[0];
@@ -424,9 +358,5 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             builder.append("RESULT : " + mResult);
             return builder.toString();
         }
-    }
-
-    private boolean checkValid(byte[] data, int size) {
-        return (size == 22);
     }
 }

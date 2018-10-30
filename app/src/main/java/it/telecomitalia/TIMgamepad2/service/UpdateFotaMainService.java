@@ -84,7 +84,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 
     private boolean isUpgradeMode = false;
 
-    private ProxyManager mProxy = ProxyManager.getInstance();
+//    private ProxyManager mProxy = ProxyManager.getInstance();
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
@@ -152,7 +152,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         EventBus.getDefault().register(this);
         mContext = this;
         restartBTAdapter(mContext);
-        checkDriver();
+//        checkDriver();
         sp = UpdateFotaMainService.this.getSharedPreferences(CommerHelper.SPNAME, Activity.MODE_PRIVATE);
         PATH = mContext.getCacheDir() + "/firmware/";
         registerBTListener();
@@ -178,22 +178,22 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         LogUtil.i("Adapter (Re)started");
     }
 
-    private void checkDriver() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!mProxy.ready()) {
-//                    LogUtil.d("Wait for driver ready...");
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                driverReady = true;
-            }
-        }).start();
-    }
+//    private void checkDriver() {
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (!mProxy.ready()) {
+////                    LogUtil.d("Wait for driver ready...");
+//                    try {
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//                driverReady = true;
+//            }
+//        }).start();
+//    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

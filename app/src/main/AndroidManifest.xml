@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="it.telecomitalia.TIMgamepad2">
+    package="it.telecomitalia.TIMgamepad2"
+    android:sharedUserId="android.uid.system">
 
     <!--<uses-sdk android:minSdkVersion="15" />-->
 
@@ -24,12 +25,10 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".activity.FOTA_V2"
-
             android:configChanges="keyboardHidden|orientation|mcc|mnc|uiMode|locale|keyboard">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="technicolor.intent.action.MANAGE_PARTNER_ACCESSORY" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
