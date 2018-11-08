@@ -2,17 +2,16 @@ package it.telecomitalia.TIMgamepad2.service;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -58,15 +57,19 @@ import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_DOWNLOADIN
  */
 
 public class UpdateFotaMainService extends Service implements GamePadListener {
+    public static final String DIALOG_CANCEL_BROADCAST = "dialog_cancel_broadcast";
+    public static final String DIALOG_OK_BROADCAST = "dialog_ok_broadcast";
+    public static final int MSG_QUERY_FIRMWARE_VERSION = 0x100;
+    public static final String KEY_MSG_FIRMWARE = "FIRMWARE_CONFIG";
+    private static final String GAMEPAD_NAME_RELEASE = "TIMGamepad";
     private static String PATH;
+    private static BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();//获取本地蓝牙设备
+    private static boolean driverReady = false;
+    int waiting_counter = 0;
     private Context mContext;
     private Timer mTimer;
     private boolean isUpdating = false;
-    private static final String GAMEPAD_NAME_RELEASE = "TIMGamepad";
-    private static BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();//获取本地蓝牙设备
     private SPPConnection mainConnection;
-    public static final String DIALOG_CANCEL_BROADCAST = "dialog_cancel_broadcast";
-    public static final String DIALOG_OK_BROADCAST = "dialog_ok_broadcast";
     private String firmwareVersion = "";//获取的硬件版本号
     private String gamepadDownLoadUrl;
     private boolean isEnterFotaMainActivity = false;
@@ -76,16 +79,8 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     private FabricModel mFabricModel;
     private BluetoothDeviceManager mGamepadDeviceManager;
     private UpgradeManager mUpgradeManager;
-
-    private static boolean driverReady = false;
-
-    public static final int MSG_QUERY_FIRMWARE_VERSION = 0x100;
-    public static final String KEY_MSG_FIRMWARE = "FIRMWARE_CONFIG";
-
     private boolean isUpgradeMode = false;
-
-//    private ProxyManager mProxy = ProxyManager.getInstance();
-
+    private ProxyManager mProxy = ProxyManager.getInstance();
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
         @Override
@@ -145,6 +140,79 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
             }
         }
     };
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                //发现远程设备
+                LogUtil.i("ACTION_FOUND: " + device.getName());
+            } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+                //指明一个与远程设备建立的低级别（ACL）连接。
+                LogUtil.d("===============================================BlueTooth Connected");
+                new ConnectedPostThread(device).start();
+
+            } else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
+                //指明一个为远程设备提出的低级别（ACL）的断开连接请求，并即将断开连接。
+                LogUtil.d("ACTION_ACL_DISCONNECT_REQUESTED: " + device.getName());
+
+            } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+                //指明一个来自于远程设备的低级别（ACL）连接的断开
+                LogUtil.d(device.getName() + "***********************************************BlueTooth disConnected");
+//                if (mUpgradeDevice != null && mUpgradeDevice.getAddress().equals(device.getAddress()) && !isUpgradeMode) {
+                mGamepadDeviceManager.notifyDisconnectedDevice(device);
+//                }
+            } else if (action.equals(BluetoothAdapter.STATE_OFF)) {
+                LogUtil.i("STATE_OFF");
+
+            } else if (action.equals(BluetoothAdapter.STATE_ON)) {
+                LogUtil.i("STATE_ON");
+
+            } else if (action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)) {
+                //蓝牙扫描状态(SCAN_MODE)发生改变
+
+            } else if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
+                //指明一个远程设备的连接状态的改变。比如，当一个设备已经被匹配。
+                LogUtil.i("ACTION_BOND_STATE_CHANGED");
+                switch (device.getBondState()) {
+                    case BluetoothDevice.BOND_NONE:
+                        mGamepadDeviceManager.notifyUnpairedDevice(device);
+                        break;
+                    case BluetoothDevice.BOND_BONDING:
+                        LogUtil.d("BOND_BONDING: " + device.getName());
+                        break;
+                    case BluetoothDevice.BOND_BONDED:
+                        LogUtil.d("BOND_BONDED: " + device.getName() + " / " + device.getAddress());
+                        break;
+                }
+            } else if (action.equals(DIALOG_CANCEL_BROADCAST)) {
+                isshowndialog = false;
+            } else if (action.equals(DIALOG_OK_BROADCAST)) {
+                isshowndialog = true;
+
+                String from = intent.getStringExtra(INTENT_KEY);
+                if (from.equals(INTENT_FROM_USER)) {
+                    String macAddress = intent.getStringExtra(INTENT_MAC);
+                    LogUtil.d("Device " + macAddress + ": intent to be upgraded");
+                    Intent intents = new Intent(UpdateFotaMainService.this, UpgradeUIActivity.class);
+                    intents.putExtra(INTENT_MAC, macAddress);
+                    intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intents);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            SystemClock.sleep(1000);
+                            EventBus.getDefault().post(BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE);
+                            SystemClock.sleep(1000);
+                            EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_DOWNLOADING, null, 0));
+                        }
+                    }).start();
+                }
+            }
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -152,7 +220,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         EventBus.getDefault().register(this);
         mContext = this;
         restartBTAdapter(mContext);
-//        checkDriver();
+        //Only use socket on android 7
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            checkDriver();
+        }
         sp = UpdateFotaMainService.this.getSharedPreferences(CommerHelper.SPNAME, Activity.MODE_PRIVATE);
         PATH = mContext.getCacheDir() + "/firmware/";
         registerBTListener();
@@ -178,22 +249,23 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         LogUtil.i("Adapter (Re)started");
     }
 
-//    private void checkDriver() {
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while (!mProxy.ready()) {
-////                    LogUtil.d("Wait for driver ready...");
-//                    try {
-//                        Thread.sleep(1000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//                driverReady = true;
-//            }
-//        }).start();
-//    }
+    private void checkDriver() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (!mProxy.ready()) {
+                    if (waiting_counter++ < 60)
+                        LogUtil.d("Waiting for the IMU driver ready...");
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                driverReady = true;
+            }
+        }).start();
+    }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -209,6 +281,8 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 //      return super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
+
+
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void getEvent(final String s) {
@@ -297,13 +371,6 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         }
     }
 
-    private void gotoGamepadList() {
-        Intent intents = new Intent(UpdateFotaMainService.this, FOTA_V2.class);
-        intents.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
-        intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intents);
-    }
-
 //    private BluetoothDevice mUpgradeDevice;
 //
 //    @Override
@@ -316,6 +383,13 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 //            mUpgradeDevice = device;
 //        }
 //    }
+
+    private void gotoGamepadList() {
+        Intent intents = new Intent(UpdateFotaMainService.this, FOTA_V2.class);
+        intents.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
+        intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intents);
+    }
 
     private class ConnectedPostThread extends Thread {
         private BluetoothDevice mDevice;
@@ -349,78 +423,4 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
             }
         }
     }
-
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-
-            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                //发现远程设备
-                LogUtil.i("ACTION_FOUND: " + device.getName());
-            } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
-                //指明一个与远程设备建立的低级别（ACL）连接。
-                LogUtil.d("===============================================BlueTooth Connected");
-                new ConnectedPostThread(device).start();
-
-            } else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
-                //指明一个为远程设备提出的低级别（ACL）的断开连接请求，并即将断开连接。
-                LogUtil.d("ACTION_ACL_DISCONNECT_REQUESTED: " + device.getName());
-
-            } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
-                //指明一个来自于远程设备的低级别（ACL）连接的断开
-                LogUtil.d(device.getName() + "***********************************************BlueTooth disConnected");
-//                if (mUpgradeDevice != null && mUpgradeDevice.getAddress().equals(device.getAddress()) && !isUpgradeMode) {
-                mGamepadDeviceManager.notifyDisconnectedDevice(device);
-//                }
-            } else if (action.equals(BluetoothAdapter.STATE_OFF)) {
-                LogUtil.i("STATE_OFF");
-
-            } else if (action.equals(BluetoothAdapter.STATE_ON)) {
-                LogUtil.i("STATE_ON");
-
-            } else if (action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)) {
-                //蓝牙扫描状态(SCAN_MODE)发生改变
-
-            } else if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
-                //指明一个远程设备的连接状态的改变。比如，当一个设备已经被匹配。
-                LogUtil.i("ACTION_BOND_STATE_CHANGED");
-                switch (device.getBondState()) {
-                    case BluetoothDevice.BOND_NONE:
-                        mGamepadDeviceManager.notifyUnpairedDevice(device);
-                        break;
-                    case BluetoothDevice.BOND_BONDING:
-                        LogUtil.d("BOND_BONDING: " + device.getName());
-                        break;
-                    case BluetoothDevice.BOND_BONDED:
-                        LogUtil.d("BOND_BONDED: " + device.getName() + " / " + device.getAddress());
-                        break;
-                }
-            } else if (action.equals(DIALOG_CANCEL_BROADCAST)) {
-                isshowndialog = false;
-            } else if (action.equals(DIALOG_OK_BROADCAST)) {
-                isshowndialog = true;
-
-                String from = intent.getStringExtra(INTENT_KEY);
-                if (from.equals(INTENT_FROM_USER)) {
-                    String macAddress = intent.getStringExtra(INTENT_MAC);
-                    LogUtil.d("Device " + macAddress + ": intent to be upgraded");
-                    Intent intents = new Intent(UpdateFotaMainService.this, UpgradeUIActivity.class);
-                    intents.putExtra(INTENT_MAC, macAddress);
-                    intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intents);
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            SystemClock.sleep(1000);
-                            EventBus.getDefault().post(BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE);
-                            SystemClock.sleep(1000);
-                            EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_DOWNLOADING, null, 0));
-                        }
-                    }).start();
-                }
-            }
-        }
-    };
 }

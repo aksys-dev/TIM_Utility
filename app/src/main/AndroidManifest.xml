@@ -67,6 +67,14 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility" />
         </service>
+        <service
+            android:name="it.telecomitalia.TIMgamepad2.service.GamePadService"
+            android:enabled="true"
+            android:process=":remote">
+            <intent-filter>
+                <action android:name="it.telecomitalia.TIMgamepad2.IGamePadService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

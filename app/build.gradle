@@ -19,8 +19,8 @@ android {
         applicationId "it.telecomitalia.TIMgamepad2"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 5
-        versionName "0.9.84"
+        versionCode 7
+        versionName "0.9.87"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -37,7 +37,7 @@ android {
                     variant.outputs.all { output ->
                         def outputFile = output.outputFile
                         if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                            def fileName = "Gamepad_Utility-debug-v${defaultConfig.versionName}.apk"
+                            def fileName = "Gamepad_Utility-v${defaultConfig.versionName}.apk"
                             outputFileName = fileName;
                         }
                     }

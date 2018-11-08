@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
+import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
@@ -73,7 +74,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private DeviceModel mInfo;
     private boolean ready;
     private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
-    //    private ProxyManager mProxyManager = ProxyManager.getInstance();
+    private ProxyManager mProxyManager = ProxyManager.getInstance();
     private String mFirmwareVersion = UNKNOWN;
     private int mBatteryVolt = -1;
     private GamePadListener mGamepadListener;
@@ -151,6 +152,18 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public void fotaOn(byte cmd) {
         LogUtil.i("SPP Send: " + cmd);
         mConnectionThread.write(cmd);
+    }
+
+    public void setVibration(int states) {
+        if (states == 0) {
+            mConnectionThread.write(CMD_MOTOR_OFF);
+        } else {
+            mConnectionThread.write(CMD_MOTOR_ON);
+        }
+    }
+
+    public void setWorkMode(byte workMode) {
+        mConnectionThread.write(workMode);
     }
 
     private boolean sendData(byte[] data) {
@@ -296,14 +309,14 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 if (data[1] == DATA_IMU_HEADER && size == IMU_FRAME_SIZE) {
                     //Use binder instead of socket on android 8 or higher version
                     byte[] event = new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17]};
+                    if (!checked) {
+                        checked = true;
+                        LogUtil.d("First frame: " + HexToString(event));
+                    }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        if (!checked) {
-                            checked = true;
-                            LogUtil.d("First frame: " + HexToString(event));
-                        }
                         mBinderProxy.send(event);
                     } else {
-//                        mProxyManager.send(event);
+                        mProxyManager.send(event);
                     }
                 }
                 break;
