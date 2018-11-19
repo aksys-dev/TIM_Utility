@@ -32,10 +32,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.GamepadListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadVO;
 import it.telecomitalia.TIMgamepad2.R;
@@ -186,11 +186,12 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
 
         try {
             android.content.pm.PackageInfo packageInfo = this.getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_META_DATA);
-            java.util.Date updateDate = new java.util.Date(packageInfo.lastUpdateTime);
-            SimpleDateFormat dmySlash = new SimpleDateFormat("dd/MM/yyyy");
+//            java.util.Date updateDate = new java.util.Date(packageInfo.lastUpdateTime);
+//            SimpleDateFormat dmySlash = new SimpleDateFormat("dd/MM/yyyy");
 
             currentVersion.setText(packageInfo.versionName);
-            lastUpdateDay.setText(dmySlash.format(updateDate));
+//            lastUpdateDay.setText(dmySlash.format(updateDate));
+            lastUpdateDay.setText(BuildConfig.BUILD_TIME);
         } catch (PackageManager.NameNotFoundException e) {
             currentVersion.setText(R.string.app_version);
             lastUpdateDay.setText(R.string.lastupdate);
@@ -262,18 +263,16 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
 
     public void SetMenuData() {
         String[] menulists;
-        if (shouldShowIMUMenu())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || BuildConfig.ANDROID_7_SUPPORT_IMU) {
             menulists = new String[]{getString(R.string.menu_gamepad), getString(R.string.menu_imu), getString(R.string.menu_about)};
-        else
+        } else {
             menulists = new String[]{getString(R.string.menu_gamepad), getString(R.string.menu_about)};
+        }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, menulists);
         menulistView.setAdapter(adapter);
     }
 
-    private boolean shouldShowIMUMenu() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-    }
 
     public void SetupGamePadList() {
         GamepadVO g;
@@ -344,8 +343,11 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
                     OpenGamepadMenu();
                     break;
                 case 1:
-                    if (shouldShowIMUMenu()) OpenIMUMenu();
-                    else OpenAboutVersion();
+                    if (BuildConfig.ANDROID_7_SUPPORT_IMU || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        OpenIMUMenu();
+                    } else {
+                        OpenAboutVersion();
+                    }
                     break;
                 case 2:
                     OpenAboutVersion();
@@ -439,7 +441,7 @@ public class FOTA_V2 extends AppCompatActivity implements AdapterView.OnItemClic
 
     public void EventAddGamepad(DeviceModel model) {
         UpgradeManager mgr = mDeviceManager.getUpgradeManager();
-        GamepadVO g = new GamepadVO(getString(R.string.gamepad_one)+ (model.getIndicator() + 1), model.getMACAddress(), model.getBatterVolt(), model.getFWVersion(), model.online(), mgr.getNewVersion().getmVersion());
+        GamepadVO g = new GamepadVO(getString(R.string.gamepad_one) + (model.getIndicator() + 1), model.getMACAddress(), model.getBatterVolt(), model.getFWVersion(), model.online(), mgr.getNewVersion().getmVersion());
         datas.add(g);
     }
 

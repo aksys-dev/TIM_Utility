@@ -4,6 +4,7 @@ gen
 libs
 obj
 lint.xml
+release
 
 # IntelliJ IDEA
 .idea

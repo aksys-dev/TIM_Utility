@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
@@ -69,10 +70,9 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private static final int INDEX_DATA_START = 3;
     private static final String UNKNOWN = "unknown";
     private final static float TOTAL_SIZE = 91374;
-    boolean checked = false;
+    private boolean checked = false;
     private BlueToothConnThread mConnectionThread;
     private DeviceModel mInfo;
-    private boolean ready;
     private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
     private ProxyManager mProxyManager = ProxyManager.getInstance();
     private String mFirmwareVersion = UNKNOWN;
@@ -112,7 +112,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
 
     private void setGamePadLedIndicator() {
-        //TODO: send the led indicator number to device
         try {
             LogUtil.d("Header:" + CMD_SET_CHANNEL + "; Channel:" + mInfo.getIndicator());
             byte[] cmd = new byte[2];
@@ -135,20 +134,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         }
     }
 
-//    public ReceivedData getResultWithoutRequest() {
-//        byte[] reply = new byte[64];
-//        int size = waitAck(reply);
-//        return new ReceivedData(reply, size);
-//    }
-//
-//    public void startFirmwareUpgrade() {
-//        mConnectionThread.write(CMD_START_FW_UPGRADE);
-//    }
-//
-//    public void getIMUstate() {
-//        mConnectionThread.write(CMD_QUERY_IMU);
-//    }
-
     public void fotaOn(byte cmd) {
         LogUtil.i("SPP Send: " + cmd);
         mConnectionThread.write(cmd);
@@ -170,12 +155,12 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         return mConnectionThread.write(data);
     }
 
-    public synchronized boolean startUpgradeProcess(byte[] data) {
+    synchronized boolean startUpgradeProcess(byte[] data) {
         byte[] firmware = data.clone();
         return sendData(firmware);
     }
 
-    public synchronized void startUpgrade(String path, final Handler handler, boolean internal) {
+    synchronized void startUpgrade(String path, final Handler handler, boolean internal) {
         if (internal) {
             retries++;
             if (retries >= 30) {
@@ -213,7 +198,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
     @Override
     public void onConnectionReady(boolean b) {
-        ready = b;
         if (mConnectionThread != null) {
             mConnectionThread.startSPPDataListener();
             mConnectionThread.write(CMD_UPGRADE_SUCCESS);
@@ -301,7 +285,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 mInfo.setBatteryVolt(mBatteryVolt);
                 mGamepadListener.onSetupSuccessfully(true, mInfo.getDevice());
                 //Enable IMU if android 7 or higher version
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || BuildConfig.ANDROID_7_SUPPORT_IMU) {
                     setGamePadIMU();
                 }
                 break;
@@ -316,7 +300,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         mBinderProxy.send(event);
                     } else {
-                        mProxyManager.send(event);
+                        if (BuildConfig.ANDROID_7_SUPPORT_IMU)
+                            mProxyManager.send(event);
                     }
                 }
                 break;
@@ -344,7 +329,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 LogUtil.d("CMD_ERROR_HEADER, Try to send the data again");
                 SystemClock.sleep(800);
                 startUpgrade(mPath, mHandler, true);
-//                mHandler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
+//              mHandler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
                 break;
             default:
                 LogUtil.e("Unknown command!");

@@ -26,6 +26,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.Timer;
 
+import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.activity.DialogActivity;
@@ -103,8 +104,8 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                             LogUtil.e(e.getMessage());
                             e.printStackTrace();
                         }
-                        Intent recommendationIntent = new Intent(mContext, UpdateRecommendationsService.class);
-                        mContext.startService(recommendationIntent);
+//                        Intent recommendationIntent = new Intent(mContext, UpdateRecommendationsService.class);
+//                        mContext.startService(recommendationIntent);
                     }
 
                     /*if (TextUtils.isEmpty(firmwareVersion)){
@@ -221,7 +222,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         mContext = this;
         restartBTAdapter(mContext);
         //Only use socket on android 7
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
             checkDriver();
         }
         sp = UpdateFotaMainService.this.getSharedPreferences(CommerHelper.SPNAME, Activity.MODE_PRIVATE);
@@ -281,7 +282,6 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 //      return super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
-
 
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
