@@ -21,8 +21,8 @@ android {
         applicationId "it.telecomitalia.TIMgamepad2"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 13
-        versionName "0.9.93"
+        versionCode 23
+        versionName "0.10.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField 'boolean', 'ANDROID_7_SUPPORT_IMU', 'true'
         buildConfigField "String", "BUILD_TIME", "\"${buildTime}\""
@@ -30,8 +30,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             applicationVariants.all { variant ->
                 if (variant.buildType.name == ('release')) {

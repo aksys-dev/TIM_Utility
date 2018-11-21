@@ -36,7 +36,7 @@ public class BackDoor extends Activity implements View.OnClickListener {
     private String startDirectory = null;// 记忆上一次访问的文件目录路径
     private TextView mVersionText, mFilePath, mUpdateResult, mStatusText;
 
-    BluetoothDeviceManager manager = BluetoothDeviceManager.getDeviceManager();
+    BluetoothDeviceManager manager = BluetoothDeviceManager.getInstance();
 
     private Button mButton;
 

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="it.telecomitalia.TIMgamepad2">
+    package="it.telecomitalia.TIMgamepad2"
+    android:sharedUserId="android.uid.system">
 
     <!--<uses-sdk android:minSdkVersion="15" />
-    android:sharedUserId="android.uid.system"-->
+    android:sharedUserId="android.uid.system"
+     -->
 
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -30,11 +32,12 @@
             android:configChanges="keyboardHidden|orientation|mcc|mnc|uiMode|locale|keyboard">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="technicolor.intent.action.MANAGE_PARTNER_ACCESSORY" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="technicolor.intent.action.MANAGE_PARTNER_ACCESSORY" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".activity.FOTAV2Main" />
 
         <activity
             android:name=".activity.DialogActivity"
@@ -51,6 +54,8 @@
         <receiver android:name=".service.UpdatePowerOnReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="it.telecomitalia.TIMgamepad2.RESTART_SERVICE" />
             </intent-filter>
         </receiver>
 
@@ -74,7 +79,7 @@
         <service
             android:name="it.telecomitalia.TIMgamepad2.service.GamePadService"
             android:enabled="true"
-            android:process=":remote">
+            android:exported="true">
             <intent-filter>
                 <action android:name="it.telecomitalia.TIMgamepad2.IGamePadService" />
             </intent-filter>

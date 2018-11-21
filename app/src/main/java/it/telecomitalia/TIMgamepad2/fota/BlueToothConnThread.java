@@ -8,6 +8,7 @@ import android.os.SystemClock;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
 import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
@@ -72,6 +73,36 @@ public class BlueToothConnThread extends Thread {
         LogUtil.d("" + getName() + " ");
 
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+/*
+        BluetoothDevice device = btAdapter.getRemoteDevice(btdevaddr);
+
+        UUID SERIAL_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // bluetooth serial port service
+        //UUID SERIAL_UUID = device.getUuids()[0].getUuid(); //if you don't know the UUID of the bluetooth device service, you can get it like this from android cache
+
+        BluetoothSocket socket = null;
+
+        try {
+            socket = device.createRfcommSocketToServiceRecord(SERIAL_UUID);
+        } catch (Exception e) {Log.e("","Error creating socket");}
+
+        try {
+            socket.connect();
+            Log.e("","Connected");
+        } catch (IOException e) {
+            Log.e("",e.getMessage());
+            try {
+                Log.e("","trying fallback...");
+
+                socket =(BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
+                socket.connect();
+
+                Log.e("","Connected");
+            }
+            catch (Exception e2) {
+                Log.e("", "Couldn't establish Bluetooth connection!");
+            }
+        }
+*/
         do {
             try {
                 // This is a blocking call and will only return on a
@@ -82,24 +113,51 @@ public class BlueToothConnThread extends Thread {
                 } else {
                     mSocket = mDeviceInfo.getDevice().createRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
                 }
+            } catch (IOException e) {
+                LogUtil.e("Error when create socketed");
+            }
+            try {
                 mSocket.connect();
-            } catch (IOException | NullPointerException e) {
-                LogUtil.e("unable to connect() socket, tries again\n" + e.getMessage());
+                LogUtil.d("SPP socketed Connected");
+                mStreamReady = STREAM_INITIATED;
+            } catch (IOException e) {
+                LogUtil.e("unable to connect() socket, trying fallback...\n" + e.getMessage());
                 // Close the socket
+//                try {
+//                    if (mSocket != null) {
+//                        mSocket.close();
+//                        mSocket = null;
+//                    }
+//                    Thread.sleep(500);
+//                } catch (IOException | InterruptedException e1) {
+//                    LogUtil.e("unable to close() socket, ignore\n" + e1.getMessage());
+//                }
+//
+//                mStreamReady = STREAM_FAILED;
+//                continue;
+
                 try {
+                    mSocket = (BluetoothSocket) mDeviceInfo.getDevice().getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(mDeviceInfo.getDevice(), 1);
+                    mSocket.connect();
+
+                    LogUtil.d("SPP socketed Connected");
+                    mStreamReady = STREAM_INITIATED;
+                } catch (NoSuchMethodException | IOException | InvocationTargetException | IllegalAccessException e1) {
+                    LogUtil.e("Connecting failed: " + e1);
+
                     if (mSocket != null) {
-                        mSocket.close();
+                        try {
+                            mSocket.close();
+                        } catch (IOException e2) {
+                            LogUtil.e(e2.toString());
+                        }
+
                         mSocket = null;
                     }
-                    Thread.sleep(500);
-                } catch (IOException | InterruptedException e1) {
-                    LogUtil.e("unable to close() socket, ignore\n" + e1.getMessage());
+                    SystemClock.sleep(1000);
                 }
-
-                mStreamReady = STREAM_FAILED;
-                continue;
             }
-            mStreamReady = STREAM_INITIATED;
+
         } while (mStreamReady != STREAM_INITIATED);
 
         // Get the BluetoothSocket input and output streams

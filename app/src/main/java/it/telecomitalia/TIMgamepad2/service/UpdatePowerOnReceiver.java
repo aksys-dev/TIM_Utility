@@ -1,15 +1,10 @@
 package it.telecomitalia.TIMgamepad2.service;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
-
-import static android.content.Context.NOTIFICATION_SERVICE;
 
 public class UpdatePowerOnReceiver extends BroadcastReceiver {
 
@@ -24,7 +19,7 @@ public class UpdatePowerOnReceiver extends BroadcastReceiver {
 
     public void onReceive(Context context, Intent intent) {
 //        initNotificationChannel(context);
-        LogUtil.d("Received intent: "+intent.getAction());
+        LogUtil.d("Received intent: " + intent.getAction());
         Intent intent2 = new Intent(context, UpdateFotaMainService.class);
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //

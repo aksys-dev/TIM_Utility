@@ -64,6 +64,10 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
     private static final int IMU_FRAME_SIZE = 22;
 
+    private static final byte CMD_VIBRATE_VALUE0 = (byte) 0x00;
+    private static final byte CMD_VIBRATE_VALUE1 = (byte) 0x01;
+    private static final byte CMD_VIBRATE_VALUE2 = (byte) 0x02;
+
     private static final int INDEX_CMD = 0;
     private static final int INDEX_STATUS = 1;
     private static final int INDEX_LENGTH = 2;
@@ -139,13 +143,13 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mConnectionThread.write(cmd);
     }
 
-    public void setVibration(int states) {
-        if (states == 0) {
-            mConnectionThread.write(CMD_MOTOR_OFF);
-        } else {
-            mConnectionThread.write(CMD_MOTOR_ON);
-        }
-    }
+//    public void setVibration(int states) {
+//        if (states == 0) {
+//            mConnectionThread.write(CMD_MOTOR_OFF);
+//        } else {
+//            mConnectionThread.write(CMD_MOTOR_ON);
+//        }
+//    }
 
     public void setWorkMode(byte workMode) {
         mConnectionThread.write(workMode);
@@ -158,6 +162,22 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     synchronized boolean startUpgradeProcess(byte[] data) {
         byte[] firmware = data.clone();
         return sendData(firmware);
+    }
+
+
+    public void vibrator(int left, int right) {
+
+        byte[] output = new byte[3]; // Vibrate Stream
+        output[0] = CMD_MOTOR_ON;
+        if (left == 2) output[1] = CMD_VIBRATE_VALUE2;
+        else if (left == 1) output[1] = CMD_VIBRATE_VALUE1;
+        else if (left == 0) output[1] = CMD_VIBRATE_VALUE0;
+
+        if (right == 2) output[2] = CMD_VIBRATE_VALUE2;
+        else if (right == 1) output[2] = CMD_VIBRATE_VALUE1;
+        else if (right == 0) output[2] = CMD_VIBRATE_VALUE0;
+        mConnectionThread.write(output);
+
     }
 
     synchronized void startUpgrade(String path, final Handler handler, boolean internal) {

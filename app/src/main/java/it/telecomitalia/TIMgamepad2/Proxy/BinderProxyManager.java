@@ -30,7 +30,7 @@ public class BinderProxyManager {
         if (mServiceBinder != null) {
             inject(mServiceBinder, data);
         } else {
-            LogUtil.e("Proxy service not ready, Please try it later...");
+           // LogUtil.e("Proxy service not ready, Please try it later...");
         }
     }
 

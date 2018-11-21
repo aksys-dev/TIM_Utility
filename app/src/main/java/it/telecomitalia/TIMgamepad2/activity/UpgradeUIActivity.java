@@ -214,7 +214,7 @@ public class UpgradeUIActivity extends Activity {
 
     private void initializeBluetoothManager() {
         LogUtil.d("initializeBluetoothManager");
-        mGamePadDeviceManager = BluetoothDeviceManager.getDeviceManager();
+        mGamePadDeviceManager = BluetoothDeviceManager.getInstance();
         mUpgradeManager = mGamePadDeviceManager.getUpgradeManager();
     }
 

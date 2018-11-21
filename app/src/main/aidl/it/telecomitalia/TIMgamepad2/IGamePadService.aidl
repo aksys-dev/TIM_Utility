@@ -15,5 +15,5 @@ interface IGamePadService {
 
     String getVersion(int device);
 
-    void setVibrationState(int id, int status);
+    void setVibrationState(int id, int left_status, int right_status);
 }

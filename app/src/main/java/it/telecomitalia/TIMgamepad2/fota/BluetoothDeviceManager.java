@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -47,15 +48,39 @@ public class BluetoothDeviceManager {
     private static final int GP_SUPPORTED_MAX_NUM = 4;
     private static final int DEFAULT_IMU_DEVICE_INDEX = 0;
 
-    public static BluetoothDeviceManager getDeviceManager() {
-        if (mDeviceManager == null) {
-            mDeviceManager = new BluetoothDeviceManager();
-        }
-        return mDeviceManager;
-    }
+//    public static BluetoothDeviceManager getDeviceManager() {
+//        if (mDeviceManager == null) {
+//            LogUtil.d("Now create new bluetooth device manager");
+//            mDeviceManager = new BluetoothDeviceManager();
+//        }
+//        return mDeviceManager;
+//    }
 
     private BluetoothDeviceManager() {
+//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+//        StrictMode.setThreadPolicy(policy);
+        //mDeviceManager = new BluetoothDeviceManager();
     }
+
+    public static BluetoothDeviceManager getInstance() {
+        BluetoothDeviceManager temp = BluetoothDeviceManagerSingleton.INSTANCE.getInstance();
+        LogUtil.d("The instance is: " + temp);
+        return temp;
+    }
+
+    private enum BluetoothDeviceManagerSingleton {
+        INSTANCE;
+        private BluetoothDeviceManager mManager;
+
+        BluetoothDeviceManagerSingleton() {
+            mManager = new BluetoothDeviceManager();
+        }
+
+        public BluetoothDeviceManager getInstance() {
+            return mManager;
+        }
+    }
+
 
     public boolean isInitialized() {
         return mInitialized;
@@ -135,9 +160,11 @@ public class BluetoothDeviceManager {
 
 
     private synchronized DeviceModel getTarget(String key) {
-        for (DeviceModel model : mDevices) {
-            if (model.getMACAddress().equals(key)) {
-                return model;
+        if (mDevices != null) {
+            for (DeviceModel model : mDevices) {
+                if (model.getMACAddress().equals(key)) {
+                    return model;
+                }
             }
         }
         return null;
@@ -263,10 +290,12 @@ public class BluetoothDeviceManager {
                 mGamePadMap.put(model.getMACAddress(), model);
             }
         }
+        Log.d("Daniel", "mGamePadMap --->>" + mGamePadMap);
         return mGamePadMap;
     }
 
     public List<DeviceModel> getConnectedDevicesList() {
+        Log.d("Daniel", "mDevices --->>" + mDevices);
         return mDevices;
     }
 
