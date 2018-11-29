@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@drawable/bg_selector"
+    android:clickable="true"
+    android:focusable="true"
+    android:layout_height="90dp"
+    android:layout_marginLeft="15dp"
+    android:layout_width="fill_parent">
+
+    <LinearLayout
+        android:id="@+id/ll_gamepad1"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_height="90dp"
+        android:layout_marginLeft="20dp"
+        android:layout_width="300dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/gamepad_name"
+            android:drawableLeft="@drawable/gamepad"
+            android:drawablePadding="15dp"
+            android:gravity="right"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="@string/gamepad_one"
+            android:textColor="#ffffff"
+            android:layout_gravity="center_vertical"
+            android:textSize="20sp" />
+
+        <ProgressBar
+            android:visibility="gone"
+            android:id="@+id/progressbar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:max="100"
+            android:layout_marginTop="20dp"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:gravity="left"
+            android:id="@+id/tv_currentgamepadver1"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_width="wrap_content"
+            android:textColor="#ffffff"
+            android:layout_gravity="center_vertical"
+            android:textSize="13sp"
+            android:visibility="visible" />
+
+        <TextView
+            android:gravity="left"
+            android:id="@+id/tv_gamepadversion1"
+            android:layout_height="wrap_content"
+            android:layout_width="320dp"
+            android:text=""
+            android:textColor="#ffffff"
+            android:layout_gravity="center_vertical"
+            android:textSize="13sp"
+            android:visibility="visible" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_battery1"
+        android:layout_centerVertical="true"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/ll_gamepad1"
+        android:layout_width="wrap_content"
+        android:src="@drawable/battery"
+        android:visibility="gone" />
+</RelativeLayout>

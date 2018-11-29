@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="icon_background">#4A4F51</color>
+    <color name="icon_alt_background">#2A2F51</color>
+    <color name="dialog_grey">#666666</color>
+    <color name="black">#000000</color>
+    <color name="write">#FFFFFF</color>
+    <color name="tv_white">#EEEEEE</color>
+    <color name="list_background">#263238</color>
+    <color name="list_highlight_background">#455A64</color>
+    <color name="red">#FF0000</color>
+</resources>
