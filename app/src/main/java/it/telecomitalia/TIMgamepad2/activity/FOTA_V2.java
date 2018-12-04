@@ -24,7 +24,7 @@ public class FOTA_V2 extends Activity {
     private ProgressBar progress;
     private TextView tv;
 
-    private static final String RESTART_SERVICE_BROADCASR = "it.telecomitalia.TIMgamepad2.RESTART_SERVICE";
+    private static final String RESTART_SERVICE_BROADCAST = "it.telecomitalia.TIMgamepad2.RESTART_SERVICE";
 
     @SuppressLint("HandlerLeak")
     final Handler handler = new Handler() {
@@ -32,16 +32,16 @@ public class FOTA_V2 extends Activity {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (msg.what == 1) {
-                LogUtil.d("Reset finished, Now start utility UI");
+//                LogUtil.d("Reset finished, Now start utility UI");
                 progress.setVisibility(View.GONE);
                 tv.setVisibility(View.GONE);
                 Intent i = new Intent(FOTA_V2.this, FOTAV2Main.class);
                 startActivity(i);
                 FOTA_V2.this.finish();
             } else if (msg.what == 0) {
-                LogUtil.d("Try to restart service...");
+//                LogUtil.d("Try to restart service...");
                 Intent i = new Intent();
-                i.setAction(RESTART_SERVICE_BROADCASR);
+                i.setAction(RESTART_SERVICE_BROADCAST);
                 i.setPackage(getPackageName());
                 sendBroadcast(i);
             }
@@ -57,7 +57,7 @@ public class FOTA_V2 extends Activity {
         if (!isMyServiceRunning(UpdateFotaMainService.class)) {
             progress.setVisibility(View.VISIBLE);
             tv.setVisibility(View.VISIBLE);
-            LogUtil.d("Service not running, Let restart it...");
+            LogUtil.d("Service not running, Launch it...");
             final BluetoothManager btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             final BluetoothAdapter btAdapter = btManager.getAdapter();
 
@@ -73,12 +73,11 @@ public class FOTA_V2 extends Activity {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
                     handler.sendEmptyMessage(1);
                 }
             }).start();
         } else {
-            LogUtil.d("Service running, Ignore...");
+//            LogUtil.d("Service running, Ignore...");
             Intent i = new Intent(FOTA_V2.this, FOTAV2Main.class);
             startActivity(i);
             finish();

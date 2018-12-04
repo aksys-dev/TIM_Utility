@@ -48,6 +48,8 @@ public class BluetoothDeviceManager {
     private static final int GP_SUPPORTED_MAX_NUM = 4;
     private static final int DEFAULT_IMU_DEVICE_INDEX = 0;
 
+
+
 //    public static BluetoothDeviceManager getDeviceManager() {
 //        if (mDeviceManager == null) {
 //            LogUtil.d("Now create new bluetooth device manager");
@@ -64,7 +66,7 @@ public class BluetoothDeviceManager {
 
     public static BluetoothDeviceManager getInstance() {
         BluetoothDeviceManager temp = BluetoothDeviceManagerSingleton.INSTANCE.getInstance();
-        LogUtil.d("The instance is: " + temp);
+//        LogUtil.d("The instance is: " + temp);
         return temp;
     }
 
@@ -123,7 +125,7 @@ public class BluetoothDeviceManager {
         byte index;
         for (index = 0; index < gamepads.size(); index++) {
             if (gamepads.get(index).getIndicator() == -1) { //Means this seat didn't occupied by other gamepad
-                LogUtil.d("Free seat found: index->" + index);
+//                LogUtil.d("Free seat found: index->" + index);
                 return index;
             }
         }
@@ -134,7 +136,7 @@ public class BluetoothDeviceManager {
         byte index;
         for (index = 0; index < gamepads.size(); index++) {
             if (gamepads.get(index).getSPPConnection() == null) { //Means this seat didn't occupied by other gamepad at now
-                LogUtil.d("Idle seat found: index->" + index);
+//                LogUtil.d("Idle seat found: index->" + index);
                 return index;
             }
         }
@@ -151,7 +153,7 @@ public class BluetoothDeviceManager {
         enableSensor(gp);
         gp.setSPPConnection(new SPPConnection(gp, listener));
         gp.getSPPConnection().start();
-        gp.print();
+//        gp.print();
         DeviceLocalCache.getInstance().save(mDevices); //update the local cache
         FabricModel model = gp.getFabricModel();
         FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_CONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
@@ -405,7 +407,7 @@ public class BluetoothDeviceManager {
                 Set<BluetoothDevice> devices = _bluetoothAdapter.getBondedDevices();
 
                 if (devices.contains(device)) {
-                    LogUtil.i("Target device found:" + device.getAddress());
+//                    LogUtil.i("Target device found:" + device.getAddress());
                     Method isConnectedMethod = BluetoothDevice.class.getDeclaredMethod("isConnected", (Class[]) null);
                     method.setAccessible(true);
                     boolean isConnected = (boolean) isConnectedMethod.invoke(device, (Object[]) null);

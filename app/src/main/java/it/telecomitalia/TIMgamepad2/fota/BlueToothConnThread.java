@@ -63,14 +63,14 @@ public class BlueToothConnThread extends Thread {
         mDeviceInfo = info;
         mListener = listener;
         setName("BTConnThread-" + info.getIndicator());
-        LogUtil.d("" + getName() + " ");
+//        LogUtil.d("" + getName() + " ");
         mCb = cb;
     }
 
     @Override
     public void run() {
         mStreamReady = STREAM_BUSY;
-        LogUtil.d("" + getName() + " ");
+//        LogUtil.d("" + getName() + " ");
 
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
 /*
@@ -162,7 +162,7 @@ public class BlueToothConnThread extends Thread {
 
         // Get the BluetoothSocket input and output streams
         try {
-            LogUtil.d("Getting input and output streaming");
+//            LogUtil.d("Getting input and output streaming");
             mIS = mSocket.getInputStream();
             mOS = mSocket.getOutputStream();
         } catch (IOException e) {

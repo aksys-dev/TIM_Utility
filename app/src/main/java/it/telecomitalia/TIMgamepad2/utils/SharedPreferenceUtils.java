@@ -15,7 +15,7 @@ public class SharedPreferenceUtils {
     /**
      * 保存的文件名
      */
-    private static final String FILE_NAME = "GamePads";
+//    private static final String FILE_NAME = "GamePads";
 
     /**
      * 保存数据的方法，我们需要拿到保存数据的具体类型，然后根据类型调用不同的保存方法
@@ -24,9 +24,9 @@ public class SharedPreferenceUtils {
      * @param key
      * @param object
      */
-    public static void put(Context context, String key, Object object) {
+    public static void put(String filename, Context context, String key, Object object) {
 
-        SharedPreferences sp = context.getSharedPreferences(FILE_NAME,
+        SharedPreferences sp = context.getSharedPreferences(filename,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
 
@@ -55,8 +55,8 @@ public class SharedPreferenceUtils {
      * @param defaultObject
      * @return
      */
-    public static Object get(Context context, String key, Object defaultObject) {
-        SharedPreferences sp = context.getSharedPreferences(FILE_NAME,
+    public static Object get(String filename, Context context, String key, Object defaultObject) {
+        SharedPreferences sp = context.getSharedPreferences(filename,
                 Context.MODE_PRIVATE);
 
         if (defaultObject instanceof String) {
@@ -80,8 +80,8 @@ public class SharedPreferenceUtils {
      * @param context
      * @param key
      */
-    public static void remove(Context context, String key) {
-        SharedPreferences sp = context.getSharedPreferences(FILE_NAME,
+    public static void remove(String filename, Context context, String key) {
+        SharedPreferences sp = context.getSharedPreferences(filename,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.remove(key);
@@ -93,8 +93,8 @@ public class SharedPreferenceUtils {
      *
      * @param context
      */
-    public static void clear(Context context) {
-        SharedPreferences sp = context.getSharedPreferences(FILE_NAME,
+    public static void clear(String filename, Context context) {
+        SharedPreferences sp = context.getSharedPreferences(filename,
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.clear();
@@ -108,8 +108,8 @@ public class SharedPreferenceUtils {
      * @param key
      * @return
      */
-    public static boolean contains(Context context, String key) {
-        SharedPreferences sp = context.getSharedPreferences(FILE_NAME,
+    public static boolean contains(String filename, Context context, String key) {
+        SharedPreferences sp = context.getSharedPreferences(filename,
                 Context.MODE_PRIVATE);
         return sp.contains(key);
     }
@@ -120,8 +120,8 @@ public class SharedPreferenceUtils {
      * @param context
      * @return
      */
-    public static Map<String, ?> getAll(Context context) {
-        SharedPreferences sp = context.getSharedPreferences(FILE_NAME,
+    public static Map<String, ?> getAll(String filename, Context context) {
+        SharedPreferences sp = context.getSharedPreferences(filename,
                 Context.MODE_PRIVATE);
         return sp.getAll();
     }

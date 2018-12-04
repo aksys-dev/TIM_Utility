@@ -44,6 +44,7 @@ import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.fota.UpgradeManager;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
+import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
@@ -55,7 +56,16 @@ import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
 
 public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
+
+    private static final String CONFIG_FILE_NAME = "CONFIG";
+    private static final String KEY_SENSITIVE = "sensitivity";
+    private static final float SENSITIVE_DEFAULT = 1.0f;
+    private static final String KEY_CALIBRATION = "calibration";
+    private static final boolean CALIBRATION_DEFAULT = true;
+
     ConstraintLayout MainTitle, IMUSensorTitle;
+
+    private Context mContext;
 
     ConstraintLayout menulist;
     ListView menulistView;
@@ -70,6 +80,7 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
     SeekBar seekBarSensitivity;
     TextView textSeekBarValue;
     float sensitivityValue = 1.00F;
+    boolean calibrationEnabled = true;
     Switch calibration;
 
     private UpgradeManager mUpgradeManager;
@@ -81,13 +92,13 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 
     TextView activityTitle;
 
-    private static BluetoothDeviceManager mDeviceManager;
+    private BluetoothDeviceManager mDeviceManager;
 
     private MagicKey[] mMagicKeys = new MagicKey[]{new MagicKey(102, 0), new MagicKey(103, 1), new MagicKey(21, 2), new MagicKey(19, 3), new MagicKey(20, 4), new MagicKey(22, 5),};
 
     private int mMagicIndex = 0;
 
-    class MagicKey {
+    private class MagicKey {
         private int mKeyCode;
         private int mIndex;
 
@@ -114,14 +125,63 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 
     @Override
     protected void onResume() {
-        LogUtil.d("onResume");
         super.onResume();
+        float restoreValue = (float) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, SENSITIVE_DEFAULT);
+        calibrationEnabled = (boolean) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, CALIBRATION_DEFAULT);
+        calibration.setChecked(calibrationEnabled);
+        if (calibrationEnabled) {
+            calibration.setText(getString(R.string.on));
+        } else {
+            calibration.setText(getString(R.string.off));
+        }
+        textSeekBarValue.setText(String.valueOf(restoreValue));
+        seekBarSensitivity.setProgress((int) (restoreValue * 100));
+
+
+//        LogUtil.i("calibrationEnabled-> " + calibrationEnabled);
+//        LogUtil.i("sensitivity Value-> " + restoreValue);
+//        LogUtil.i("progress-> " + seekBarSensitivity.getProgress());
+
+        calibration.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    calibration.setText(getString(R.string.on));
+                } else {
+                    calibration.setText(getString(R.string.off));
+                }
+                SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, isChecked);
+            }
+        });
+
+        seekBarSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            // IMU Sensitivity Source
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (progress < 1) {
+                    seekBar.setProgress(1);
+                    progress = 1;
+                }
+
+                sensitivityValue = (float) ((progress) / 100.0);
+                textSeekBarValue.setText(String.valueOf(sensitivityValue));
+                SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, sensitivityValue);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+
         registerReceiver(mReceiver, makeFilter());
     }
 
     @Override
     protected void onPause() {
-        LogUtil.d("onPause");
         super.onPause();
         unregisterReceiver(mReceiver);
     }
@@ -140,12 +200,11 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        LogUtil.d("onCreate");
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fota_v2_main);
-
+        mContext = this;
         MainTitle = findViewById(R.id.AppTitle);
         IMUSensorTitle = findViewById(R.id.IMU_Title);
 
@@ -172,17 +231,10 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 
         seekBarSensitivity = findViewById(R.id.seekBar);
         textSeekBarValue = findViewById(R.id.textSensitibity);
+
+
         calibration = findViewById(R.id.sw_calibration);
-        calibration.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    calibration.setText(getString(R.string.on));
-                } else {
-                    calibration.setText(getString(R.string.off));
-                }
-            }
-        });
+
 
         currentVersion = findViewById(R.id.value_currentVersion);
         lastUpdateDay = findViewById(R.id.value_updateDay);
@@ -193,34 +245,13 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 //            SimpleDateFormat dmySlash = new SimpleDateFormat("dd/MM/yyyy");
 
             currentVersion.setText(packageInfo.versionName);
-//            lastUpdateDay.setText(dmySlash.format(updateDate));
+//          lastUpdateDay.setText(dmySlash.format(updateDate));
             lastUpdateDay.setText(BuildConfig.BUILD_TIME);
         } catch (PackageManager.NameNotFoundException e) {
             currentVersion.setText(R.string.app_version);
             lastUpdateDay.setText(R.string.lastupdate);
         }
 
-        seekBarSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            // IMU Sensitivity Source
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (progress < 1) {
-                    seekBar.setProgress(1);
-                    progress = 1;
-                }
-
-                sensitivityValue = (float) ((progress) / 100.0);
-                textSeekBarValue.setText(String.valueOf(sensitivityValue));
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
 
         mGamePadDeviceManager = BluetoothDeviceManager.getInstance();
         mUpgradeManager = mGamePadDeviceManager.getUpgradeManager();
@@ -295,7 +326,7 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
                 }
             }
             if (datas.size() == 0) {
-                // No Gamepad
+                // No Game pad
                 g = new GamepadVO();
                 g.setGamepadName(String.format("Gamepad %d", list));
                 datas.add(g);

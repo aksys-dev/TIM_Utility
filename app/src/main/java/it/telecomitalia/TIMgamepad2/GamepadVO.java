@@ -19,15 +19,15 @@ public class GamepadVO {
     public GamepadVO(String name, String mac, int batt, String firm, boolean online, String latestFWVersion) {
         this.GamepadName = name;
         this.MACAddress = mac;
-        LogUtil.d("battery is :" + batt);
+//        LogUtil.d("battery is :" + batt);
         float validBattery = calibrateBattery(batt);
-        LogUtil.d("Calibrated battery: " + validBattery);
+//        LogUtil.d("Calibrated battery: " + validBattery);
         this.Battery = ((validBattery - MIN_BAT) / (MAX_BAT - MIN_BAT)) * 100;
         this.Firmware = firm;
         this.NeedUpdate = false;
         this.mOnLine = online;
         this.latestFWVersion = latestFWVersion;
-        log();
+//        log();
     }
 
     private float calibrateBattery(int raw) {

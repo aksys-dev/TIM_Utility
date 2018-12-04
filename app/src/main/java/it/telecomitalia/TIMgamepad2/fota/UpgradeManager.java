@@ -51,7 +51,7 @@ public class UpgradeManager {
         } else {
             mTimer.schedule(new TimerTask() {
                 public void run() {
-                    LogUtil.i("Start upgrade manager");
+//                    LogUtil.i("Start upgrade manager");
                     FirmwareConfig config = getNewVersion();
                     Message msg = handler.obtainMessage();
                     Bundle data = new Bundle();
@@ -69,7 +69,7 @@ public class UpgradeManager {
             @Override
             public void run() {
                 LogUtil.d("Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
-                if (model != null && model.getFabricModel() != null && model.getFabricModel().mFirmwareConfig != null) {
+                if (model.getFabricModel() != null && model.getFabricModel().mFirmwareConfig != null) {
                     String url = model.getFabricModel().mFirmwareConfig.getmDownUrl();
                     if (url != null) {
                         String path = FileUtils.downLoadBin(url, handler);
@@ -155,11 +155,10 @@ public class UpgradeManager {
         File file = new File(mFWPath + CONFIG_FILE_NAME_GAMEPAD1);
         FirmwareConfig config = new FirmwareConfig();
 
-        LogUtil.d("file exits " + file.exists());
         if (file.exists()) {
             config = getJsonFromLocal(mFWPath + CONFIG_FILE_NAME_GAMEPAD1);
         }
-        LogUtil.d("new version : " + config.getmVersion());
+        LogUtil.d("Version : " + config.getmVersion());
         return config;
     }
 
@@ -169,45 +168,51 @@ public class UpgradeManager {
      * @param path
      * @param name
      */
-    public void getJsonFromeServer(String path, String name) {
-        try {
-            int count = 0;
+    public void getJsonFromeServer(final String path, final String name) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int count = 0;
 
-            URL url = new URL(path);
-            LogUtil.i("getJsonFromeServer-->path:" + path);
-            HttpURLConnection conection = (HttpURLConnection) url.openConnection();
-            conection.connect();
-            conection.setConnectTimeout(4000);
-            conection.setReadTimeout(4000);
-            // download the file
-            InputStream input = conection.getInputStream();
-            File dir = new File(mFWPath);
-            File configFile = new File(mFWPath + name);
-            if (!dir.exists())
-                dir.mkdir();
-            if (configFile.exists())
-                configFile.delete();
+                    URL url = new URL(path);
+                    LogUtil.i("URL: " + path);
+                    HttpURLConnection conection = (HttpURLConnection) url.openConnection();
+                    conection.connect();
+                    conection.setConnectTimeout(4000);
+                    conection.setReadTimeout(4000);
+                    // download the file
+                    InputStream input = conection.getInputStream();
+                    File dir = new File(mFWPath);
+                    File configFile = new File(mFWPath + name);
+                    if (!dir.exists())
+                        dir.mkdir();
+                    if (configFile.exists())
+                        configFile.delete();
 
-            // Output stream
-            OutputStream output = new FileOutputStream(configFile);
+                    // Output stream
+                    OutputStream output = new FileOutputStream(configFile);
 
-            byte data[] = new byte[256];
-            do {
-                count = input.read(data);
-                if (count == -1) {
-                    break;
+                    byte data[] = new byte[256];
+                    do {
+                        count = input.read(data);
+                        if (count == -1) {
+                            break;
+                        }
+                        output.write(data, 0, count);
+                    } while (true);
+                    // flushing output
+                    output.flush();
+
+                    // closing streams
+                    output.close();
+                    input.close();
+
+                } catch (Exception e) {
+                    LogUtil.i(e.toString());
                 }
-                output.write(data, 0, count);
-            } while (true);
-            // flushing output
-            output.flush();
+            }
+        }).start();
 
-            // closing streams
-            output.close();
-            input.close();
-
-        } catch (Exception e) {
-            LogUtil.i(e.toString());
-        }
     }
 }

@@ -39,7 +39,6 @@ public class BinderProxyManager {
             Class localClass = Class.forName("android.os.ServiceManager");
             Method getService = localClass.getMethod("getService", new Class[]{String.class});
             if (getService != null) {
-                LogUtil.d("getService method ready:" + getService);
                 try {
                     Object result = getService.invoke(localClass, new Object[]{DESCRIPTOR});
                     if (result != null) {
@@ -47,13 +46,13 @@ public class BinderProxyManager {
                         // NEED TO CAST THE BINDER TO THE PROPER TYPE OF THE SERVICE YOU USE.
                         return (IBinder) result;
                     } else {
-                        LogUtil.d("Can not get Binder: " + result);
+                        LogUtil.e("Can not get Binder: " + result);
                     }
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
                 }
             } else {
-                LogUtil.d("Can not get method");
+                LogUtil.e("Can not get method for binder");
                 return null;
             }
         } catch (ClassNotFoundException | NoSuchMethodException e) {

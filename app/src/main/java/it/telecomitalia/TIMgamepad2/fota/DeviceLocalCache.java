@@ -21,6 +21,8 @@ public class DeviceLocalCache {
     private static final String CACHED_KEY = "GAMEPADS";
     private static final String DEFAULT_KEY = "empty";
 
+    private static final String FILE_NAME = "GamePads";
+
     private Context mContext;
 
     private DeviceLocalCache() {
@@ -53,18 +55,17 @@ public class DeviceLocalCache {
         LogUtil.d("Create " + devices.size() + " device record");
         Gson gson = new Gson();
         String jsonStr = gson.toJson(devices);
-        SharedPreferenceUtils.clear(mContext);
-        SharedPreferenceUtils.put(mContext, CACHED_KEY, jsonStr);
+        SharedPreferenceUtils.clear(FILE_NAME, mContext);
+        SharedPreferenceUtils.put(FILE_NAME, mContext, CACHED_KEY, jsonStr);
         LogUtil.d("Device cached:" + jsonStr);
     }
 
     public synchronized void clear() {
-        SharedPreferenceUtils.clear(mContext);
+        SharedPreferenceUtils.clear(FILE_NAME, mContext);
     }
 
     public synchronized void restore(List<DeviceModel> list) {
-        LogUtil.d("Gamepad: " + list.size());
-        String str = (String) SharedPreferenceUtils.get(mContext, CACHED_KEY, DEFAULT_KEY);
+        String str = (String) SharedPreferenceUtils.get(FILE_NAME, mContext, CACHED_KEY, DEFAULT_KEY);
         if (str.equals(DEFAULT_KEY)) {
             LogUtil.d("No existed device info, Now init: " + str);
             for (DeviceModel gamepad : list) {

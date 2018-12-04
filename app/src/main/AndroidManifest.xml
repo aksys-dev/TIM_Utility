@@ -4,10 +4,9 @@
     package="it.telecomitalia.TIMgamepad2"
     android:sharedUserId="android.uid.system">
 
-    <!--<uses-sdk android:minSdkVersion="15" />
-    android:sharedUserId="android.uid.system"
-     -->
+    <!--<uses-sdk android:minSdkVersion="15"
 
+    />-->
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -43,13 +42,11 @@
             android:name=".activity.DialogActivity"
             android:launchMode="singleTask"
             android:theme="@style/MyDialog" />
-
         <activity
             android:name=".activity.UpgradeUIActivity"
             android:launchMode="singleTask" />
         <activity android:name=".activity.FotaMainActivity" />
         <activity android:name=".activity.BackDoor" />
-
 
         <receiver android:name=".service.UpdatePowerOnReceiver">
             <intent-filter>

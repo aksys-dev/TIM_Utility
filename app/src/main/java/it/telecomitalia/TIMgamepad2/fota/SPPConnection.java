@@ -78,7 +78,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private BlueToothConnThread mConnectionThread;
     private DeviceModel mInfo;
     private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
-    private ProxyManager mProxyManager = ProxyManager.getInstance();
+    private ProxyManager mProxyManager;// = ProxyManager.getInstance();
     private String mFirmwareVersion = UNKNOWN;
     private int mBatteryVolt = -1;
     private GamePadListener mGamepadListener;
@@ -88,10 +88,12 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private float sentDataSize = 0;
 
     SPPConnection(DeviceModel info, GamePadListener listener) {
-        LogUtil.d("SPPConnection : " + info.getDevice().getName());
         mConnectionThread = new BlueToothConnThread(info, this, this);
         mInfo = info;
         mGamepadListener = listener;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
+            mProxyManager = ProxyManager.getInstance();
+        }
     }
 
     private static int combineHighAndLowByte(byte high, byte low) {
@@ -163,7 +165,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         byte[] firmware = data.clone();
         return sendData(firmware);
     }
-
 
     public void vibrator(int left, int right) {
 
