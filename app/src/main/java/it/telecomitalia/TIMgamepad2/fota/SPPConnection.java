@@ -22,7 +22,6 @@ import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_FAILURE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_SUCCESS;
-import static it.telecomitalia.TIMgamepad2.utils.CommerHelper.HexToString;
 
 
 /**
@@ -56,7 +55,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_PARTITION_VERIFY_FAIL = (byte) 0x94;
     public static final byte CMD_PARTITION_VERIFY_SUCCESS = (byte) 0x95;
     public static final byte CMD_OTA_WRITTEN_BYTES = (byte) 0x96;
-    public static final byte CMD_OTA_DATA_RECEVIED = (byte) 0x97;
+    public static final byte CMD_OTA_DATA_RECEIVED = (byte) 0x97;
     //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
     public static final byte CMD_ERROR_HEADER = (byte) 0x98;
     private static final int CMD_HEADER = 0;
@@ -74,6 +73,9 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private static final int INDEX_DATA_START = 3;
     private static final String UNKNOWN = "unknown";
     private final static float TOTAL_SIZE = 91374;
+    private static final int interval = 200; //(4s)50Hz = 1 second
+    private static final int IMUMonitorInterval = 2000;
+    private static int interval_counter = 0;
     private boolean checked = false;
     private BlueToothConnThread mConnectionThread;
     private DeviceModel mInfo;
@@ -86,6 +88,10 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private Handler mHandler;
     private int retries = 0;
     private float sentDataSize = 0;
+    private int mIMUTimeoutCounter = 0;
+    private volatile boolean mIMUTimeout = false;
+    private volatile boolean monitoring = true;
+    private IMUStatusCheckThread imuStatusCheckThread;//= new IMUStatusCheckThread();
 
     SPPConnection(DeviceModel info, GamePadListener listener) {
         mConnectionThread = new BlueToothConnThread(info, this, this);
@@ -107,6 +113,17 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public void stop() {
         mConnectionThread.cancel();
         mConnectionThread = null;
+        monitoring = false;
+        imuStatusCheckThread.interrupt();
+    }
+
+    private void recoverySPPConnection() {
+        LogUtil.d("Do recovery");
+        SystemClock.sleep(500);
+        mConnectionThread.cancel();
+        mConnectionThread = null;
+        mConnectionThread = new BlueToothConnThread(mInfo, this, this);
+        mConnectionThread.start();
     }
 
     public String getDeviceFirmwareVersion() {
@@ -144,14 +161,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         LogUtil.i("SPP Send: " + cmd);
         mConnectionThread.write(cmd);
     }
-
-//    public void setVibration(int states) {
-//        if (states == 0) {
-//            mConnectionThread.write(CMD_MOTOR_OFF);
-//        } else {
-//            mConnectionThread.write(CMD_MOTOR_ON);
-//        }
-//    }
 
     public void setWorkMode(byte workMode) {
         mConnectionThread.write(workMode);
@@ -205,7 +214,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 if (handler != null)
                     handler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
             }
-            LogUtil.d("Data send finished");
+            LogUtil.d("Data finished");
             fileInputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -218,22 +227,38 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
 
     @Override
-    public void onConnectionReady(boolean b) {
-        if (mConnectionThread != null) {
+    public void onConnectionReady(boolean connected) {
+        LogUtil.i("onConnectionReady(" + connected + ")");
+        if (connected && mConnectionThread != null) {
             mConnectionThread.startSPPDataListener();
+            mIMUTimeout = false;
+            if (mInfo.getIndicator() == 0) {
+                monitoring = false;
+                imuStatusCheckThread = null;
+                SystemClock.sleep(IMUMonitorInterval+200);
+                monitoring = true;
+                imuStatusCheckThread = new IMUStatusCheckThread();
+                imuStatusCheckThread.start();
+            }
             mConnectionThread.write(CMD_UPGRADE_SUCCESS);
-            SystemClock.sleep(200);
-            setGamePadLedIndicator();
             SystemClock.sleep(200);
             setGamePadLedIndicator();
             SystemClock.sleep(200);
             queryFirmwareVersion();
             SystemClock.sleep(200);
             queryBatteryLevel();
-        } else {
-            mGamepadListener.onSetupSuccessfully(false, mInfo.getDevice());
-        }
 
+        } else {
+            mGamepadListener.onSetupStatusChanged(false, mInfo.getDevice());
+            monitoring = false;
+        }
+    }
+
+    @Override
+    public void onConnectionException(Exception e) {
+        LogUtil.w("SPP connection exception: " + e.getMessage());
+        LogUtil.i("Recovery the SPP connection");
+        recoverySPPConnection();
     }
 
     private void queryFirmwareVersion() {
@@ -246,6 +271,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
     @Override
     public void onDataArrived(byte[] data, int size) {
+        //LogUtil.d("FrameHeader: [" + HexToString(data[INDEX_CMD]) + "]");
         switch (data[INDEX_CMD]) {
             case CMD_ENABLE_IMU:
                 LogUtil.d("CMD_ENABLE_IMU");
@@ -280,19 +306,15 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             case CMD_ENABLE_UPDATE_MODE:
                 LogUtil.d("CMD_ENABLE_UPDATE_MODE");
                 sentDataSize = 0;
-//                mGamepadListener.onUpgradeMode(true, mInfo.getDevice());
                 break;
             case CMD_DISABLE_UPDATE_MODE:
                 LogUtil.d("CMD_DISABLE_UPDATE_MODE");
-//                mGamepadListener.onUpgradeMode(false, mInfo.getDevice());
                 break;
             case CMD_UPGRADE_SUCCESS:
                 LogUtil.d("CMD_UPGRADE_SUCCESS");
-//                EventBus.getDefault().post(new FotaEvent(CMD_UPGRADE_SUCCESS, mInfo.getDevice()));
                 break;
             case CMD_UPGRADE_FAILED:
                 LogUtil.d("CMD_UPGRADE_FAILED");
-//                EventBus.getDefault().post(new FotaEvent(CMD_UPGRADE_FAILED, mInfo.getDevice()));
                 break;
             case CMD_MOTOR_ON:
                 LogUtil.d("CMD_MOTOR_ON");
@@ -304,20 +326,25 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 mBatteryVolt = combineHighAndLowByte(data[INDEX_DATA_START], data[INDEX_DATA_START + 1]);
                 LogUtil.d("BatteryVolt: " + mBatteryVolt);
                 mInfo.setBatteryVolt(mBatteryVolt);
-                mGamepadListener.onSetupSuccessfully(true, mInfo.getDevice());
                 //Enable IMU if android 7 or higher version
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || BuildConfig.ANDROID_7_SUPPORT_IMU) {
-                    setGamePadIMU();
+                if (!checked) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || BuildConfig.ANDROID_7_SUPPORT_IMU) {
+                        setGamePadIMU();
+                    }
+                    mGamepadListener.onSetupStatusChanged(true, mInfo.getDevice());
+                    checked = true;
                 }
                 break;
             case DATA_IMU_HEADER_PREFIX:
                 if (data[1] == DATA_IMU_HEADER && size == IMU_FRAME_SIZE) {
+                    mIMUTimeoutCounter++;
                     //Use binder instead of socket on android 8 or higher version
                     byte[] event = new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17]};
-                    if (!checked) {
-                        checked = true;
-                        LogUtil.d("First frame: " + HexToString(event));
-                    }
+//                    if (interval_counter % interval == 0) {
+//                        LogUtil.d("Frames from GP: " + HexToString(event));
+//                        interval_counter = 1;
+//                    }
+//                    interval_counter++;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         mBinderProxy.send(event);
                     } else {
@@ -343,7 +370,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                     LogUtil.d("CMD_OTA_WRITTEN_BYTES: percent = " + percent);
                 }
                 break;
-            case CMD_OTA_DATA_RECEVIED:
+            case CMD_OTA_DATA_RECEIVED:
                 LogUtil.d("CMD_OTA_END_TAG");
                 break;
             case CMD_ERROR_HEADER:
@@ -357,7 +384,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
         }
     }
-
 
     public static class ReceivedData {
         public byte mCmd;
@@ -376,6 +402,29 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             builder.append("CMD : " + mCmd).append("\n");
             builder.append("RESULT : " + mResult);
             return builder.toString();
+        }
+    }
+
+    private class IMUStatusCheckThread extends Thread {
+        @Override
+        public void run() {
+            while (monitoring) {
+                SystemClock.sleep(IMUMonitorInterval);
+                if (!mIMUTimeout) {
+                    LogUtil.d("IMU fresh rate:" + mIMUTimeoutCounter / 2+" Hz");
+                    if (mIMUTimeoutCounter < 10) {
+                        mIMUTimeoutCounter = 0;
+                        mIMUTimeout = true;
+                        LogUtil.w("Lack of IMU events:(" + mIMUTimeoutCounter + "), Restart monitor...");
+                        onConnectionException(new Exception("IMU Time Out"));
+                        break;
+                    }
+                } else {
+                    LogUtil.d("Waiting for the IMU data recovery");
+                }
+                mIMUTimeoutCounter = 0;
+            }
+            super.run();
         }
     }
 }

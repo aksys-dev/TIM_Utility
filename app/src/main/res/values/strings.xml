@@ -115,4 +115,5 @@
     <string name="upgrading_connection_timeout">La richiesta di aggiornamento è scaduta, riprova più tardi.</string>
     <string name="dailog_tips">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare.</string>
     <string name="utility_service_restarting">"Connecting&#8230;"</string>
+    <string name="gamepad_service_running">The TIM Gamepad service is running</string>
 </resources>

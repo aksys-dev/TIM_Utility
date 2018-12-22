@@ -6,4 +6,5 @@ package it.telecomitalia.TIMgamepad2.fota;
 
 public interface ConnectionReadyListener {
     void onConnectionReady(boolean ready);
+    void onConnectionException(Exception e);
 }

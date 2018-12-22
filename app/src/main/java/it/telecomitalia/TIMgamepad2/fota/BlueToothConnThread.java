@@ -27,15 +27,15 @@ public class BlueToothConnThread extends Thread {
     private static final int STREAM_BUSY = 1;
     private static final int STREAM_FAILED = 2;
     private static final int STREAM_INITIATED = 3;
+    private static final int SPP_RETRY_TIMES = 10;
     private DeviceModel mDeviceInfo;
     private BluetoothSocket mSocket = null;
     private InputStream mIS = null;
     private OutputStream mOS = null;
-    private boolean sppRunning = false;
+    private volatile boolean sppRunning = false;
     private int mStreamReady = STREAM_UNINITIATED; //-1=uninitialized,  0=ready , 1=busy, 2=failed
     private SPPDataListener mCb;
     private ConnectionReadyListener mListener;
-
     private Thread SPPDataThread = new Thread(new Runnable() {
 
         @Override
@@ -52,7 +52,10 @@ public class BlueToothConnThread extends Thread {
                         mCb.onDataArrived(recv, bytes);
                     }
                 } catch (IOException e) {
-                    LogUtil.e("disconnected\n", e.toString());
+                    LogUtil.e("SPP disconnected" + e.toString());
+                    if (mListener != null) {
+                        mListener.onConnectionException(e);
+                    }
                     break;
                 }
             }
@@ -63,46 +66,14 @@ public class BlueToothConnThread extends Thread {
         mDeviceInfo = info;
         mListener = listener;
         setName("BTConnThread-" + info.getIndicator());
-//        LogUtil.d("" + getName() + " ");
         mCb = cb;
     }
 
     @Override
     public void run() {
         mStreamReady = STREAM_BUSY;
-//        LogUtil.d("" + getName() + " ");
-
+        int retries = 0;
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-/*
-        BluetoothDevice device = btAdapter.getRemoteDevice(btdevaddr);
-
-        UUID SERIAL_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); // bluetooth serial port service
-        //UUID SERIAL_UUID = device.getUuids()[0].getUuid(); //if you don't know the UUID of the bluetooth device service, you can get it like this from android cache
-
-        BluetoothSocket socket = null;
-
-        try {
-            socket = device.createRfcommSocketToServiceRecord(SERIAL_UUID);
-        } catch (Exception e) {Log.e("","Error creating socket");}
-
-        try {
-            socket.connect();
-            Log.e("","Connected");
-        } catch (IOException e) {
-            Log.e("",e.getMessage());
-            try {
-                Log.e("","trying fallback...");
-
-                socket =(BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[] {int.class}).invoke(device,1);
-                socket.connect();
-
-                Log.e("","Connected");
-            }
-            catch (Exception e2) {
-                Log.e("", "Couldn't establish Bluetooth connection!");
-            }
-        }
-*/
         do {
             try {
                 // This is a blocking call and will only return on a
@@ -114,33 +85,19 @@ public class BlueToothConnThread extends Thread {
                     mSocket = mDeviceInfo.getDevice().createRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
                 }
             } catch (IOException e) {
-                LogUtil.e("Error when create socketed");
+                LogUtil.e("Error when create socket");
             }
             try {
                 mSocket.connect();
-                LogUtil.d("SPP socketed Connected");
+                LogUtil.d("SPP socket Connected");
                 mStreamReady = STREAM_INITIATED;
             } catch (IOException e) {
-                LogUtil.e("unable to connect() socket, trying fallback...\n" + e.getMessage());
-                // Close the socket
-//                try {
-//                    if (mSocket != null) {
-//                        mSocket.close();
-//                        mSocket = null;
-//                    }
-//                    Thread.sleep(500);
-//                } catch (IOException | InterruptedException e1) {
-//                    LogUtil.e("unable to close() socket, ignore\n" + e1.getMessage());
-//                }
-//
-//                mStreamReady = STREAM_FAILED;
-//                continue;
-
+                LogUtil.e("unable to connect() socket, trying fallback...(" + e + ")");
                 try {
                     mSocket = (BluetoothSocket) mDeviceInfo.getDevice().getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(mDeviceInfo.getDevice(), 1);
                     mSocket.connect();
 
-                    LogUtil.d("SPP socketed Connected");
+                    LogUtil.d("SPP socket Connected");
                     mStreamReady = STREAM_INITIATED;
                 } catch (NoSuchMethodException | IOException | InvocationTargetException | IllegalAccessException e1) {
                     LogUtil.e("Connecting failed: " + e1);
@@ -151,15 +108,20 @@ public class BlueToothConnThread extends Thread {
                         } catch (IOException e2) {
                             LogUtil.e(e2.toString());
                         }
-
                         mSocket = null;
                     }
-                    SystemClock.sleep(1000);
+                    if (retries < SPP_RETRY_TIMES) {
+                        SystemClock.sleep(1000);
+                        retries++;
+                    } else {
+                        //Build SPP failed
+                        LogUtil.w("Build SPP connection retry: " + SPP_RETRY_TIMES + " times, Abort");
+                        mListener.onConnectionReady(false);
+                        return;
+                    }
                 }
             }
-
         } while (mStreamReady != STREAM_INITIATED);
-
         // Get the BluetoothSocket input and output streams
         try {
 //            LogUtil.d("Getting input and output streaming");
@@ -177,10 +139,11 @@ public class BlueToothConnThread extends Thread {
 
     public void startSPPDataListener() {
         sppRunning = true;
+        SystemClock.sleep(500);
         SPPDataThread.start();
     }
 
-    public void stopSPPDataListener() {
+    private void stopSPPDataListener() {
         sppRunning = false;
     }
 

@@ -26,28 +26,23 @@ import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
  */
 
 public class BluetoothDeviceManager {
-    private static final String TAG = "BluetoothDeviceManager";
-    private static final String GAMEPAD_NAME_RELEASE = "TIMGamepad";
     public static final String EVENTBUS_MSG_QUERY_END = "QueryDeviceEnd";
     public static final String EVENTBUS_MSG_NEED_UPGRADE = "NeedUpgrade";
     public static final String EVENTBUS_MSG_UPGRADE_SUCCESS = "UpgradeSuccess";
     public static final String EVENTBUS_MSG_STAUS_CHANGED = "status_changed";
-
     public static final String GAMEPAD_DEVICE_CONNECTED = "GAMEPAD_DEVICE_CONNECTED";
     public static final String GAMEPAD_DEVICE_DISCONNECTED = "GAMEPAD_DEVICE_DISCONNECTED";
-
+    private static final String TAG = "BluetoothDeviceManager";
+    private static final String GAMEPAD_NAME_RELEASE = "TIMGamepad";
+    private static final int GP_SUPPORTED_MAX_NUM = 4;
+    private static final int DEFAULT_IMU_DEVICE_INDEX = 0;
     private static BluetoothDeviceManager mDeviceManager;
     private static volatile boolean mInitialized = false;
     private Hashtable<String, DeviceModel> mGamePadMap = new Hashtable<>(4);
     private UpgradeManager mUpgradeManager;
     private int mTargetDeviceCount = 0;
     private List<DeviceModel> mDevices;
-
     private Context mContext;
-
-    private static final int GP_SUPPORTED_MAX_NUM = 4;
-    private static final int DEFAULT_IMU_DEVICE_INDEX = 0;
-
 
 
 //    public static BluetoothDeviceManager getDeviceManager() {
@@ -57,6 +52,7 @@ public class BluetoothDeviceManager {
 //        }
 //        return mDeviceManager;
 //    }
+    private BluetoothAdapter _bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
     private BluetoothDeviceManager() {
 //        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -69,20 +65,6 @@ public class BluetoothDeviceManager {
 //        LogUtil.d("The instance is: " + temp);
         return temp;
     }
-
-    private enum BluetoothDeviceManagerSingleton {
-        INSTANCE;
-        private BluetoothDeviceManager mManager;
-
-        BluetoothDeviceManagerSingleton() {
-            mManager = new BluetoothDeviceManager();
-        }
-
-        public BluetoothDeviceManager getInstance() {
-            return mManager;
-        }
-    }
-
 
     public boolean isInitialized() {
         return mInitialized;
@@ -176,8 +158,7 @@ public class BluetoothDeviceManager {
         LogUtil.l();
         if (invalidGamePad(device)) {
             LogUtil.e("Not valid tim game pad, Abort");
-            listener.onSetupSuccessfully(false, device);
-
+            listener.onSetupStatusChanged(false, device);
             return;
         }
 
@@ -391,8 +372,6 @@ public class BluetoothDeviceManager {
         return false;
     }
 
-    private BluetoothAdapter _bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
     public boolean isConnected(BluetoothDevice device) {
 
         Class<BluetoothAdapter> bluetoothAdapterClass = BluetoothAdapter.class;//得到BluetoothAdapter的Class对象
@@ -430,5 +409,18 @@ public class BluetoothDeviceManager {
     public void generateException() {
         List<String> inits = new ArrayList<>(1);
         LogUtil.d("" + inits.get(2));
+    }
+
+    private enum BluetoothDeviceManagerSingleton {
+        INSTANCE;
+        private BluetoothDeviceManager mManager;
+
+        BluetoothDeviceManagerSingleton() {
+            mManager = new BluetoothDeviceManager();
+        }
+
+        public BluetoothDeviceManager getInstance() {
+            return mManager;
+        }
     }
 }

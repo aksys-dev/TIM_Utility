@@ -22,7 +22,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 26
         versionCode 26
-        versionName "0.10.6"
+        versionName "0.11.9-beta"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField 'boolean', 'ANDROID_7_SUPPORT_IMU', 'true'
         buildConfigField "String", "BUILD_TIME", "\"${buildTime}\""

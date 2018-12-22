@@ -60,7 +60,7 @@ public class LogUtil {
 
     public static void w(String msg) {
         if (DEBUG) {
-            Log.w(_FILE_(), "[" + getLineMethod() + "]" + msg);
+            Log.w(TAG, getFileLineMethod() + msg);
         }
     }
 

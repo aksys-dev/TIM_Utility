@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 
 
+import java.util.HashSet;
 import java.util.Set;
 
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
@@ -34,7 +35,7 @@ public class AttachDevice {
             for (BluetoothDevice device : pairedDevices) {
                 // Add the name and address to an array adapter to show in a ListView
                 if (device.getName().contains(GAMEPAD_NAME_RELEASE)) {
-                    LogUtil.d(TAG, "Target device attached : " + device.getName());
+                    LogUtil.d( "Target device attached : " + device.getName());
                     intent.putExtra(EXTRA_DEVICE_ADDRESS, device.getAddress());
                     return intent;
                 }
@@ -54,10 +55,30 @@ public class AttachDevice {
                 // Add the name and address to an array adapter to show in a ListView
                 if (device.getName().contains(GAMEPAD_NAME_RELEASE)) {
                     number +=1;
-                    Log.d(TAG, "Target device found, Total="+number);
+                    LogUtil.d("Target device found, Total="+number);
                 }
             }
         }
         return number;
+    }
+
+    public static Set<BluetoothDevice> getConnectedTargetDevice() {
+        Set<BluetoothDevice> pairedDevices = mBtAdapter.getBondedDevices();
+        Set<BluetoothDevice> targetDevices = new HashSet<>();
+        if (pairedDevices.size() > 0) {
+            // Loop through paired devices and find all all the connected device that we specified
+            for (BluetoothDevice device : pairedDevices) {
+                // Add the name and address to an array adapter to show in a ListView
+                if (device.getName().contains(GAMEPAD_NAME_RELEASE)) {
+                    LogUtil.d("Target device found: "+device.getName()+"/"+device.getAddress());
+                    targetDevices.add(device);
+                }
+            }
+        }
+        if (targetDevices.size() != 0) {
+            return targetDevices;
+        } else {
+            return null;
+        }
     }
 }
