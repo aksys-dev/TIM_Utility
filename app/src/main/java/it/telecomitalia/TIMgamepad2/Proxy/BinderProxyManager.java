@@ -13,6 +13,7 @@ public class BinderProxyManager {
 
     private static final java.lang.String DESCRIPTOR = "SensorData";
     private static final int INJECT = android.os.IBinder.FIRST_CALL_TRANSACTION;
+    private static final int SET_SENSITIVITY = android.os.IBinder.FIRST_CALL_TRANSACTION+1;
 
     private IBinder mServiceBinder;
 
@@ -25,12 +26,15 @@ public class BinderProxyManager {
         return BinderProxyManagerSingleton.INSTANCE.getInstance();
     }
 
-
     public void send(byte[] data) {
         if (mServiceBinder != null) {
             inject(mServiceBinder, data);
-        } else {
-           // LogUtil.e("Proxy service not ready, Please try it later...");
+        }
+    }
+
+    public void setSensitivity(float value) {
+        if (mServiceBinder != null) {
+            setSensitivityValue(mServiceBinder, value);
         }
     }
 
@@ -73,6 +77,25 @@ public class BinderProxyManager {
             _reply.readException();
             _reply.readInt();
 
+
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            _reply.recycle();
+            _data.recycle();
+        }
+    }
+
+    private void setSensitivityValue(IBinder b, float senstivity) {
+        Parcel _data = Parcel.obtain();
+        Parcel _reply = Parcel.obtain();
+        try {
+            _data.writeInterfaceToken(DESCRIPTOR);
+            _data.writeFloat(senstivity);
+
+            b.transact(SET_SENSITIVITY, _data, _reply, IBinder.FLAG_ONEWAY);
+//            _reply.readException();
 
         } catch (RemoteException e) {
             // TODO Auto-generated catch block

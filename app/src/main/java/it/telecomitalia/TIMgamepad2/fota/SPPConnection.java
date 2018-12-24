@@ -17,6 +17,7 @@ import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
+import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_CONNECTION_ERROR;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
@@ -98,6 +99,10 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mInfo = info;
         mGamepadListener = listener;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
+            mProxyManager = ProxyManager.getInstance();
+        }
+
+        if (TEST_A7_ON_A8) {
             mProxyManager = ProxyManager.getInstance();
         }
     }
@@ -234,8 +239,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             mIMUTimeout = false;
             if (mInfo.getIndicator() == 0) {
                 monitoring = false;
-                imuStatusCheckThread = null;
-                SystemClock.sleep(IMUMonitorInterval+200);
+                if (imuStatusCheckThread != null) {
+                    SystemClock.sleep(IMUMonitorInterval + 200);
+                    imuStatusCheckThread.stop();
+                    imuStatusCheckThread = null;
+                }
                 monitoring = true;
                 imuStatusCheckThread = new IMUStatusCheckThread();
                 imuStatusCheckThread.start();
@@ -351,6 +359,9 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                         if (BuildConfig.ANDROID_7_SUPPORT_IMU)
                             mProxyManager.send(event);
                     }
+                    if(TEST_A7_ON_A8) {
+                        mProxyManager.send(event);
+                    }
                 }
                 break;
             case CMD_PARTITION_VERIFY_FAIL:
@@ -411,7 +422,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             while (monitoring) {
                 SystemClock.sleep(IMUMonitorInterval);
                 if (!mIMUTimeout) {
-                    LogUtil.d("IMU fresh rate:" + mIMUTimeoutCounter / 2+" Hz");
+                    LogUtil.d("IMU fresh rate:" + mIMUTimeoutCounter / 2 + " Hz");
                     if (mIMUTimeoutCounter < 10) {
                         mIMUTimeoutCounter = 0;
                         mIMUTimeout = true;

@@ -22,10 +22,15 @@ android {
         minSdkVersion 24
         targetSdkVersion 26
         versionCode 26
-        versionName "0.11.9-beta"
+        versionName "0.11.10"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField 'boolean', 'ANDROID_7_SUPPORT_IMU', 'true'
+        buildConfigField 'boolean', 'TEST_A7_ON_A8', 'false'
         buildConfigField "String", "BUILD_TIME", "\"${buildTime}\""
+        buildConfigField "String", "CONFIG_FILE_NAME", "\"CONFIG\""
+        buildConfigField "String", "KEY_SENSITIVE", "\"sensitivity\""
+        buildConfigField "String", "KEY_CALIBRATION", "\"calibration\""
+
     }
 
     buildTypes {

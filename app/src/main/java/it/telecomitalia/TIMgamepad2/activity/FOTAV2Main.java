@@ -38,6 +38,8 @@ import java.util.List;
 import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.GamepadListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadVO;
+import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
+import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
@@ -46,6 +48,10 @@ import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
+import static it.telecomitalia.TIMgamepad2.BuildConfig.CONFIG_FILE_NAME;
+import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_CALIBRATION;
+import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_SENSITIVE;
+import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
@@ -57,64 +63,56 @@ import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
 public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
 
-    private static final String CONFIG_FILE_NAME = "CONFIG";
-    private static final String KEY_SENSITIVE = "sensitivity";
     private static final float SENSITIVE_DEFAULT = 1.0f;
-    private static final String KEY_CALIBRATION = "calibration";
-    private static final boolean CALIBRATION_DEFAULT = true;
+    private static final boolean CALIBRATION_DEFAULT = false;
 
     ConstraintLayout MainTitle, IMUSensorTitle;
-
-    private Context mContext;
-
     ConstraintLayout menulist;
     ListView menulistView;
-
     FrameLayout gamepadView;
     ListView gamepadList2;
     LinearLayout imuoptionLists;
     ConstraintLayout aboutLists;
-
     ArrayList<GamepadVO> datas;
-
     SeekBar seekBarSensitivity;
     TextView textSeekBarValue;
     float sensitivityValue = 1.00F;
     boolean calibrationEnabled = true;
     Switch calibration;
-
-    private UpgradeManager mUpgradeManager;
-    private BluetoothDeviceManager mGamePadDeviceManager;
-
     //	FrameLayout frame_newVersion;
     TextView currentVersion, updateVersion;
     TextView lastUpdateDay;
-
     TextView activityTitle;
-
+    private Context mContext;
+    private UpgradeManager mUpgradeManager;
+    private BluetoothDeviceManager mGamePadDeviceManager;
     private BluetoothDeviceManager mDeviceManager;
+
+    private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
+    private ProxyManager mProxyManager;// = ProxyManager.getInstance();
 
     private MagicKey[] mMagicKeys = new MagicKey[]{new MagicKey(102, 0), new MagicKey(103, 1), new MagicKey(21, 2), new MagicKey(19, 3), new MagicKey(20, 4), new MagicKey(22, 5),};
 
     private int mMagicIndex = 0;
-
-    private class MagicKey {
-        private int mKeyCode;
-        private int mIndex;
-
-        MagicKey(int keyCode, int index) {
-            this.mKeyCode = keyCode;
-            this.mIndex = index;
+    private GamepadListAdapter adapter;
+    private String targetDeviceMac = "none";
+    private ListView.OnItemClickListener mGamepadListListener = new ListView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            showGamepadsInfo(position);
         }
-
-        int getKeyCode() {
-            return mKeyCode;
+    };
+    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action != null) {
+                if (action.equals(GAMEPAD_DEVICE_CONNECTED) || action.equals(GAMEPAD_DEVICE_DISCONNECTED)) {
+                    gotoGamepadsListView(false);
+                }
+            }
         }
-
-        int getIndex() {
-            return mIndex;
-        }
-    }
+    };
 
     private IntentFilter makeFilter() {
         IntentFilter intentFilter = new IntentFilter();
@@ -166,6 +164,16 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
                 sensitivityValue = (float) ((progress) / 100.0);
                 textSeekBarValue.setText(String.valueOf(sensitivityValue));
                 SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, sensitivityValue);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    mBinderProxy.setSensitivity(sensitivityValue);
+                } else {
+                    if (BuildConfig.ANDROID_7_SUPPORT_IMU)
+                        mProxyManager.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
+                }
+
+                if (TEST_A7_ON_A8) {
+                    mProxyManager.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
+                }
             }
 
             @Override
@@ -185,18 +193,6 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         super.onPause();
         unregisterReceiver(mReceiver);
     }
-
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action != null) {
-                if (action.equals(GAMEPAD_DEVICE_CONNECTED) || action.equals(GAMEPAD_DEVICE_DISCONNECTED)) {
-                    gotoGamepadsListView(false);
-                }
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -262,6 +258,14 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
                 gotoGamepadsListView(true);
             }
         }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
+            mProxyManager = ProxyManager.getInstance();
+        }
+
+        if(TEST_A7_ON_A8) {
+            mProxyManager = ProxyManager.getInstance();
+        }
     }
 
     private void gotoGamepadsListView(boolean directly) {
@@ -307,7 +311,6 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         menulistView.setAdapter(adapter);
     }
 
-
     public void SetupGamePadList() {
         GamepadVO g;
         int list = 0;
@@ -333,8 +336,6 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
             }
         }
     }
-
-    private GamepadListAdapter adapter;
 
     public void RefreshGamePadList() {
         adapter = new GamepadListAdapter(this, R.layout.gamepad_info, datas);
@@ -362,7 +363,6 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
-
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -413,13 +413,6 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         activityTitle.setText(R.string.menu_about);
     }
 
-    private ListView.OnItemClickListener mGamepadListListener = new ListView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-            showGamepadsInfo(position);
-        }
-    };
-
     private void showGamepadsInfo(int position) {
         List<DeviceModel> models = mDeviceManager.getBondedDevices();
         if (models != null && models.size() != 0 && mUpgradeManager != null) {
@@ -451,8 +444,6 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
             }
         }
     }
-
-    private String targetDeviceMac = "none";
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void getEvent(final Object object) {
@@ -502,5 +493,23 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
                 break;
         }
         return super.dispatchKeyEvent(event);
+    }
+
+    private class MagicKey {
+        private int mKeyCode;
+        private int mIndex;
+
+        MagicKey(int keyCode, int index) {
+            this.mKeyCode = keyCode;
+            this.mIndex = index;
+        }
+
+        int getKeyCode() {
+            return mKeyCode;
+        }
+
+        int getIndex() {
+            return mIndex;
+        }
     }
 }

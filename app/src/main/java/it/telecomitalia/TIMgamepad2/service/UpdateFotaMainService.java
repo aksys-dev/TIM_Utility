@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.Timer;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
+import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.activity.DialogActivity;
@@ -47,7 +48,11 @@ import it.telecomitalia.TIMgamepad2.model.UpdateModel;
 import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.FileUtils;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
+import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
+import static it.telecomitalia.TIMgamepad2.BuildConfig.CONFIG_FILE_NAME;
+import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_SENSITIVE;
+import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
@@ -275,8 +280,29 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         mContext = this;
 //        restartBTAdapter(mContext);
         //Only use socket on android 7
+
         LogUtil.d("Service running on " + Build.VERSION.SDK_INT);
+        float sensitivityValue = (float)SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, 1.0f);
+        LogUtil.d("Sensor default sensitivity: "+sensitivityValue);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
+            mProxy = ProxyManager.getInstance();
+            checkDriver();
+            if (mProxy!=null) {
+                mProxy.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
+            } else {
+                LogUtil.e("[Socket]Driver not ready, Use default sensitivity");
+            }
+        }
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            BinderProxyManager mgr = BinderProxyManager.getInstance();
+            if (mgr!= null) {
+                mgr.setSensitivity(sensitivityValue);
+            } else {
+                LogUtil.e("[Binder]Driver not ready, Use default sensitivity");
+            }
+        }
+        if (TEST_A7_ON_A8) {
             mProxy = ProxyManager.getInstance();
             checkDriver();
         }

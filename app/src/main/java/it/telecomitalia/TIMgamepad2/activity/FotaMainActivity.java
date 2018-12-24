@@ -71,7 +71,6 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
     private Handler mHandler;
     private BluetoothDeviceManager mGamepadDeviceManager;
     private UpgradeManager mUpgradeManager;
-    private static boolean mAppInit = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
