@@ -53,9 +53,9 @@ public class BlueToothConnThread extends Thread {
                     }
                 } catch (IOException e) {
                     LogUtil.e("SPP disconnected" + e.toString());
-                    if (mListener != null) {
-                        mListener.onConnectionException(e);
-                    }
+//                    if (mListener != null) {
+//                        mListener.onConnectionException(e);
+//                    }
                     break;
                 }
             }
@@ -92,7 +92,7 @@ public class BlueToothConnThread extends Thread {
                 LogUtil.d("SPP socket Connected");
                 mStreamReady = STREAM_INITIATED;
             } catch (IOException e) {
-                LogUtil.e("unable to connect() socket, trying fallback...(" + e + ")");
+                //LogUtil.e("unable to connect() socket, trying fallback...(" + e + ")");
                 try {
                     mSocket = (BluetoothSocket) mDeviceInfo.getDevice().getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(mDeviceInfo.getDevice(), 1);
                     mSocket.connect();
@@ -139,7 +139,6 @@ public class BlueToothConnThread extends Thread {
 
     public void startSPPDataListener() {
         sppRunning = true;
-        SystemClock.sleep(500);
         SPPDataThread.start();
     }
 
@@ -148,18 +147,19 @@ public class BlueToothConnThread extends Thread {
     }
 
     public void cancel() {
+        LogUtil.d("Cancel the SPP connection");
         stopSPPDataListener();
         try {
             if (mIS != null) {
-                LogUtil.d("Close SPP socket input stream");
+//                LogUtil.d("Close SPP socket input stream");
                 mIS.close();
             }
             if (mOS != null) {
-                LogUtil.d("Close SPP socket output stream");
+//                LogUtil.d("Close SPP socket output stream");
                 mOS.close();
             }
             if (mSocket != null) {
-                LogUtil.d("Close SPP socket");
+//                LogUtil.d("Close SPP socket");
                 mSocket.close();
                 mSocket = null;
             }
@@ -180,7 +180,7 @@ public class BlueToothConnThread extends Thread {
      * @param buffer The bytes to write
      */
     public synchronized boolean write(byte[] buffer) {
-        LogUtil.d("Send spp data (" + buffer.length + ") to game pad");
+//        LogUtil.d("Send spp data (" + buffer.length + ") to game pad");
         try {
             if (mOS != null) {
                 mOS.write(buffer);
@@ -196,7 +196,7 @@ public class BlueToothConnThread extends Thread {
 
     public synchronized void write(byte cmd) {
         try {
-            LogUtil.d("Send spp data (" + CommerHelper.HexToString(cmd) + ") to game pad");
+//            LogUtil.d("Send spp data (" + CommerHelper.HexToString(cmd) + ") to game pad");
             if (mOS != null) {
                 mOS.write(cmd);
             } else {

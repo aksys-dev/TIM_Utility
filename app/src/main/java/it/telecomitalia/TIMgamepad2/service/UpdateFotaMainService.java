@@ -147,9 +147,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 //                LogUtil.i("ACTION_FOUND: " + device.getName());
             } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 //指明一个与远程设备建立的低级别（ACL）连接。
-//                LogUtil.d("===============================================BlueTooth Connected");
-                new ConnectedPostThread(device).start();
-
+                LogUtil.d("====ACTION_ACL_CONNECTED: :" + device.getAddress());
             } else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
                 //指明一个为远程设备提出的低级别（ACL）的断开连接请求，并即将断开连接。
                 LogUtil.d("ACTION_ACL_DISCONNECT_REQUESTED: " + device.getName());
@@ -180,6 +178,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                         break;
                     case BluetoothDevice.BOND_BONDED:
                         LogUtil.d("BOND_BONDED: " + device.getName() + " / " + device.getAddress());
+                        new ConnectedPostThread(device).start();
                         break;
                 }
             } else if (action.equals(DIALOG_CANCEL_BROADCAST)) {
@@ -217,6 +216,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     }
 
     private void processConnectedDevice() {
+        LogUtil.d("processConnectedDevice..");
         Set<BluetoothDevice> mConnectedDevice = getConnectedTargetDevice();
         if (mConnectedDevice != null && mConnectedDevice.size() != 0) {
             for (BluetoothDevice device : mConnectedDevice) {
@@ -282,21 +282,22 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         //Only use socket on android 7
 
         LogUtil.d("Service running on " + Build.VERSION.SDK_INT);
-        float sensitivityValue = (float)SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, 1.0f);
-        LogUtil.d("Sensor default sensitivity: "+sensitivityValue);
+        float sensitivityValue = (float) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, 1.0f);
+        LogUtil.d("Sensor default sensitivity: " + sensitivityValue);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
             mProxy = ProxyManager.getInstance();
             checkDriver();
-            if (mProxy!=null) {
-                mProxy.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
+            if (mProxy != null) {
+//                mProxy.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
+                mProxy.setSensitivity((byte) (sensitivityValue * 100));
             } else {
                 LogUtil.e("[Socket]Driver not ready, Use default sensitivity");
             }
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             BinderProxyManager mgr = BinderProxyManager.getInstance();
-            if (mgr!= null) {
+            if (mgr != null) {
                 mgr.setSensitivity(sensitivityValue);
             } else {
                 LogUtil.e("[Binder]Driver not ready, Use default sensitivity");
@@ -407,8 +408,8 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
             intentBroadcast.setAction(GAMEPAD_DEVICE_CONNECTED);
             sendBroadcast(intentBroadcast);
         } else {
-            LogUtil.w("Device (" + device.getName() + " setup failed");
-            gotoGamepadList();
+            LogUtil.w("Device (" + device.getName() + ") setup failed");
+//            gotoGamepadList();
         }
     }
 
@@ -430,8 +431,8 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         @Override
         public void run() {
             while (!mGamepadDeviceManager.isConnected(mDevice)) {
-                LogUtil.d("Waiting for the connection ready retries(" + counter + ")");
-                if (counter++ >= 20) {
+                LogUtil.d("Waiting for the connection ready (" + counter + ") for " + mDevice.getAddress());
+                if (counter++ >= 10) {
                     LogUtil.e("Device(" + mDevice.getAddress() + ") connect timeout, abort.");
                     return;
                 }
@@ -445,7 +446,6 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 
             if (mDevice.getName() != null && mDevice.getName().contains(GAMEPAD_NAME_RELEASE)) {
 //                LogUtil.d("setupDevice on Receiver");
-                //添加一个设备并更新UI
                 mGamepadDeviceManager.notifyConnectedDevice(mDevice, UpdateFotaMainService.this);
 
             }

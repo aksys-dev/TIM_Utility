@@ -5,10 +5,11 @@ public enum CommonEventCode {
     REQ_ENABLE_TIMESTAMP(0x02),
     REQ_DISABLE_TIMESTAMP(0x03),
     REQ_QUERY_TIMESTAMP_STATUS(0x04),
+    REQ_SET_SENSITIVITY(0x07),
 
     RES_ACTIVATED(0x05),
     RES_SERVER_ERROR(0x06),
-    RES_TIMESTAMP_ENABLED(0x07),
+    //    RES_TIMESTAMP_ENABLED(0x07),
     RES_TIMESTAMP_DISABLED(0x08),
 
     REQ_IMU_DATA(0x09),
@@ -38,7 +39,7 @@ public enum CommonEventCode {
             case 0x06:
                 return CommonEventCode.RES_SERVER_ERROR;
             case 0x07:
-                return CommonEventCode.RES_TIMESTAMP_ENABLED;
+                return CommonEventCode.REQ_SET_SENSITIVITY;
             case 0x08:
                 return CommonEventCode.RES_TIMESTAMP_DISABLED;
             case 0x09:
@@ -70,7 +71,7 @@ public enum CommonEventCode {
                 return 0x05;
             case RES_SERVER_ERROR:
                 return 0x06;
-            case RES_TIMESTAMP_ENABLED:
+            case REQ_SET_SENSITIVITY:
                 return 0x07;
             case REQ_IMU_DATA:
                 return 0x09;

@@ -168,11 +168,11 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
                     mBinderProxy.setSensitivity(sensitivityValue);
                 } else {
                     if (BuildConfig.ANDROID_7_SUPPORT_IMU)
-                        mProxyManager.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
+                        mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
                 }
 
                 if (TEST_A7_ON_A8) {
-                    mProxyManager.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
+                    mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
                 }
             }
 

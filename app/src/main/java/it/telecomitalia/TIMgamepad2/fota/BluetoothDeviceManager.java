@@ -185,7 +185,7 @@ public class BluetoothDeviceManager {
                     LogUtil.l();
                     processNewDevice(seat, device, listener);
                 } else {
-                    LogUtil.e("This should never happened, Fault!!!");
+                    LogUtil.e("Abnormal scenario!");
                 }
             }
         }
@@ -226,7 +226,7 @@ public class BluetoothDeviceManager {
             return;
         }
 
-        LogUtil.e("This should never happened, Fault");
+        LogUtil.e("Abnormal scenario!!");
     }
 
     public void notifyUnpairedDevice(BluetoothDevice device) {
@@ -237,7 +237,6 @@ public class BluetoothDeviceManager {
 
         DeviceModel gamepad = getTarget(device.getAddress());
         if (gamepad != null) {
-
             LogUtil.d("GamePad " + gamepad.getIndicator() + "::" + gamepad.getGamePadName() + "::" + gamepad.getMACAddress() + " existed!");
             if (gamepad.getSPPConnection() != null) {
                 gamepad.getSPPConnection().stop();
@@ -251,7 +250,7 @@ public class BluetoothDeviceManager {
             mContext.sendBroadcast(intentBroadcast);
             return;
         }
-        LogUtil.e("This should never happened, Fault");
+        LogUtil.e("Abnormal scenario!");
     }
 
     public boolean isEmpty() {
