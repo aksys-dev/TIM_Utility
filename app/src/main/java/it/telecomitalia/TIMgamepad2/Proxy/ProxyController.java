@@ -44,7 +44,7 @@ public class ProxyController implements ProxyStatusListener {
 
     public CommonEventCode commonSendByte(CommonEventCode reqCode, byte data) {
 //        LogUtil.e("Service ready ? " + serviceReady);
-//        LogUtil.d("Code = "+reqCode.value(reqCode)+"Sensitivity = " + data);
+        LogUtil.d("Code = " + reqCode.value(reqCode) + "Sensitivity = " + data);
         mTransmitter.send(new byte[]{reqCode.value(reqCode), data});
         return CommonEventCode.CODE_OK;
     }

@@ -185,7 +185,7 @@ public class BluetoothDeviceManager {
                     LogUtil.l();
                     processNewDevice(seat, device, listener);
                 } else {
-                    LogUtil.e("Abnormal scenario!");
+                    //LogUtil.e("Abnormal scenario!");
                 }
             }
         }
@@ -226,7 +226,7 @@ public class BluetoothDeviceManager {
             return;
         }
 
-        LogUtil.e("Abnormal scenario!!");
+        //LogUtil.e("Abnormal scenario!!");
     }
 
     public void notifyUnpairedDevice(BluetoothDevice device) {
@@ -250,7 +250,7 @@ public class BluetoothDeviceManager {
             mContext.sendBroadcast(intentBroadcast);
             return;
         }
-        LogUtil.e("Abnormal scenario!");
+        //LogUtil.e("Abnormal scenario!");
     }
 
     public boolean isEmpty() {
@@ -391,7 +391,7 @@ public class BluetoothDeviceManager {
                     boolean isConnected = (boolean) isConnectedMethod.invoke(device, (Object[]) null);
 
                     if (isConnected && device.getAddress().equals(device.getAddress())) {
-                        LogUtil.i("Target connected:" + device.getAddress());
+                        LogUtil.i("Target device connected:" + device.getAddress());
                         return true;
                     } else {
                         LogUtil.d("Device found but not connected ");

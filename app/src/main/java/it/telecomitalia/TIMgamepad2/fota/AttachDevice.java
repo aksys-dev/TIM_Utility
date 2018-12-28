@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -70,7 +71,7 @@ public class AttachDevice {
             for (BluetoothDevice device : pairedDevices) {
                 // Add the name and address to an array adapter to show in a ListView
                 if (device.getName().contains(GAMEPAD_NAME_RELEASE)) {
-                    LogUtil.d("Target device found: "+device.getName()+"/"+device.getAddress());
+//                    LogUtil.d("Target device found: "+device.getName()+"/"+device.getAddress());
                     targetDevices.add(device);
                 }
             }
@@ -80,5 +81,39 @@ public class AttachDevice {
         } else {
             return null;
         }
+    }
+
+    public static boolean isConnected(BluetoothDevice device) {
+
+        Class<BluetoothAdapter> bluetoothAdapterClass = BluetoothAdapter.class;//得到BluetoothAdapter的Class对象
+        try {//得到蓝牙状态的方法
+            Method method = bluetoothAdapterClass.getDeclaredMethod("getConnectionState", (Class[]) null);
+            //打开权限
+            method.setAccessible(true);
+            int state = (int) method.invoke(mBtAdapter, (Object[]) null);
+
+            if (state == BluetoothAdapter.STATE_CONNECTED) {
+
+                Set<BluetoothDevice> devices = mBtAdapter.getBondedDevices();
+
+                if (devices.contains(device)) {
+//                    LogUtil.i("Target device found:" + device.getAddress());
+                    Method isConnectedMethod = BluetoothDevice.class.getDeclaredMethod("isConnected", (Class[]) null);
+                    method.setAccessible(true);
+                    boolean isConnected = (boolean) isConnectedMethod.invoke(device, (Object[]) null);
+
+                    if (isConnected && device.getAddress().equals(device.getAddress())) {
+//                        LogUtil.i("Target connected:" + device.getAddress());
+                        return true;
+                    } else {
+                        LogUtil.d("Device found but not connected ");
+                        return false;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

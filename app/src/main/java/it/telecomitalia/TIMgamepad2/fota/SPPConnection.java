@@ -241,7 +241,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
     @Override
     public void onConnectionReady(boolean connected) {
-        LogUtil.i("onConnectionReady(" + connected + ")");
+//        LogUtil.i("onConnectionReady(" + connected + ")");
         if (connected && mConnectionThread != null) {
             mConnectionThread.startSPPDataListener();
 //            mIMUTimeout = false;
