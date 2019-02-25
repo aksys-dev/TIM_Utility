@@ -22,7 +22,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 26
         versionCode 26
-        versionName "0.11.17"
+        versionName "0.11.18"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField 'boolean', 'ANDROID_7_SUPPORT_IMU', 'true'
         buildConfigField 'boolean', 'TEST_A7_ON_A8', 'false'

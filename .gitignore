@@ -47,5 +47,7 @@ extensions/vp9/src/main/jni/libvpx
 extensions/vp9/src/main/jni/libvpx_android_configs
 extensions/vp9/src/main/jni/libyuv
 
+app/release/output.json
+
 # Opus Extension
 extensions/opus/src/main/jni/libopus
