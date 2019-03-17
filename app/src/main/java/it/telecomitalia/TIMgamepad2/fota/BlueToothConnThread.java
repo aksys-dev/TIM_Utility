@@ -11,7 +11,6 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
-import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 
@@ -89,7 +88,7 @@ public class BlueToothConnThread extends Thread {
             }
             try {
                 mSocket.connect();
-                LogUtil.d("SPP socket Connected");
+//                LogUtil.d("SPP socket Connected");
                 mStreamReady = STREAM_INITIATED;
             } catch (IOException e) {
                 //LogUtil.e("unable to connect() socket, trying fallback...(" + e + ")");
@@ -97,7 +96,7 @@ public class BlueToothConnThread extends Thread {
                     mSocket = (BluetoothSocket) mDeviceInfo.getDevice().getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(mDeviceInfo.getDevice(), 1);
                     mSocket.connect();
 
-                    LogUtil.d("SPP socket Connected");
+//                    LogUtil.d("SPP socket Connected");
                     mStreamReady = STREAM_INITIATED;
                 } catch (NoSuchMethodException | IOException | InvocationTargetException | IllegalAccessException e1) {
                     LogUtil.e("Connecting failed: " + e1);

@@ -16,6 +16,7 @@ import java.util.Set;
 
 import it.telecomitalia.TIMgamepad2.model.FabricModel;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
+import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
@@ -30,8 +31,10 @@ public class BluetoothDeviceManager {
     public static final String EVENTBUS_MSG_NEED_UPGRADE = "NeedUpgrade";
     public static final String EVENTBUS_MSG_UPGRADE_SUCCESS = "UpgradeSuccess";
     public static final String EVENTBUS_MSG_STAUS_CHANGED = "status_changed";
-    public static final String GAMEPAD_DEVICE_CONNECTED = "GAMEPAD_DEVICE_CONNECTED";
-    public static final String GAMEPAD_DEVICE_DISCONNECTED = "GAMEPAD_DEVICE_DISCONNECTED";
+    //    public static final String GAMEPAD_DEVICE_CONNECTED = "android.intent.action.GAMEPAD_DEVICE_CONNECTED";
+//    public static final String GAMEPAD_DEVICE_DISCONNECTED = "android.intent.action.GAMEPAD_DEVICE_DISCONNECTED";
+    public static final String EVENTBUT_MSG_GP_DEVICE_CONNECTED = "TIM.V2.GAMEPAD_DEVICE_CONNECTED";
+    public static final String EVENTBUT_MSG_GP_DEVICE_DISCONNECTED = "TIM.V2.GAMEPAD_DEVICE_DISCONNECTED";
     private static final String TAG = "BluetoothDeviceManager";
     private static final String GAMEPAD_NAME_RELEASE = "TIMGamepad";
     private static final int GP_SUPPORTED_MAX_NUM = 4;
@@ -45,7 +48,7 @@ public class BluetoothDeviceManager {
     private Context mContext;
 
 
-//    public static BluetoothDeviceManager getDeviceManager() {
+    //    public static BluetoothDeviceManager getDeviceManager() {
 //        if (mDeviceManager == null) {
 //            LogUtil.d("Now create new bluetooth device manager");
 //            mDeviceManager = new BluetoothDeviceManager();
@@ -219,10 +222,11 @@ public class BluetoothDeviceManager {
             DeviceLocalCache.getInstance().save(mDevices);
             FabricModel model = gamepad.getFabricModel();
             FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_DISCONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
-            Intent intentBroadcast = new Intent();
-            intentBroadcast.putExtra(INTENT_MAC, gamepad.getMACAddress());
-            intentBroadcast.setAction(GAMEPAD_DEVICE_DISCONNECTED);
-            mContext.sendBroadcast(intentBroadcast);
+//            Intent intentBroadcast = new Intent();
+//            intentBroadcast.putExtra(INTENT_MAC, gamepad.getMACAddress());
+//            intentBroadcast.setAction(GAMEPAD_DEVICE_DISCONNECTED);
+            EventBus.getDefault().post(new GamePadEvent(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED, gamepad.getMACAddress()));
+//            mContext.sendBroadcast(intentBroadcast);
             return;
         }
 
@@ -245,9 +249,10 @@ public class BluetoothDeviceManager {
             DeviceLocalCache.getInstance().save(mDevices);
             FabricModel model = gamepad.getFabricModel();
             FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_UNPAIRED, FabricController.GP_V2_NAME, model.mPreviousVersion);
-            Intent intentBroadcast = new Intent();
-            intentBroadcast.setAction(GAMEPAD_DEVICE_DISCONNECTED);
-            mContext.sendBroadcast(intentBroadcast);
+//            Intent intentBroadcast = new Intent();
+//            intentBroadcast.setAction(GAMEPAD_DEVICE_DISCONNECTED);
+//            mContext.sendBroadcast(intentBroadcast);
+            EventBus.getDefault().post(new GamePadEvent(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED, gamepad.getMACAddress()));
             return;
         }
         //LogUtil.e("Abnormal scenario!");

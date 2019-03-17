@@ -1,10 +1,8 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +43,7 @@ import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.fota.UpgradeManager;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
+import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
@@ -56,8 +55,8 @@ import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_S
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
-import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.GAMEPAD_DEVICE_CONNECTED;
-import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.GAMEPAD_DEVICE_DISCONNECTED;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_CONNECTED;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_DISCONNECTED;
 import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
 
 public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemClickListener {
@@ -102,23 +101,52 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
             showGamepadsInfo(position);
         }
     };
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action != null) {
-                if (action.equals(GAMEPAD_DEVICE_CONNECTED) || action.equals(GAMEPAD_DEVICE_DISCONNECTED)) {
-                    gotoGamepadsListView(false);
-                }
-            }
-        }
-    };
+//    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            String action = intent.getAction();
+//            if (action != null) {
+//                if (action.equals(GAMEPAD_DEVICE_CONNECTED) || action.equals(GAMEPAD_DEVICE_DISCONNECTED)) {
+//                    gotoGamepadsListView(false);
+//                }
+//            }
+//        }
+//    };
+//
+//    private IntentFilter makeFilter() {
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(GAMEPAD_DEVICE_CONNECTED);
+//        intentFilter.addAction(BluetoothDeviceManager.GAMEPAD_DEVICE_DISCONNECTED);
+//        return intentFilter;
+//    }
 
-    private IntentFilter makeFilter() {
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(GAMEPAD_DEVICE_CONNECTED);
-        intentFilter.addAction(BluetoothDeviceManager.GAMEPAD_DEVICE_DISCONNECTED);
-        return intentFilter;
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+    /**
+     * 事件响应方法
+     * 接收消息
+     *
+     * @param event
+     */
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onEvent(GamePadEvent event) {
+        if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_CONNECTED)) {
+            LogUtil.d("GamePad connected");
+            gotoGamepadsListView(false);
+        } else if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED)) {
+            LogUtil.d("GamePad disconnected");
+            gotoGamepadsListView(false);
+        }
     }
 
     @Override
@@ -185,13 +213,13 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
             }
         });
 
-        registerReceiver(mReceiver, makeFilter());
+//        registerReceiver(mReceiver, makeFilter());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(mReceiver);
+//        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -207,7 +235,7 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         mDeviceManager = BluetoothDeviceManager.getInstance();
         datas = new ArrayList<>();
 
-        EventBus.getDefault().register(this);
+//        EventBus.getDefault().register(this);
 
         activityTitle = findViewById(R.id.ActivityTitle);
 
@@ -263,7 +291,7 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
             mProxyManager = ProxyManager.getInstance();
         }
 
-        if(TEST_A7_ON_A8) {
+        if (TEST_A7_ON_A8) {
             mProxyManager = ProxyManager.getInstance();
         }
     }
@@ -360,7 +388,7 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 
     @Override
     public void onDestroy() {
-        EventBus.getDefault().unregister(this);
+//        EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 

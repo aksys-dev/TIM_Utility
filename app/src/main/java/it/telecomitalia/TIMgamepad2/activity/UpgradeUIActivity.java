@@ -1,10 +1,7 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,14 +30,15 @@ import it.telecomitalia.TIMgamepad2.fota.FabricController;
 import it.telecomitalia.TIMgamepad2.fota.UpgradeManager;
 import it.telecomitalia.TIMgamepad2.model.FabricModel;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
+import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE;
-import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.GAMEPAD_DEVICE_CONNECTED;
-import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.GAMEPAD_DEVICE_DISCONNECTED;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_CONNECTED;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_DISCONNECTED;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_CONNECTION_ERROR;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_FAILED;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_TIMEOUT;
@@ -65,13 +63,13 @@ public class UpgradeUIActivity extends Activity {
 
     private boolean aborted = false;
 
-    private IntentFilter makeFilter() {
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(GAMEPAD_DEVICE_CONNECTED);
-        intentFilter.addAction(BluetoothDeviceManager.GAMEPAD_DEVICE_DISCONNECTED);
-
-        return intentFilter;
-    }
+//    private IntentFilter makeFilter() {
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(GAMEPAD_DEVICE_CONNECTED);
+//        intentFilter.addAction(BluetoothDeviceManager.GAMEPAD_DEVICE_DISCONNECTED);
+//
+//        return intentFilter;
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,53 +92,91 @@ public class UpgradeUIActivity extends Activity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterReceiver(mReceiver);
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
     }
 
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (action != null) {
-                LogUtil.d("Action ======== " + action);
-                if (action.equals(GAMEPAD_DEVICE_DISCONNECTED)) {
-                    String mac = intent.getStringExtra(INTENT_MAC);
-                    if (mac != null) {
-                        if (mac.equals(targetDeviceMAC)) {
-                            LogUtil.d("Target gamepad" + mac + "(" + targetDeviceMAC + ") disconnected, So abort......");
-                            aborted = true;
-                            mProgressText.setTextColor(getResources().getColor(R.color.red));
-                            mProgressText.setText(R.string.upgrading_gamepad_disconnected);
-                            mDoneButton.setVisibility(View.VISIBLE);
-                        } else {
-                            LogUtil.d("Not the target device, go on: " + mac + "(" + targetDeviceMAC + ")");
-                        }
-                    } else {
-                        LogUtil.d("Do nothing......");
-                    }
-//                    List<DeviceModel> gamepads = mGamePadDeviceManager.getBondedDevices();
-//                    boolean found = false;
-//                    for (DeviceModel gamepad : gamepads) {
-//                        LogUtil.d("Action ======== 1");
-//                        if (gamepad.getMACAddress().equals(targetDeviceMAC) && gamepad.online()) {
-//                            LogUtil.d("Action ======== 2");
-//                            found = true;
-//                            break;
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+//        unregisterReceiver(mReceiver);
+    }
+
+//    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            String action = intent.getAction();
+//            if (action != null) {
+//                LogUtil.d("Action ======== " + action);
+//                if (action.equals(GAMEPAD_DEVICE_DISCONNECTED)) {
+//                    String mac = intent.getStringExtra(INTENT_MAC);
+//                    if (mac != null) {
+//                        if (mac.equals(targetDeviceMAC)) {
+//                            LogUtil.d("Target gamepad" + mac + "(" + targetDeviceMAC + ") disconnected, So abort......");
+//                            aborted = true;
+//                            mProgressText.setTextColor(getResources().getColor(R.color.red));
+//                            mProgressText.setText(R.string.upgrading_gamepad_disconnected);
+//                            mDoneButton.setVisibility(View.VISIBLE);
+//                        } else {
+//                            LogUtil.d("Not the target device, go on: " + mac + "(" + targetDeviceMAC + ")");
 //                        }
+//                    } else {
+//                        LogUtil.d("Do nothing......");
 //                    }
-//                    if (!found) {
-//                        LogUtil.d("The upgrading device has disconnected, abort!");
-//                        mProgressText.setTextColor(getResources().getColor(R.color.red));
-//                        mProgressText.setText(R.string.upgrading_gamepad_disconnected);
-//                        mDoneButton.setVisibility(View.VISIBLE);
-//                    }
-//                    LogUtil.d("Action ======== 4");
+////                    List<DeviceModel> gamepads = mGamePadDeviceManager.getBondedDevices();
+////                    boolean found = false;
+////                    for (DeviceModel gamepad : gamepads) {
+////                        LogUtil.d("Action ======== 1");
+////                        if (gamepad.getMACAddress().equals(targetDeviceMAC) && gamepad.online()) {
+////                            LogUtil.d("Action ======== 2");
+////                            found = true;
+////                            break;
+////                        }
+////                    }
+////                    if (!found) {
+////                        LogUtil.d("The upgrading device has disconnected, abort!");
+////                        mProgressText.setTextColor(getResources().getColor(R.color.red));
+////                        mProgressText.setText(R.string.upgrading_gamepad_disconnected);
+////                        mDoneButton.setVisibility(View.VISIBLE);
+////                    }
+////                    LogUtil.d("Action ======== 4");
+//                }
+//            }
+//        }
+//    };
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onEvent(GamePadEvent event) {
+        if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_CONNECTED)) {
+//            Toast.makeText(this, "Upgrade UI received GamePad connected", Toast.LENGTH_LONG).show();
+            LogUtil.d("Upgrade UI received GamePad connected");
+        } else if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED)) {
+//            Toast.makeText(this, "GamePad disconnected", Toast.LENGTH_LONG).show();
+            LogUtil.d("Upgrade UI received GamePad disconnected");
+            String mac = event.getMAC();
+            if (mac != null) {
+                if (mac.equals(targetDeviceMAC)) {
+                    LogUtil.d("Target gamepad" + mac + "(" + targetDeviceMAC + ") disconnected, So abort......");
+                    aborted = true;
+                    mProgressText.setTextColor(getResources().getColor(R.color.red));
+                    mProgressText.setText(R.string.upgrading_gamepad_disconnected);
+                    mDoneButton.setVisibility(View.VISIBLE);
+                } else {
+                    LogUtil.d("Not the target device, go on: " + mac + "(" + targetDeviceMAC + ")");
                 }
+            } else {
+                LogUtil.d("Do nothing......");
             }
         }
-    };
+    }
 
     private void initUI() {
         mUpdateProgressBar = findViewById(R.id.upgrade_progressbar);
@@ -223,7 +259,7 @@ public class UpgradeUIActivity extends Activity {
         super.onResume();
         LogUtil.d("onResume called");
         mGamePadDeviceManager.queryDeviceFabricInfo();
-        registerReceiver(mReceiver, makeFilter());
+//        registerReceiver(mReceiver, makeFilter());
     }
 
 //    /**

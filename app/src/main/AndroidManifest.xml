@@ -2,10 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="it.telecomitalia.TIMgamepad2"
-    android:sharedUserId="android.uid.system">
+    >
 
     <!--<uses-sdk android:minSdkVersion="15"
-
+    android:sharedUserId="android.uid.system"
     />-->
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <!--<uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />-->
 
+
     <application
         android:name=".GamePadV2UpgadeApplication"
         android:allowBackup="false"
@@ -27,6 +28,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+        <!--
+                <protected-broadcast android:name="android.intent.action.GAMEPAD_DEVICE_CONNECTED" />
+                <protected-broadcast android:name="android.intent.action.GAMEPAD_DEVICE_DISCONNECTED" />
+        -->
         <activity
             android:name=".activity.FOTA_V2"
             android:configChanges="keyboardHidden|orientation|mcc|mnc|uiMode|locale|keyboard">
@@ -84,6 +89,8 @@
                 <action android:name="it.telecomitalia.TIMgamepad2.IGamePadService" />
             </intent-filter>
         </service>
+
+
     </application>
 
 </manifest>

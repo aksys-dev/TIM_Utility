@@ -158,7 +158,7 @@ public class UpgradeManager {
         if (file.exists()) {
             config = getJsonFromLocal(mFWPath + CONFIG_FILE_NAME_GAMEPAD1);
         }
-        LogUtil.d("Version : " + config.getmVersion());
+//        LogUtil.d("Version : " + config.getmVersion());
         return config;
     }
 
@@ -176,7 +176,7 @@ public class UpgradeManager {
                     int count = 0;
 
                     URL url = new URL(path);
-                    LogUtil.i("URL: " + path);
+//                    LogUtil.i("URL: " + path);
                     HttpURLConnection conection = (HttpURLConnection) url.openConnection();
                     conection.connect();
                     conection.setConnectTimeout(4000);

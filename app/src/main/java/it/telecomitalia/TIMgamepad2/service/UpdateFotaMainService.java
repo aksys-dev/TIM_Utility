@@ -3,6 +3,8 @@ package it.telecomitalia.TIMgamepad2.service;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -13,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -49,6 +52,7 @@ import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.model.UpdateModel;
 import it.telecomitalia.TIMgamepad2.utils.CommerHelper;
 import it.telecomitalia.TIMgamepad2.utils.FileUtils;
+import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
@@ -60,7 +64,7 @@ import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_U
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
 import static it.telecomitalia.TIMgamepad2.fota.AttachDevice.getConnectedTargetDevice;
-import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.GAMEPAD_DEVICE_CONNECTED;
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_CONNECTED;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_DOWNLOADING;
 
 
@@ -75,6 +79,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     public static final String KEY_MSG_FIRMWARE = "FIRMWARE_CONFIG";
     private static final String GAMEPAD_NAME_RELEASE = "TIMGamepad";
     private static final int FOREGROUND_ID = 9527;
+    private static final String FOREGROUND_NOTIFICATION_CHANNEL_ID = "TIMGamepad_V2";
     private static final String ACTION_HID_STATUS_CHANGED = "android.bluetooth.input.profile.action.CONNECTION_STATE_CHANGED";
     private static String PATH;
     private static BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();//获取本地蓝牙设备
@@ -214,11 +219,11 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, 0);
 //                LogUtil.i("HID state=" + state + ",device=" + device);
                 if (state == BluetoothProfile.STATE_CONNECTED) {
-                    LogUtil.d("HID device STATE_CONNECTED: "+device.getAddress());
+                    LogUtil.d("HID device STATE_CONNECTED: " + device.getAddress());
                     new ConnectedPostThread(device).start();
                 } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
                     mGamepadDeviceManager.notifyDisconnectedDevice(device);
-                    LogUtil.d("HID device STATE_DISCONNECTED: "+device.getAddress());
+                    LogUtil.d("HID device STATE_DISCONNECTED: " + device.getAddress());
                 }
             }
         }
@@ -284,7 +289,30 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     }
 
     private Notification buildForegroundNotification(Context context) {
-        NotificationCompat.Builder b = new NotificationCompat.Builder(context);
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        String CHANNEL_ID = FOREGROUND_NOTIFICATION_CHANNEL_ID;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+
+            String Description = "TIM Gamepad v2 notification";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, importance);
+            mChannel.setDescription(Description);
+            mChannel.enableLights(false);
+            mChannel.setLightColor(Color.RED);
+            mChannel.enableVibration(false);
+            mChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+            mChannel.setShowBadge(false);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(mChannel);
+            } else {
+                LogUtil.w("Warning: create notification");
+            }
+        }
+
+        NotificationCompat.Builder b = new NotificationCompat.Builder(context, CHANNEL_ID);
+//        Notification.Builder b = new Notification.Builder(context);
 
         b.setOngoing(true)
                 .setContentTitle(context.getString(R.string.inno_gamepad_update))
@@ -424,9 +452,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
             LogUtil.i("Device (" + device.getName() + ") setup successfully");
             EventBus.getDefault().post("BlueTooth_Connected");
             EventBus.getDefault().post(device);
-            Intent intentBroadcast = new Intent();
-            intentBroadcast.setAction(GAMEPAD_DEVICE_CONNECTED);
-            sendBroadcast(intentBroadcast);
+//            Intent intentBroadcast = new Intent();
+//            intentBroadcast.setAction(GAMEPAD_DEVICE_CONNECTED);
+//            sendBroadcast(intentBroadcast);
+            EventBus.getDefault().post(new GamePadEvent(EVENTBUT_MSG_GP_DEVICE_CONNECTED, device.getAddress()));
         } else {
             LogUtil.w("Device (" + device.getName() + ") setup failed");
 //            gotoGamepadList();

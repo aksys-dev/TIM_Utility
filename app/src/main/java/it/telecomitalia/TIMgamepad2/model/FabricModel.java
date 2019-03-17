@@ -27,7 +27,7 @@ public class FabricModel {
     private static final int HIGH = 4200;
 
     public boolean needUpdate() {
-        LogUtil.d("Compare old : " + mPreviousVersion + " new : " + mUpgradeVersion);
+//        LogUtil.d("Compare old : " + mPreviousVersion + " new : " + mUpgradeVersion);
         if (!TextUtils.isEmpty(mUpgradeVersion)) {
             return mUpgradeVersion.compareTo(mPreviousVersion) > 0;
         }
@@ -35,7 +35,7 @@ public class FabricModel {
     }
 
     public boolean needUpdate(String newVersion) {
-        LogUtil.d("Compare old : " + mPreviousVersion + " new : " + newVersion);
+//        LogUtil.d("Compare old : " + mPreviousVersion + " new : " + newVersion);
         if (!TextUtils.isEmpty(newVersion) && !TextUtils.isEmpty(mPreviousVersion)) {
             mUpgradeVersion = newVersion;
             return newVersion.compareTo(mPreviousVersion) > 0;
