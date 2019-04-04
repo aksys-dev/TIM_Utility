@@ -59,9 +59,7 @@ import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_DISCONNECTED;
 import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
 
-public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemClickListener {
-
-
+public class FOTAV2Main extends AppCompatActivity {
     private static final float SENSITIVE_DEFAULT = 1.0f;
     private static final boolean CALIBRATION_DEFAULT = false;
 
@@ -76,16 +74,17 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
     SeekBar seekBarSensitivity;
     TextView textSeekBarValue;
     float sensitivityValue = 1.00F;
-    boolean calibrationEnabled = true;
-    Switch calibration;
-    //	FrameLayout frame_newVersion;
+//    boolean calibrationEnabled = true;
+    ListView calibrationGamepadList;
+//    Switch calibration;
+//    FrameLayout frame_newVersion;
     TextView currentVersion, updateVersion;
     TextView lastUpdateDay;
     TextView activityTitle;
     private Context mContext;
     private UpgradeManager mUpgradeManager;
     private BluetoothDeviceManager mGamePadDeviceManager;
-    private BluetoothDeviceManager mDeviceManager;
+    //private BluetoothDeviceManager mDeviceManager;
 
     private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
     private ProxyManager mProxyManager;// = ProxyManager.getInstance();
@@ -93,14 +92,13 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
     private MagicKey[] mMagicKeys = new MagicKey[]{new MagicKey(102, 0), new MagicKey(103, 1), new MagicKey(21, 2), new MagicKey(19, 3), new MagicKey(20, 4), new MagicKey(22, 5),};
 
     private int mMagicIndex = 0;
-    private GamepadListAdapter adapter;
     private String targetDeviceMac = "none";
-    private ListView.OnItemClickListener mGamepadListListener = new ListView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-            showGamepadsInfo(position);
-        }
-    };
+//    private ListView.OnItemClickListener mGamepadListListener = new ListView.OnItemClickListener() {
+//        @Override
+//        public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+//            showGamepadsInfo(position);
+//        }
+//    };
 //    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
 //        @Override
 //        public void onReceive(Context context, Intent intent) {
@@ -153,13 +151,13 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
     protected void onResume() {
         super.onResume();
         float restoreValue = (float) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, SENSITIVE_DEFAULT);
-        calibrationEnabled = (boolean) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, CALIBRATION_DEFAULT);
-        calibration.setChecked(calibrationEnabled);
-        if (calibrationEnabled) {
-            calibration.setText(getString(R.string.on));
-        } else {
-            calibration.setText(getString(R.string.off));
-        }
+//        calibrationEnabled = (boolean) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, CALIBRATION_DEFAULT);
+//        calibration.setChecked(calibrationEnabled);
+//        if (calibrationEnabled) {
+//            calibration.setText(getString(R.string.on));
+//        } else {
+//            calibration.setText(getString(R.string.off));
+//        }
         textSeekBarValue.setText(String.valueOf(restoreValue));
         seekBarSensitivity.setProgress((int) (restoreValue * 100));
 
@@ -168,17 +166,17 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 //        LogUtil.i("sensitivity Value-> " + restoreValue);
 //        LogUtil.i("progress-> " + seekBarSensitivity.getProgress());
 
-        calibration.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    calibration.setText(getString(R.string.on));
-                } else {
-                    calibration.setText(getString(R.string.off));
-                }
-                SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, isChecked);
-            }
-        });
+//        calibration.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if (isChecked) {
+//                    calibration.setText(getString(R.string.on));
+//                } else {
+//                    calibration.setText(getString(R.string.off));
+//                }
+//                SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, isChecked);
+//            }
+//        });
 
         seekBarSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             // IMU Sensitivity Source
@@ -231,8 +229,8 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         mContext = this;
         MainTitle = findViewById(R.id.AppTitle);
         IMUSensorTitle = findViewById(R.id.IMU_Title);
-
-        mDeviceManager = BluetoothDeviceManager.getInstance();
+    
+        mGamePadDeviceManager = BluetoothDeviceManager.getInstance();
         datas = new ArrayList<>();
 
 //        EventBus.getDefault().register(this);
@@ -242,12 +240,45 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         // App Main Menu
         menulist = findViewById(R.id.Menus);
         menulistView = findViewById(R.id.menuListView);
-        menulistView.setOnItemClickListener(this);
+        menulistView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (menulist.getVisibility() == View.VISIBLE) {
+                    // Menu Item Click
+                    menulist.setVisibility(View.GONE);
+                    gamepadView.setVisibility(View.GONE);
+                    imuoptionLists.setVisibility(View.GONE);
+                    aboutLists.setVisibility(View.GONE);
+            
+                    switch (position) {
+                        case 0:
+                            OpenGamepadMenu();
+                            break;
+                        case 1:
+                            if (BuildConfig.ANDROID_7_SUPPORT_IMU || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                OpenIMUMenu();
+                            } else {
+                                OpenAboutVersion();
+                            }
+                            break;
+                        case 2:
+                            OpenAboutVersion();
+                            break;
+                    }
+                }
+            }
+        } );
         SetMenuData();
 
         // Gamepad Option
         gamepadView = findViewById(R.id.gamepadView2);
         gamepadList2 = findViewById(R.id.gamepadListView);
+        gamepadList2.setOnItemClickListener( new ListView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                showGamepadsInfo(position);
+            }
+        } );
 
         // IMU Sensor
         imuoptionLists = findViewById(R.id.imuoptionLists);
@@ -255,9 +286,16 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 
         seekBarSensitivity = findViewById(R.id.seekBar);
         textSeekBarValue = findViewById(R.id.textSensitibity);
+        calibrationGamepadList = findViewById( R.id.calibrationlist );
+        calibrationGamepadList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView textView = view.findViewById( android.R.id.text1 );
+                LogUtil.i( "Select " + textView.getText().toString() );
+            }
+        } );
 
-
-        calibration = findViewById(R.id.sw_calibration);
+//        calibration = findViewById(R.id.sw_calibration);
 
 
         currentVersion = findViewById(R.id.value_currentVersion);
@@ -277,7 +315,7 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         }
 
 
-        mGamePadDeviceManager = BluetoothDeviceManager.getInstance();
+        
         mUpgradeManager = mGamePadDeviceManager.getUpgradeManager();
 
         String from = getIntent().getStringExtra(INTENT_KEY);
@@ -304,8 +342,6 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
             aboutLists.setVisibility(View.GONE);
 
             SetupGamePadList();
-            RefreshGamePadList();
-            gamepadList2.setOnItemClickListener(mGamepadListListener);
             gamepadView.setVisibility(View.VISIBLE);
             activityTitle.setText(R.string.title_gamepad);
         } else {
@@ -315,14 +351,10 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
                 imuoptionLists.setVisibility(View.GONE);
                 aboutLists.setVisibility(View.GONE);
                 SetupGamePadList();
-                RefreshGamePadList();
-                gamepadList2.setOnItemClickListener(mGamepadListListener);
                 gamepadView.setVisibility(View.VISIBLE);
                 activityTitle.setText(R.string.title_gamepad);
             } else {
                 SetupGamePadList();
-                RefreshGamePadList();
-                gamepadList2.setOnItemClickListener(mGamepadListListener);
             }
         }
     }
@@ -341,9 +373,9 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
 
     public void SetupGamePadList() {
         GamepadVO g;
-        int list = 0;
+        int list = 1;
         datas.clear();
-        List<DeviceModel> models = mDeviceManager.getBondedDevices();
+        List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
         if (models == null || models.size() == 0) {
             LogUtil.w("No gamepad connected or service not running...");
             g = new GamepadVO();
@@ -363,11 +395,34 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
                 datas.add(g);
             }
         }
-    }
-
-    public void RefreshGamePadList() {
-        adapter = new GamepadListAdapter(this, R.layout.gamepad_info, datas);
+    
+        GamepadListAdapter adapter = new GamepadListAdapter(this, R.layout.gamepad_info, datas);
         gamepadList2.setAdapter(adapter);
+    }
+    
+    public void SetupIMUEnabledGamepadList() {
+        ArrayList<String> enabledGamepads = new ArrayList<>(  );
+        int list = 1;
+        enabledGamepads.clear();
+        List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
+        if (models == null || models.size() == 0) {
+            LogUtil.w("No Gamepad enabled IMU");
+            enabledGamepads.add( "No Gamepad enabled IMU" );
+        } else {
+            for (DeviceModel model : models) {
+                if (!model.getMACAddress().equals(INIT_ADDRESS)) {
+                    enabledGamepads.add(String.format("Gamepad %d", list));
+                    list++;
+                }
+            }
+            if (datas.size() == 0) {
+                // No IMU Enabled Gamepad.
+                enabledGamepads.add( "No Gamepad enabled IMU" );
+            }
+        }
+        ArrayAdapter<String> calibrationAdapter = new ArrayAdapter<String>(
+                this, android.R.layout.simple_list_item_1, enabledGamepads );
+        calibrationGamepadList.setAdapter( calibrationAdapter );
     }
 
     @Override
@@ -392,44 +447,16 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
         super.onDestroy();
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (menulist.getVisibility() == View.VISIBLE) {
-            // Menu Item Click
-            menulist.setVisibility(View.GONE);
-            gamepadView.setVisibility(View.GONE);
-            imuoptionLists.setVisibility(View.GONE);
-            aboutLists.setVisibility(View.GONE);
-
-            switch (position) {
-                case 0:
-                    OpenGamepadMenu();
-                    break;
-                case 1:
-                    if (BuildConfig.ANDROID_7_SUPPORT_IMU || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        OpenIMUMenu();
-                    } else {
-                        OpenAboutVersion();
-                    }
-                    break;
-                case 2:
-                    OpenAboutVersion();
-                    break;
-            }
-        }
-    }
-
     void OpenGamepadMenu() {
         // Gamepad Menu
         SetupGamePadList();
-        RefreshGamePadList();
-        gamepadList2.setOnItemClickListener(mGamepadListListener);
         gamepadView.setVisibility(View.VISIBLE);
         activityTitle.setText(R.string.title_gamepad);
     }
 
     void OpenIMUMenu() {
         // IMU Setting
+        SetupIMUEnabledGamepadList();
         imuoptionLists.setVisibility(View.VISIBLE);
         MainTitle.setVisibility(View.GONE);
         IMUSensorTitle.setVisibility(View.VISIBLE);
@@ -442,7 +469,7 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
     }
 
     private void showGamepadsInfo(int position) {
-        List<DeviceModel> models = mDeviceManager.getBondedDevices();
+        List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
         if (models != null && models.size() != 0 && mUpgradeManager != null) {
             if (gamepadView.getVisibility() == View.VISIBLE) {
                 FirmwareConfig config = mUpgradeManager.getNewVersion();
@@ -494,7 +521,7 @@ public class FOTAV2Main extends AppCompatActivity implements AdapterView.OnItemC
     }
 
     public void EventAddGamepad(DeviceModel model) {
-        UpgradeManager mgr = mDeviceManager.getUpgradeManager();
+        UpgradeManager mgr = mGamePadDeviceManager.getUpgradeManager();
         GamepadVO g = new GamepadVO(getString(R.string.gamepad_one) + (model.getIndicator() + 1), model.getMACAddress(), model.getBatterVolt(), model.getFWVersion(), model.online(), mgr.getNewVersion().getmVersion());
         datas.add(g);
     }
