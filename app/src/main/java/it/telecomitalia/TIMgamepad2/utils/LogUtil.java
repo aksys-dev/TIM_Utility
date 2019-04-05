@@ -2,6 +2,7 @@ package it.telecomitalia.TIMgamepad2.utils;
 
 import android.os.Environment;
 import android.util.Log;
+import android.view.KeyEvent;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -179,5 +180,9 @@ public class LogUtil {
                 }
             }
         }
+    }
+    
+    public static void logKeyEvent(KeyEvent event) {
+        d("Controller: " + event.getDevice().getName() + " ( Code: " + event.getKeyCode() + ")" );
     }
 }

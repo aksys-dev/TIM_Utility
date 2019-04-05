@@ -102,7 +102,7 @@ public class DeviceModel {
     public void setFabricModel(FabricModel mode) {
         mFabricModel = mode;
     }
-
+    
     public FabricModel getFabricModel() {
         return mFabricModel;
     }
@@ -141,4 +141,5 @@ public class DeviceModel {
         this.mMACAddress = address;
         this.mGamedName = name;
     }
+    
 }

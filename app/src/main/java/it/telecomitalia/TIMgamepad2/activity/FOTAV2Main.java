@@ -15,12 +15,11 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
-import android.widget.Switch;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +30,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
@@ -48,7 +48,6 @@ import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
 import static it.telecomitalia.TIMgamepad2.BuildConfig.CONFIG_FILE_NAME;
-import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_CALIBRATION;
 import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_SENSITIVE;
 import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
@@ -70,7 +69,7 @@ public class FOTAV2Main extends AppCompatActivity {
     ListView gamepadList2;
     LinearLayout imuoptionLists;
     ConstraintLayout aboutLists;
-    ArrayList<GamepadVO> datas;
+    ArrayList<GamepadVO> gamepadDatas;
     SeekBar seekBarSensitivity;
     TextView textSeekBarValue;
     float sensitivityValue = 1.00F;
@@ -231,7 +230,7 @@ public class FOTAV2Main extends AppCompatActivity {
         IMUSensorTitle = findViewById(R.id.IMU_Title);
     
         mGamePadDeviceManager = BluetoothDeviceManager.getInstance();
-        datas = new ArrayList<>();
+        gamepadDatas = new ArrayList<>();
 
 //        EventBus.getDefault().register(this);
 
@@ -291,7 +290,19 @@ public class FOTAV2Main extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView textView = view.findViewById( android.R.id.text1 );
-                LogUtil.i( "Select " + textView.getText().toString() );
+                String name = textView.getText().toString();
+                LogUtil.i( "Select " + name );
+                if (!textView.getText().toString().equals( getString(R.string.no_gamepad) )) {
+                    TextView addressData = view.findViewById( android.R.id.text2 );
+                    String addr = addressData.getText().toString().substring( "MAC: ".length() );
+                    LogUtil.i( "Mac Address " + addr );
+                    
+                    // go to Sensor Calibration
+                    Intent intent = new Intent( FOTAV2Main.this, SensorCalibrationActivity.class );
+                    intent.putExtra( "gpname", name );
+                    intent.putExtra( "gpaddr", addr );
+                    startActivity( intent );
+                }
             }
         } );
 
@@ -374,13 +385,13 @@ public class FOTAV2Main extends AppCompatActivity {
     public void SetupGamePadList() {
         GamepadVO g;
         int list = 1;
-        datas.clear();
+        gamepadDatas.clear();
         List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
         if (models == null || models.size() == 0) {
             LogUtil.w("No gamepad connected or service not running...");
             g = new GamepadVO();
             g.setGamepadName(String.format("Gamepad %d", list));
-            datas.add(g);
+            gamepadDatas.add(g);
         } else {
             for (DeviceModel model : models) {
                 if (!model.getMACAddress().equals(INIT_ADDRESS)) {
@@ -388,40 +399,52 @@ public class FOTAV2Main extends AppCompatActivity {
                     list++;
                 }
             }
-            if (datas.size() == 0) {
+            if ( gamepadDatas.size() == 0) {
                 // No Game pad
                 g = new GamepadVO();
                 g.setGamepadName(String.format("Gamepad %d", list));
-                datas.add(g);
+                gamepadDatas.add(g);
             }
         }
     
-        GamepadListAdapter adapter = new GamepadListAdapter(this, R.layout.gamepad_info, datas);
+        GamepadListAdapter adapter = new GamepadListAdapter(this, R.layout.gamepad_info, gamepadDatas );
         gamepadList2.setAdapter(adapter);
     }
     
     public void SetupIMUEnabledGamepadList() {
-        ArrayList<String> enabledGamepads = new ArrayList<>(  );
+        ArrayList<HashMap<String, String>> enabledGamepads = new ArrayList<>();
         int list = 1;
         enabledGamepads.clear();
         List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
-        if (models == null || models.size() == 0) {
-            LogUtil.w("No Gamepad enabled IMU");
-            enabledGamepads.add( "No Gamepad enabled IMU" );
+        if ( models == null || models.size() == 0 ) {
+            LogUtil.w( "No Gamepad enabled IMU" );
+            HashMap<String, String> d = new HashMap<String, String>();
+            d.put( "name", getString(R.string.no_gamepad) );
+            d.put( "address", "Click to re-check Gamepads" );
+            enabledGamepads.add( d );
         } else {
-            for (DeviceModel model : models) {
-                if (!model.getMACAddress().equals(INIT_ADDRESS)) {
-                    enabledGamepads.add(String.format("Gamepad %d", list));
+            for ( DeviceModel model : models ) {
+                if ( ! model.getMACAddress().equals( INIT_ADDRESS ) ) {
+                    HashMap<String, String> d = new HashMap<String, String>();
+                    d.put( "name", String.format( "Gamepad %d", list ) );
+                    d.put( "address", "MAC: " + model.getMACAddress() );
+                    enabledGamepads.add( d );
                     list++;
                 }
             }
-            if (datas.size() == 0) {
+            if ( enabledGamepads.size() == 0 ) {
                 // No IMU Enabled Gamepad.
-                enabledGamepads.add( "No Gamepad enabled IMU" );
+                LogUtil.w( "No Gamepad enabled IMU" );
+                HashMap<String, String> d = new HashMap<String, String>();
+                d.put( "name", "No Gamepad" );
+                d.put( "address", "Click to re-check Gamepads" );
+                enabledGamepads.add( d );
             }
         }
-        ArrayAdapter<String> calibrationAdapter = new ArrayAdapter<String>(
-                this, android.R.layout.simple_list_item_1, enabledGamepads );
+        SimpleAdapter calibrationAdapter = new SimpleAdapter(
+                this, enabledGamepads, android.R.layout.simple_list_item_2,
+                new String[]{ "name", "address" },
+                new int[]{ android.R.id.text1, android.R.id.text2 } );
         calibrationGamepadList.setAdapter( calibrationAdapter );
     }
 
@@ -478,7 +501,7 @@ public class FOTAV2Main extends AppCompatActivity {
 
                 for (DeviceModel model : deviceList) {
                     LogUtil.d("Device online? " + model.online());
-                    if (datas.get(position).getMACAddress().equals(model.getMACAddress()) && model.online()) {
+                    if ( gamepadDatas.get(position).getMACAddress().equals(model.getMACAddress()) && model.online()) {
                         online = true;
                         targetDeviceMac = model.getMACAddress();
                         break;
@@ -517,13 +540,13 @@ public class FOTAV2Main extends AppCompatActivity {
         GamepadVO g = new GamepadVO(macAddress);
 //        Toast.makeText(this, "Detected Bluetooth: " + macAddress, Toast.LENGTH_SHORT).show();
         g.setGamepadName(String.format("Gamepad %d"));
-        datas.add(g);
+        gamepadDatas.add(g);
     }
 
     public void EventAddGamepad(DeviceModel model) {
         UpgradeManager mgr = mGamePadDeviceManager.getUpgradeManager();
         GamepadVO g = new GamepadVO(getString(R.string.gamepad_one) + (model.getIndicator() + 1), model.getMACAddress(), model.getBatterVolt(), model.getFWVersion(), model.online(), mgr.getNewVersion().getmVersion());
-        datas.add(g);
+        gamepadDatas.add(g);
     }
 
     @Override
@@ -531,7 +554,7 @@ public class FOTAV2Main extends AppCompatActivity {
         switch (event.getAction()) {
 
             case KeyEvent.ACTION_UP:
-
+	            LogUtil.logKeyEvent( event );
                 if (mMagicIndex == mMagicKeys[mMagicIndex].getIndex() && event.getKeyCode() == mMagicKeys[mMagicIndex].getKeyCode()) {
                     mMagicIndex++;
                     LogUtil.d("Keycode " + event.getKeyCode() + "; Index =" + mMagicIndex);

@@ -116,4 +116,8 @@
     <string name="dailog_tips">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare.</string>
     <string name="utility_service_restarting">"Connecting&#8230;"</string>
     <string name="gamepad_service_running">The TIM Gamepad service is running</string>
+    <string name="no_gamepad">Nessun gamepad</string>
+    <string name="gamepad_calibration_first">If you wan\'t calibration, press \"B\" or \"⬅\".</string>
+    <string name="gamepad_calibration_wait">Now Calibrating Sensor. Please don\'t touch this gamepad.</string>
+    <string name="gamepad_calibration_end">Press (B) or Back button.(⬅)</string>
 </resources>

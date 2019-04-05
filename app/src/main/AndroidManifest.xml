@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="it.telecomitalia.TIMgamepad2"
-    >
+    package="it.telecomitalia.TIMgamepad2">
 
-    <!--<uses-sdk android:minSdkVersion="15"
+    <!--
+    <uses-sdk android:minSdkVersion="15"
     android:sharedUserId="android.uid.system"
-    />-->
+    />
+    -->
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -16,9 +17,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <!--<uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />-->
 
-
+    <!-- <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" /> -->
     <application
         android:name=".GamePadV2UpgadeApplication"
         android:allowBackup="false"
@@ -28,6 +28,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+
         <!--
                 <protected-broadcast android:name="android.intent.action.GAMEPAD_DEVICE_CONNECTED" />
                 <protected-broadcast android:name="android.intent.action.GAMEPAD_DEVICE_DISCONNECTED" />
@@ -37,13 +38,13 @@
             android:configChanges="keyboardHidden|orientation|mcc|mnc|uiMode|locale|keyboard">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
+
                 <action android:name="technicolor.intent.action.MANAGE_PARTNER_ACCESSORY" />
             </intent-filter>
         </activity>
-
         <activity android:name=".activity.FOTAV2Main" />
-
         <activity
             android:name=".activity.DialogActivity"
             android:launchMode="singleTask"
@@ -70,19 +71,19 @@
             android:name=".service.UpdateFotaMainService"
             android:priority="1000" />
         <service android:name=".service.UpdateRecommendationsService" />
-
         <service
             android:name=".service.FabricAccessabilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
+
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility" />
         </service>
         <service
-            android:name="it.telecomitalia.TIMgamepad2.service.GamePadService"
+            android:name=".service.GamePadService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -90,7 +91,7 @@
             </intent-filter>
         </service>
 
-
+        <activity android:name=".activity.SensorCalibrationActivity"></activity>
     </application>
 
 </manifest>

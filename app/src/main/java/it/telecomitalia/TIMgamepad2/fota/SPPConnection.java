@@ -1,15 +1,19 @@
 package it.telecomitalia.TIMgamepad2.fota;
 
 
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
@@ -59,6 +63,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_OTA_DATA_RECEIVED = (byte) 0x97;
     //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
     public static final byte CMD_ERROR_HEADER = (byte) 0x98;
+    public static final byte CMD_SET_CALIBRATION = (byte) 0x9a;
+    public static final byte CMD_SET_CALIBRATION_END = (byte) 0x9b;
     private static final int CMD_HEADER = 0;
     private static final int CMD_PAYLOAD = 1;
     //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
@@ -89,15 +95,24 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private Handler mHandler;
     private int retries = 0;
     private float sentDataSize = 0;
+    private byte[] byteGyroZero;
+    private boolean checkGyroZero = false;
+    
+    private SensorCalibrationEvent calibrationEvent;
 //    private int mIMUTimeoutCounter = 0;
 //    private volatile boolean mIMUTimeout = false;
 //    private volatile boolean monitoring = true;
 //    private IMUStatusCheckThread imuStatusCheckThread;//= new IMUStatusCheckThread();
+    
+    ArrayList<Integer> list_x = new ArrayList<>();
+    ArrayList<Integer> list_y = new ArrayList<>();
+    ArrayList<Integer> list_z = new ArrayList<>();
 
     SPPConnection(DeviceModel info, GamePadListener listener) {
         mConnectionThread = new BlueToothConnThread(info, this, this);
         mInfo = info;
         mGamepadListener = listener;
+        byteGyroZero = new byte[] {0x0,0x0,0x0,0x0,0x0,0x0};
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
             mProxyManager = ProxyManager.getInstance();
         }
@@ -105,6 +120,13 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         if (TEST_A7_ON_A8) {
             mProxyManager = ProxyManager.getInstance();
         }
+    }
+    
+    private static byte[] seperateIntToBytes(int x) {
+        byte[] b = new byte[2];
+        b[0] = (byte) (x >> 8);
+        b[1] = (byte) (x - (b[0] << 8));
+        return b;
     }
 
     private static int combineHighAndLowByte(byte high, byte low) {
@@ -201,6 +223,40 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         else if (right == 0) output[2] = CMD_VIBRATE_VALUE0;
         mConnectionThread.write(output);
 
+    }
+    
+    final int SIGNAL_WAIT_TIME = 3000;
+    public void startCalibration() {
+        mHandler = new Handler(  );
+        LogUtil.d( "Call How to Calibration" );
+        int version = Integer.parseInt( mFirmwareVersion );
+        if ( version > 180943 ) {
+            mConnectionThread.write( CMD_SET_CALIBRATION );
+            /// for Cannot detect Eventcode
+            mHandler.postDelayed( SoftCalibration, SIGNAL_WAIT_TIME );
+        }
+        else {
+            /// for Cannot detect Eventcode
+            mHandler.post( SoftCalibration );
+        }
+    }
+    
+    Runnable SoftCalibration = new Runnable() {
+        @Override
+        public void run() {
+            LogUtil.d( "Call Start Calibration in Software" );
+            checkGyroZero = true;
+        }
+    };
+    
+    void endSensorCalibration() {
+        calibrationEvent.endCalibration();
+    }
+    
+    public int[] getResultSensorCalibration() {
+        return new int[] { combineHighAndLowByte( byteGyroZero[0], byteGyroZero[1] ),
+                combineHighAndLowByte( byteGyroZero[2], byteGyroZero[3] ),
+                combineHighAndLowByte( byteGyroZero[4], byteGyroZero[5] )};
     }
 
     synchronized void startUpgrade(String path, final Handler handler, boolean internal) {
@@ -353,14 +409,43 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             case DATA_IMU_HEADER_PREFIX:
                 if (data[1] == DATA_IMU_HEADER && size == IMU_FRAME_SIZE) {
+                    if (checkGyroZero) {
+                        //byteGyroZero = new byte[]{ data[ 12 ], data[ 13 ], data[ 14 ], data[ 15 ], data[ 16 ], data[ 17 ] };
+                        inputGyroscopeData( combineHighAndLowByte( data[ 12 ], data[ 13 ] ), combineHighAndLowByte( data[ 14 ], data[ 15 ] ), combineHighAndLowByte( data[ 16 ], data[ 17 ] ) );
+                    }
+                    
+                    int[] calcs = new int[] {
+                            combineHighAndLowByte( data[ 12 ], data[ 13 ] ) - combineHighAndLowByte( byteGyroZero[ 0 ], byteGyroZero[ 1 ] ),
+                            combineHighAndLowByte( data[ 14 ], data[ 15 ] ) - combineHighAndLowByte( byteGyroZero[ 2 ], byteGyroZero[ 3 ] ),
+                            combineHighAndLowByte( data[ 16 ], data[ 17 ] ) - combineHighAndLowByte( byteGyroZero[ 4 ], byteGyroZero[ 5 ] )
+                    } ;
+                    
+                    byte[] gyros = new byte[] {
+                            seperateIntToBytes( calcs[0] )[0], seperateIntToBytes( calcs[0] )[1],
+                            seperateIntToBytes( calcs[1] )[0], seperateIntToBytes( calcs[1] )[1],
+                            seperateIntToBytes( calcs[2] )[0], seperateIntToBytes( calcs[2] )[1],
+                    };
+                    
 //                    mIMUTimeoutCounter++;
                     //Use binder instead of socket on android 8 or higher version
-                    byte[] event = new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15], data[16], data[17]};
+                    byte[] event = new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11],
+                            gyros[0], gyros[1], gyros[2], gyros[3], gyros[4], gyros[5] };
+                    
+//                            (byte) (data[12] - byteGyroZero[0]), (byte) (data[13] - byteGyroZero[1]), (byte) (data[14] - byteGyroZero[2]),
+//                            (byte) (data[15] - byteGyroZero[3]), (byte) (data[16] - byteGyroZero[4]), (byte) (data[17] - byteGyroZero[5]) };
+
 //                    if (interval_counter % interval == 0) {
 //                        LogUtil.d("Frames from GP: " + HexToString(event));
 //                        interval_counter = 1;
 //                    }
 //                    interval_counter++;
+                    if (calibrationEvent != null) {
+                        calibrationEvent.getGyroscopeValue(
+                                combineHighAndLowByte( event[7],event[8] ),
+                                combineHighAndLowByte( event[9],event[10] ),
+                                combineHighAndLowByte( event[11],event[12] ) );
+                    }
+                    
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         mBinderProxy.send(event);
                     } else {
@@ -398,12 +483,75 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 startUpgrade(mPath, mHandler, true);
 //              mHandler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
                 break;
+                
+            case CMD_SET_CALIBRATION:
+                LogUtil.d( "Start Calibration" );
+                checkGyroZero = false;
+                mHandler.removeCallbacks( SoftCalibration );
+                break;
+            case CMD_SET_CALIBRATION_END:
+                endSensorCalibration();
+                break;
             default:
                 LogUtil.e("Unknown command!");
                 break;
         }
     }
+    
+    public void setCalibrationClear() {
+        list_x = new ArrayList<>(  );
+        list_y = new ArrayList<>(  );
+        list_z = new ArrayList<>(  );
+    }
+    
+    private void inputGyroscopeData(int x, int y, int z) {
+        int sample = 501;
+        
+        if ( list_x.size() >= sample) {
+            /// calibration over.
+            checkGyroZero = false;
+            Integer[] lx = list_x.toArray( new Integer[ list_x.size() ] );
+            Integer[] ly = list_y.toArray( new Integer[ list_y.size() ] );
+            Integer[] lz = list_z.toArray( new Integer[ list_z.size() ] );
+            Arrays.sort(list_x.toArray());
+            Arrays.sort(list_y.toArray());
+            Arrays.sort(list_z.toArray());
+    
+            int[] gyrozero = new int[] {
+                    lx[sample/2], ly[sample/2], lz[sample/2]
+            };
 
+//            int a=0,b=0,c=0;
+//
+//            for (int w = 0; w < sample; w++) a += list_x.get(w);
+//            for (int w = 0; w < sample; w++) b += list_y.get(w);
+//            for (int w = 0; w < sample; w++) c += list_z.get(w);
+    
+//            int[] gyrozero = new int[] { Math.round( a/sample ), Math.round( b/sample ), Math.round( c/sample ) };
+//            int[] gyrozero = new int[] { a/sample , b/sample , c/sample };
+            
+            byteGyroZero[0] = seperateIntToBytes( gyrozero[0] )[0];
+            byteGyroZero[1] = seperateIntToBytes( gyrozero[0] )[1];
+            byteGyroZero[2] = seperateIntToBytes( gyrozero[1] )[0];
+            byteGyroZero[3] = seperateIntToBytes( gyrozero[1] )[1];
+            byteGyroZero[4] = seperateIntToBytes( gyrozero[2] )[0];
+            byteGyroZero[5] = seperateIntToBytes( gyrozero[2] )[1];
+            
+            //endSensorCalibration();
+            calibrationEvent.getSavedGyroZero( gyrozero[0], gyrozero[1], gyrozero[2] );
+        }
+        else {
+            list_x.add( x );
+            list_y.add( y );
+            list_z.add( z );
+            calibrationEvent.progressCalibration( list_x.size(), sample );
+        }
+    }
+    
+    public void setCalibrationEventListener(SensorCalibrationEvent event) {
+        calibrationEvent = event;
+    }
+    
     public static class ReceivedData {
         public byte mCmd;
         public String mResult;
