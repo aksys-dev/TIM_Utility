@@ -120,4 +120,8 @@
     <string name="gamepad_calibration_first">If you wan\'t calibration, press \"B\" or \"⬅\".</string>
     <string name="gamepad_calibration_wait">Now Calibrating Sensor. Please don\'t touch this gamepad.</string>
     <string name="gamepad_calibration_end">Press (B) or Back button.(⬅)</string>
+    <string name="cancel">CANCELLA</string>
+    <string name="yes">Si</string>
+    <string name="no">No</string>
+    <string name="calibration_ready">Posiziona il game pad su una superficie piana prima di iniziare.\nNon toccare il gamepad fino alla fine della calibrazione.\nQuando sei pronto, premi Sì.\nPremere Cencella per annullare.</string>
 </resources>

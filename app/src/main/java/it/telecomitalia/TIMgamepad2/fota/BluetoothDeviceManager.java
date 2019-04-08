@@ -3,7 +3,6 @@ package it.telecomitalia.TIMgamepad2.fota;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -18,8 +17,6 @@ import it.telecomitalia.TIMgamepad2.model.FabricModel;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
 import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
-
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
 
 /**
  * Created by cmx on 2018/8/17.

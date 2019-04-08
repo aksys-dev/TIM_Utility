@@ -1,7 +1,9 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -297,14 +299,12 @@ public class FOTAV2Main extends AppCompatActivity {
                     String addr = addressData.getText().toString().substring( "MAC: ".length() );
                     LogUtil.i( "Mac Address " + addr );
                     
-                    // go to Sensor Calibration
-                    Intent intent = new Intent( FOTAV2Main.this, SensorCalibrationActivity.class );
-                    intent.putExtra( "gpname", name );
-                    intent.putExtra( "gpaddr", addr );
-                    startActivity( intent );
+                    gotoIMUCalibrationScene( name, addr );
                 }
             }
         } );
+    
+        
 
 //        calibration = findViewById(R.id.sw_calibration);
 
@@ -344,6 +344,8 @@ public class FOTAV2Main extends AppCompatActivity {
             mProxyManager = ProxyManager.getInstance();
         }
     }
+    
+    //// GAMEPAD SCENE
 
     private void gotoGamepadsListView(boolean directly) {
         if (directly) {
@@ -411,6 +413,8 @@ public class FOTAV2Main extends AppCompatActivity {
         gamepadList2.setAdapter(adapter);
     }
     
+    //// IMU SENSOR SCENE
+    
     public void SetupIMUEnabledGamepadList() {
         ArrayList<HashMap<String, String>> enabledGamepads = new ArrayList<>();
         int list = 1;
@@ -446,6 +450,28 @@ public class FOTAV2Main extends AppCompatActivity {
                 new String[]{ "name", "address" },
                 new int[]{ android.R.id.text1, android.R.id.text2 } );
         calibrationGamepadList.setAdapter( calibrationAdapter );
+    }
+    
+    private void gotoIMUCalibrationScene(final String name, final String addr) {
+        AlertDialog.Builder b = new AlertDialog.Builder( this );
+        b.setTitle( "Calibration " + name );
+        b.setMessage( R.string.calibration_ready );
+        b.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent( FOTAV2Main.this, SensorCalibrationActivity.class );
+                intent.putExtra( "gpname", name );
+                intent.putExtra( "gpaddr", addr );
+                startActivity( intent );
+            }
+        } );
+        b.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            
+            }
+        } );
+        b.show();
     }
 
     @Override
