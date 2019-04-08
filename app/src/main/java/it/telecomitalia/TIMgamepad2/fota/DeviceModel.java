@@ -1,9 +1,14 @@
 package it.telecomitalia.TIMgamepad2.fota;
 
+import android.app.Application;
 import android.bluetooth.BluetoothDevice;
 
+import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
+import it.telecomitalia.TIMgamepad2.R;
+import it.telecomitalia.TIMgamepad2.activity.SensorCalibrationActivity;
 import it.telecomitalia.TIMgamepad2.model.FabricModel;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
+import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
 public class DeviceModel {
 
@@ -84,6 +89,12 @@ public class DeviceModel {
 
     public synchronized void setIMUEnable(boolean enable) {
         mIMUEnabled = enable;
+    }
+    
+    public synchronized void setCalibrationData() {
+        String value = (String) SharedPreferenceUtils.get( mDevice.getAddress(), GamePadV2UpgadeApplication.getContext(), "calibration", "" );
+        LogUtil.d( mDevice.getName() + " - " + value );
+        if (value != "HARDWARE" && online()) mSPPConnection.setByteGyroZero( SensorCalibrationActivity.getCalibrationData( value ) );
     }
 
     public synchronized void setGamePadName(String name) {

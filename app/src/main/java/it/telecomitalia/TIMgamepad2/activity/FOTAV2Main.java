@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
+import it.telecomitalia.TIMgamepad2.CalibrationGamepadVO;
+import it.telecomitalia.TIMgamepad2.CalibrationListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadVO;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
@@ -291,12 +293,12 @@ public class FOTAV2Main extends AppCompatActivity {
         calibrationGamepadList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView textView = view.findViewById( android.R.id.text1 );
+                TextView textView = view.findViewById( R.id.gamepad_name );
                 String name = textView.getText().toString();
                 LogUtil.i( "Select " + name );
                 if (!textView.getText().toString().equals( getString(R.string.no_gamepad) )) {
-                    TextView addressData = view.findViewById( android.R.id.text2 );
-                    String addr = addressData.getText().toString().substring( "MAC: ".length() );
+                    TextView addressData = view.findViewById( R.id.gamepad_address );
+                    String addr = addressData.getText().toString();
                     LogUtil.i( "Mac Address " + addr );
                     
                     gotoIMUCalibrationScene( name, addr );
@@ -416,40 +418,40 @@ public class FOTAV2Main extends AppCompatActivity {
     //// IMU SENSOR SCENE
     
     public void SetupIMUEnabledGamepadList() {
-        ArrayList<HashMap<String, String>> enabledGamepads = new ArrayList<>();
+        CalibrationGamepadVO c;
+        ArrayList<CalibrationGamepadVO> enabledGamepads = new ArrayList<>();
         int list = 1;
         enabledGamepads.clear();
         List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
         if ( models == null || models.size() == 0 ) {
             LogUtil.w( "No Gamepad enabled IMU" );
-            HashMap<String, String> d = new HashMap<String, String>();
-            d.put( "name", getString(R.string.no_gamepad) );
-            d.put( "address", "Click to re-check Gamepads" );
-            enabledGamepads.add( d );
+            c = new CalibrationGamepadVO(
+                    getString( R.string.no_gamepad ),
+            "Click to re-check Gamepads"
+            );
+            enabledGamepads.add( c );
         } else {
             for ( DeviceModel model : models ) {
                 if ( ! model.getMACAddress().equals( INIT_ADDRESS ) ) {
-                    HashMap<String, String> d = new HashMap<String, String>();
-                    d.put( "name", String.format( "Gamepad %d", list ) );
-                    d.put( "address", "MAC: " + model.getMACAddress() );
-                    enabledGamepads.add( d );
+                    c = new CalibrationGamepadVO( String.format( "Gamepad %d", list )
+                            , model.getMACAddress() );
+                    enabledGamepads.add( c );
                     list++;
                 }
             }
             if ( enabledGamepads.size() == 0 ) {
                 // No IMU Enabled Gamepad.
                 LogUtil.w( "No Gamepad enabled IMU" );
-                HashMap<String, String> d = new HashMap<String, String>();
-                d.put( "name", "No Gamepad" );
-                d.put( "address", "Click to re-check Gamepads" );
-                enabledGamepads.add( d );
+                c = new CalibrationGamepadVO(
+                        getString( R.string.no_gamepad ),
+                        "Click to re-check Gamepads"
+                );
+                enabledGamepads.add( c );
             }
         }
-        SimpleAdapter calibrationAdapter = new SimpleAdapter(
-                this, enabledGamepads, android.R.layout.simple_list_item_2,
-                new String[]{ "name", "address" },
-                new int[]{ android.R.id.text1, android.R.id.text2 } );
-        calibrationGamepadList.setAdapter( calibrationAdapter );
+        
+        CalibrationListAdapter adapter = new CalibrationListAdapter(this, R.layout.gamepad_calibration_list, enabledGamepads );
+        calibrationGamepadList.setAdapter( adapter );
     }
     
     private void gotoIMUCalibrationScene(final String name, final String addr) {
@@ -580,7 +582,7 @@ public class FOTAV2Main extends AppCompatActivity {
         switch (event.getAction()) {
 
             case KeyEvent.ACTION_UP:
-	            LogUtil.logKeyEvent( event );
+	            //LogUtil.logKeyEvent( event );
                 if (mMagicIndex == mMagicKeys[mMagicIndex].getIndex() && event.getKeyCode() == mMagicKeys[mMagicIndex].getKeyCode()) {
                     mMagicIndex++;
                     LogUtil.d("Keycode " + event.getKeyCode() + "; Index =" + mMagicIndex);

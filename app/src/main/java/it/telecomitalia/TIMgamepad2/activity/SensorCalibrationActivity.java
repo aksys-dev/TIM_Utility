@@ -1,19 +1,19 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.os.Handler;
-
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.fota.SensorCalibrationEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
+import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
 public class SensorCalibrationActivity extends AppCompatActivity {
 	BluetoothDeviceManager deviceManager;
@@ -23,6 +23,8 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 	TextView monitorIMU, monitorSavedIMU;
 	ProgressBar StatusProgress;
 	Handler handler;
+	boolean isHardMode;
+	boolean isWorking;
 	
 	final int USER_WAIT_TIME = 5000;
 	
@@ -31,6 +33,7 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 		super.onCreate( savedInstanceState );
 		setContentView( R.layout.activity_sensor_calibration );
 		deviceManager= BluetoothDeviceManager.getInstance();
+		
 		calibrationMessage = findViewById( R.id.status_calibration );
 		normalMessage = findViewById( R.id.message );
 		StatusProgress = findViewById( R.id.status_progress );
@@ -38,6 +41,8 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 		monitorIMU.setVisibility( View.GONE );
 		monitorSavedIMU = findViewById( R.id.view_savedimu );
 		monitorSavedIMU.setVisibility( View.GONE );
+		isHardMode = false;
+		isWorking = true;
 		
 		LogUtil.d( "Calibration Activity" );
 		handler = new Handler();
@@ -53,7 +58,13 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 		}
 	}
 	
+	@Override
+	public void onBackPressed() {
+		if ( ! isWorking ) finish();
+	}
+	
 	public void SetGamepadEvent(String name, String address) {
+		LogUtil.d( name + " - " + address );
 		device = deviceManager.getDeviceModelByAddress( address );
 		if (device == null) {
 			LogUtil.w( "Not Found Device!" );
@@ -79,13 +90,14 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 	Runnable EndCalibrationSoftly = new Runnable() {
 		@Override
 		public void run() {
+			isWorking = false;
 			calibrationMessage.setText( "It's Done!" );
 			StatusProgress.setIndeterminate( false );
 			StatusProgress.setMax( 100 );
 			StatusProgress.setProgress( 100 );
 			normalMessage.setText( R.string.gamepad_calibration_end );
-			monitorIMU.setVisibility( View.VISIBLE );
-			monitorSavedIMU.setVisibility( View.VISIBLE );
+			monitorIMU.setVisibility( View.GONE );
+			monitorSavedIMU.setVisibility( View.GONE );
 		}
 	};
 	
@@ -120,6 +132,7 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 			zx = x; zy = y; zz = z;
 			handler.post( ViewCalibrationValue );
 			handler.post( EndCalibrationSoftly );
+			SaveCalibrationData( x,y,z);
 		}
 		
 		@Override
@@ -138,6 +151,7 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 		@Override
 		public void endCalibration() {
 			/// its over.
+			isWorking = false;
 			normalMessage.setText( R.string.gamepad_calibration_end );
 			int[] gyrovalues = device.getSPPConnection().getResultSensorCalibration();
 			String textvalue = "";
@@ -145,7 +159,27 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 				if (textvalue != "") textvalue += ",";
 				textvalue += String.valueOf( val );
 			}
-			
 		}
 	};
+	
+	void SaveCalibrationData(final int x, final int y, final int z) {
+		String data = x+","+y+","+z;
+		SharedPreferenceUtils.put( device.getMACAddress(), this, "calibration", data );
+	}
+	
+	void SaveCalibrationHardmode() {
+		SharedPreferenceUtils.put( device.getMACAddress(), this, "calibration", "HARDWARE" );
+	}
+	
+	public static int[] getCalibrationData(String xyz) {
+		if (xyz.indexOf( "," ) >= 0) {
+			String[] xyzvalue = xyz.split( "," );
+			int[] value = new int[ 3 ];
+			value[ 0 ] = Integer.valueOf( xyzvalue[ 0 ] );
+			value[ 1 ] = Integer.valueOf( xyzvalue[ 1 ] );
+			value[ 2 ] = Integer.valueOf( xyzvalue[ 2 ] );
+			return value;
+		}
+		return new int[] {0,0,0};
+	}
 }

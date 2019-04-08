@@ -135,6 +135,7 @@ public class BluetoothDeviceManager {
         enableSensor(gp);
         gp.setSPPConnection(new SPPConnection(gp, listener));
         gp.getSPPConnection().start();
+        gp.setCalibrationData();
 //        gp.print();
         DeviceLocalCache.getInstance().save(mDevices); //update the local cache
         FabricModel model = gp.getFabricModel();
@@ -169,6 +170,8 @@ public class BluetoothDeviceManager {
             enableSensor(gamepad);
             gamepad.setSPPConnection(new SPPConnection(gamepad, listener));
             gamepad.getSPPConnection().start();
+            gamepad.setCalibrationData();
+    
             FabricModel model = gamepad.getFabricModel();
             FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_CONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
             gamepad.setFabricModel(model);

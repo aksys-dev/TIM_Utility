@@ -97,6 +97,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private float sentDataSize = 0;
     private byte[] byteGyroZero;
     private boolean checkGyroZero = false;
+    private int IMU_SAMPLES = 1499;
+    private boolean useHardCalibration;
     
     private SensorCalibrationEvent calibrationEvent;
 //    private int mIMUTimeoutCounter = 0;
@@ -113,6 +115,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mInfo = info;
         mGamepadListener = listener;
         byteGyroZero = new byte[] {0x0,0x0,0x0,0x0,0x0,0x0};
+        useHardCalibration = false;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
             mProxyManager = ProxyManager.getInstance();
         }
@@ -120,6 +123,19 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         if (TEST_A7_ON_A8) {
             mProxyManager = ProxyManager.getInstance();
         }
+    }
+    
+    public void setByteGyroZero(String savedata) {
+    
+    }
+    
+    public void setByteGyroZero(int[] xyz) {
+        byteGyroZero[0] = seperateIntToBytes( xyz[0] )[0];
+        byteGyroZero[1] = seperateIntToBytes( xyz[0] )[1];
+        byteGyroZero[2] = seperateIntToBytes( xyz[1] )[0];
+        byteGyroZero[3] = seperateIntToBytes( xyz[1] )[1];
+        byteGyroZero[4] = seperateIntToBytes( xyz[2] )[0];
+        byteGyroZero[5] = seperateIntToBytes( xyz[2] )[1];
     }
     
     private static byte[] seperateIntToBytes(int x) {
@@ -228,7 +244,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     final int SIGNAL_WAIT_TIME = 3000;
     public void startCalibration() {
         mHandler = new Handler(  );
-        LogUtil.d( "Call How to Calibration" );
         int version = Integer.parseInt( mFirmwareVersion );
         if ( version > 180943 ) {
             mConnectionThread.write( CMD_SET_CALIBRATION );
@@ -244,8 +259,25 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     Runnable SoftCalibration = new Runnable() {
         @Override
         public void run() {
-            LogUtil.d( "Call Start Calibration in Software" );
+            //LogUtil.d( "Start Calibration in Software" );
             checkGyroZero = true;
+        }
+    };
+    
+    Runnable HardCalibration = new Runnable() {
+        @Override
+        public void run() {
+            LogUtil.d( "Start Calibration in Hardware" );
+            int x = 0;
+            useHardCalibration = true;
+            while (x < IMU_SAMPLES) {
+                calibrationEvent.progressCalibration( x, IMU_SAMPLES );
+                x++;
+                SystemClock.sleep( 1000/50 );
+            }
+            if (x >= IMU_SAMPLES) {
+            
+            }
         }
     };
     
@@ -409,28 +441,32 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             case DATA_IMU_HEADER_PREFIX:
                 if (data[1] == DATA_IMU_HEADER && size == IMU_FRAME_SIZE) {
+                    byte[] event;
                     if (checkGyroZero) {
                         //byteGyroZero = new byte[]{ data[ 12 ], data[ 13 ], data[ 14 ], data[ 15 ], data[ 16 ], data[ 17 ] };
                         inputGyroscopeData( combineHighAndLowByte( data[ 12 ], data[ 13 ] ), combineHighAndLowByte( data[ 14 ], data[ 15 ] ), combineHighAndLowByte( data[ 16 ], data[ 17 ] ) );
                     }
-                    
-                    int[] calcs = new int[] {
-                            combineHighAndLowByte( data[ 12 ], data[ 13 ] ) - combineHighAndLowByte( byteGyroZero[ 0 ], byteGyroZero[ 1 ] ),
-                            combineHighAndLowByte( data[ 14 ], data[ 15 ] ) - combineHighAndLowByte( byteGyroZero[ 2 ], byteGyroZero[ 3 ] ),
-                            combineHighAndLowByte( data[ 16 ], data[ 17 ] ) - combineHighAndLowByte( byteGyroZero[ 4 ], byteGyroZero[ 5 ] )
-                    } ;
-                    
-                    byte[] gyros = new byte[] {
-                            seperateIntToBytes( calcs[0] )[0], seperateIntToBytes( calcs[0] )[1],
-                            seperateIntToBytes( calcs[1] )[0], seperateIntToBytes( calcs[1] )[1],
-                            seperateIntToBytes( calcs[2] )[0], seperateIntToBytes( calcs[2] )[1],
-                    };
-                    
+                    if (useHardCalibration) {
+                        event = new byte[]{ 0x09, data[ 6 ], data[ 7 ], data[ 8 ], data[ 9 ], data[ 10 ], data[ 11 ],
+                                data[ 12 ], data[ 13 ], data[ 14 ], data[ 15 ], data[ 16 ], data[ 17 ] };
+                    } else {
+                        int[] calcs = new int[]{
+                                combineHighAndLowByte( data[ 12 ], data[ 13 ] ) - combineHighAndLowByte( byteGyroZero[ 0 ], byteGyroZero[ 1 ] ),
+                                combineHighAndLowByte( data[ 14 ], data[ 15 ] ) - combineHighAndLowByte( byteGyroZero[ 2 ], byteGyroZero[ 3 ] ),
+                                combineHighAndLowByte( data[ 16 ], data[ 17 ] ) - combineHighAndLowByte( byteGyroZero[ 4 ], byteGyroZero[ 5 ] )
+                        };
+    
+                        byte[] gyros = new byte[]{
+                                seperateIntToBytes( calcs[ 0 ] )[ 0 ], seperateIntToBytes( calcs[ 0 ] )[ 1 ],
+                                seperateIntToBytes( calcs[ 1 ] )[ 0 ], seperateIntToBytes( calcs[ 1 ] )[ 1 ],
+                                seperateIntToBytes( calcs[ 2 ] )[ 0 ], seperateIntToBytes( calcs[ 2 ] )[ 1 ],
+                        };
+
 //                    mIMUTimeoutCounter++;
-                    //Use binder instead of socket on android 8 or higher version
-                    byte[] event = new byte[]{0x09, data[6], data[7], data[8], data[9], data[10], data[11],
-                            gyros[0], gyros[1], gyros[2], gyros[3], gyros[4], gyros[5] };
-                    
+                        //Use binder instead of socket on android 8 or higher version
+                        event = new byte[]{ 0x09, data[ 6 ], data[ 7 ], data[ 8 ], data[ 9 ], data[ 10 ], data[ 11 ],
+                                gyros[ 0 ], gyros[ 1 ], gyros[ 2 ], gyros[ 3 ], gyros[ 4 ], gyros[ 5 ] };
+
 //                            (byte) (data[12] - byteGyroZero[0]), (byte) (data[13] - byteGyroZero[1]), (byte) (data[14] - byteGyroZero[2]),
 //                            (byte) (data[15] - byteGyroZero[3]), (byte) (data[16] - byteGyroZero[4]), (byte) (data[17] - byteGyroZero[5]) };
 
@@ -439,6 +475,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 //                        interval_counter = 1;
 //                    }
 //                    interval_counter++;
+                    }
                     if (calibrationEvent != null) {
                         calibrationEvent.getGyroscopeValue(
                                 combineHighAndLowByte( event[7],event[8] ),
@@ -448,12 +485,15 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                     
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         mBinderProxy.send(event);
+//                        LogUtil.d( "Android O - " + byteViewer( event ) );
                     } else {
                         if (BuildConfig.ANDROID_7_SUPPORT_IMU)
                             mProxyManager.send(event);
+//                        LogUtil.d( "Android N (with IMU) - " + byteViewer( event ));
                     }
                     if (TEST_A7_ON_A8) {
                         mProxyManager.send(event);
+//                        LogUtil.d( "Android N - " + byteViewer( event ));
                     }
                 }
                 break;
@@ -487,7 +527,9 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             case CMD_SET_CALIBRATION:
                 LogUtil.d( "Start Calibration" );
                 checkGyroZero = false;
+                useHardCalibration = true;
                 mHandler.removeCallbacks( SoftCalibration );
+                mHandler.post( HardCalibration );
                 break;
             case CMD_SET_CALIBRATION_END:
                 endSensorCalibration();
@@ -505,9 +547,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
     
     private void inputGyroscopeData(int x, int y, int z) {
-        int sample = 501;
-        
-        if ( list_x.size() >= sample) {
+        if ( list_x.size() >= IMU_SAMPLES) {
             /// calibration over.
             checkGyroZero = false;
             Integer[] lx = list_x.toArray( new Integer[ list_x.size() ] );
@@ -518,17 +558,17 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             Arrays.sort(list_z.toArray());
     
             int[] gyrozero = new int[] {
-                    lx[sample/2], ly[sample/2], lz[sample/2]
+                    lx[IMU_SAMPLES/2], ly[IMU_SAMPLES/2], lz[IMU_SAMPLES/2]
             };
 
 //            int a=0,b=0,c=0;
 //
-//            for (int w = 0; w < sample; w++) a += list_x.get(w);
-//            for (int w = 0; w < sample; w++) b += list_y.get(w);
-//            for (int w = 0; w < sample; w++) c += list_z.get(w);
+//            for (int w = 0; w < IMU_SAMPLES; w++) a += list_x.get(w);
+//            for (int w = 0; w < IMU_SAMPLES; w++) b += list_y.get(w);
+//            for (int w = 0; w < IMU_SAMPLES; w++) c += list_z.get(w);
     
-//            int[] gyrozero = new int[] { Math.round( a/sample ), Math.round( b/sample ), Math.round( c/sample ) };
-//            int[] gyrozero = new int[] { a/sample , b/sample , c/sample };
+//            int[] gyrozero = new int[] { Math.round( a/IMU_SAMPLES ), Math.round( b/IMU_SAMPLES ), Math.round( c/IMU_SAMPLES ) };
+//            int[] gyrozero = new int[] { a/IMU_SAMPLES , b/IMU_SAMPLES , c/IMU_SAMPLES };
             
             byteGyroZero[0] = seperateIntToBytes( gyrozero[0] )[0];
             byteGyroZero[1] = seperateIntToBytes( gyrozero[0] )[1];
@@ -544,7 +584,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             list_x.add( x );
             list_y.add( y );
             list_z.add( z );
-            calibrationEvent.progressCalibration( list_x.size(), sample );
+            calibrationEvent.progressCalibration( list_x.size(), IMU_SAMPLES );
         }
     }
     
@@ -570,6 +610,14 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             builder.append("RESULT : " + mResult);
             return builder.toString();
         }
+    }
+    
+    String byteViewer( byte[] array) {
+        String s = "";
+        for ( byte b : array ) {
+            s += String.format( " %02x", b );
+        }
+        return s;
     }
 
 //    private class IMUStatusCheckThread extends Thread {
