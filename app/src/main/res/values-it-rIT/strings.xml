@@ -117,11 +117,12 @@
     <string name="utility_service_restarting">"Connessione in corso &#8230;"</string>
     <string name="gamepad_service_running">Il servizio TIM Gamepad è in esecuzione</string>
     <string name="no_gamepad">Nessun gamepad</string>
-    <string name="gamepad_calibration_first">If you wan\'t calibration, press \"B\" or \"⬅\".</string>
-    <string name="gamepad_calibration_wait">Now Calibrating Sensor. Please don\'t touch this gamepad.</string>
-    <string name="gamepad_calibration_end">Press (B) or Back button.(⬅)</string>
+    <string name="gamepad_calibration_first">Per annullare, premere (B) o (&lt;) pulsanti.</string>
+    <string name="gamepad_calibration_wait">Calibrazione in corso, non muovere il gamepad.</string>
+    <string name="gamepad_calibration_end">Premere (B) o Back (&lt;)</string>
     <string name="cancel">CANCELLA</string>
     <string name="yes">Si</string>
     <string name="no">No</string>
     <string name="calibration_ready">Posiziona il game pad su una superficie piana prima di iniziare.\nNon toccare il gamepad fino alla fine della calibrazione.\nQuando sei pronto, premi \"SI\".\nPremere \"CANCELLA\" per annullare.</string>
+    <string name="calibration_completed">Calibrazione completata</string>
 </resources>

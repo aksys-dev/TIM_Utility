@@ -91,7 +91,7 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 		@Override
 		public void run() {
 			isWorking = false;
-			calibrationMessage.setText( "It's Done!" );
+			calibrationMessage.setText( R.string.calibration_completed );
 			StatusProgress.setIndeterminate( false );
 			StatusProgress.setMax( 100 );
 			StatusProgress.setProgress( 100 );
