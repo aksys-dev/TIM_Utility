@@ -95,7 +95,7 @@ public class GamePadService extends Service {
 
             if (devices != null) {
                 for (DeviceModel dev : devices) {
-                    if (dev.getIndicator() == id) {
+                    if (dev.getInputID() == id) {
                         dev.getSPPConnection().vibrator(left_status, right_status);
                     }
                 }

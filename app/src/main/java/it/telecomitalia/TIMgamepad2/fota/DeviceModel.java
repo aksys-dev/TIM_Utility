@@ -2,6 +2,7 @@ package it.telecomitalia.TIMgamepad2.fota;
 
 import android.app.Application;
 import android.bluetooth.BluetoothDevice;
+import android.view.InputDevice;
 
 import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
 import it.telecomitalia.TIMgamepad2.R;
@@ -16,6 +17,7 @@ public class DeviceModel {
     private SPPConnection mSPPConnection;
     private FabricModel mFabricModel;
     private int mIndex;
+    private int mInputID;
 
     private static final int INIT_INDICATOR = -1;
     public static final String INIT_ADDRESS = "undefined";
@@ -38,6 +40,7 @@ public class DeviceModel {
         mFabricModel = null;
         mFabricModel = new FabricModel();
         mIndex = -1;
+        mInputID = -1;
     }
 
     public synchronized void reset() {
@@ -47,6 +50,7 @@ public class DeviceModel {
         mGamedName = INIT_NAME;
         mDevice = null;
         mSPPConnection = null;
+        mInputID = -1;
     }
 
 
@@ -104,6 +108,14 @@ public class DeviceModel {
 
     public synchronized void setBlueToothDevice(BluetoothDevice device) {
         mDevice = device;
+        
+        // Get InputDevide ID from System.
+        for ( int i: InputDevice.getDeviceIds() ) {
+            if (device == null) return;
+            if ( mDevice.getName().equals( InputDevice.getDevice( i ).getName() ) )
+                mInputID = i;
+            return;
+        };
     }
 
     public synchronized void setAddress(String address) {
@@ -122,6 +134,10 @@ public class DeviceModel {
         return mDevice;
     }
 
+    public int getInputID() {
+        return mInputID;
+    }
+    
     public SPPConnection getSPPConnection() {
         return mSPPConnection;
     }
