@@ -48,6 +48,10 @@ public class CalibrationListAdapter extends ArrayAdapter<CalibrationGamepadVO> {
 		gamepadNo.setText( vo.GamepadName );
 		gamepadAddr.setText( vo.getMACAddress() );
 		gamepadIcon.setImageResource( R.drawable.gamepad_big );
+		if (!vo.online && vo.getGamepadName() != getContext().getString( R.string.no_gamepad )) {
+			gamepadAddr.setVisibility( View.VISIBLE );
+			gamepadAddr.setText( R.string.gamepad_offline );
+		}
 		
 		return convertView;
 	}

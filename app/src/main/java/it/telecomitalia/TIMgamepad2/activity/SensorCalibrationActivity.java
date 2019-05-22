@@ -60,7 +60,14 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 	
 	@Override
 	public void onBackPressed() {
-		if ( ! isWorking ) finish();
+		if ( isWorking )
+		{
+			handler.removeCallbacks( SetCalibrationSoftly );
+			handler.post( CancelCalibrationSoftly );
+			device.getSPPConnection().cancelSensorCalibration();
+		}
+		else
+			finish();
 	}
 	
 	public void SetGamepadEvent(String name, String address) {
@@ -71,7 +78,7 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 			super.onBackPressed();
 		}
 		
-		calibrationMessage.setText( "Calibration " + name );
+		calibrationMessage.setText( getString( R.string.Calibration ) + " " + name );
 		normalMessage.setText( R.string.gamepad_calibration_first );
 		
 		device.getSPPConnection().setCalibrationEventListener( calibrationEvent );
@@ -81,9 +88,22 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 	Runnable SetCalibrationSoftly = new Runnable() {
 		@Override
 		public void run() {
-			normalMessage.setText( R.string.gamepad_calibration_wait );
+			isWorking = true;
+			normalMessage.setText( getString(R.string.gamepad_calibration_first) + "\n" + getString(R.string.gamepad_calibration_wait) );
 			device.getSPPConnection().setCalibrationClear();
 			device.getSPPConnection().startCalibration();
+		}
+	};
+	
+	Runnable CancelCalibrationSoftly = new Runnable() {
+		@Override
+		public void run() {
+			isWorking = false;
+			calibrationMessage.setText( R.string.calibration_cancelled );
+			StatusProgress.setIndeterminate( false );
+			normalMessage.setText( R.string.gamepad_calibration_end );
+			monitorIMU.setVisibility( View.GONE );
+			monitorSavedIMU.setVisibility( View.GONE );
 		}
 	};
 	
@@ -148,6 +168,12 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 			normalMessage.setText( R.string.gamepad_calibration_wait );
 		}
 		
+		@Override
+		public void cancelCalibration() {
+			isWorking = false;
+			LogUtil.i( "Cancel Calibration" );
+			handler.post( CancelCalibrationSoftly );
+		}
 		@Override
 		public void endCalibration() {
 			/// its over.

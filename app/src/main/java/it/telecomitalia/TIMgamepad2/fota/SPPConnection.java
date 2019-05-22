@@ -99,6 +99,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private boolean checkGyroZero = false;
     private int IMU_SAMPLES = 1499;
     private boolean useHardCalibration;
+    private boolean useSoftCalibration;
     
     private SensorCalibrationEvent calibrationEvent;
 //    private int mIMUTimeoutCounter = 0;
@@ -115,6 +116,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mInfo = info;
         mGamepadListener = listener;
         byteGyroZero = new byte[] {0x0,0x0,0x0,0x0,0x0,0x0};
+        useSoftCalibration = false;
         useHardCalibration = false;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
             mProxyManager = ProxyManager.getInstance();
@@ -261,6 +263,18 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         public void run() {
             //LogUtil.d( "Start Calibration in Software" );
             checkGyroZero = true;
+            useHardCalibration = false;
+            useSoftCalibration = true;
+        }
+    };
+    
+    Runnable SoftCalibrationCancel = new Runnable() {
+        @Override
+        public void run() {
+            LogUtil.d( "Force Stop Calibration in Software" );
+            useHardCalibration = false;
+            useSoftCalibration = false;
+            checkGyroZero = false;
         }
     };
     
@@ -280,6 +294,18 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             }
         }
     };
+    
+    public void cancelSensorCalibration() {
+        if (useHardCalibration) {
+            mConnectionThread.write( CMD_SET_CALIBRATION_END ); /// FORCE CANCEL
+            calibrationEvent.cancelCalibration();
+        } else if (useSoftCalibration) {
+            LogUtil.d( "Cancel Sensor Calibration" );
+            mHandler.removeCallbacks( SoftCalibration );
+            mHandler.post( SoftCalibrationCancel );
+            calibrationEvent.cancelCalibration();
+        }
+    }
     
     void endSensorCalibration() {
         calibrationEvent.endCalibration();

@@ -294,13 +294,13 @@ public class FOTAV2Main extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView textView = view.findViewById( R.id.gamepad_name );
+                TextView addressData = view.findViewById( R.id.gamepad_address );
+                String addr = addressData.getText().toString();
                 String name = textView.getText().toString();
                 LogUtil.i( "Select " + name );
-                if (!textView.getText().toString().equals( getString(R.string.no_gamepad) )) {
-                    TextView addressData = view.findViewById( R.id.gamepad_address );
-                    String addr = addressData.getText().toString();
+                if (!textView.getText().toString().equals( getString(R.string.no_gamepad) )
+                        && !addr.equals( getResources().getText( R.string.gamepad_offline ) )) {
                     LogUtil.i( "Mac Address " + addr );
-                    
                     gotoIMUCalibrationScene( name, addr );
                 }
             }
@@ -427,14 +427,14 @@ public class FOTAV2Main extends AppCompatActivity {
             LogUtil.w( "No Gamepad enabled IMU" );
             c = new CalibrationGamepadVO(
                     getString( R.string.no_gamepad ),
-            "Click to re-check Gamepads"
+                    null, false
             );
             enabledGamepads.add( c );
         } else {
             for ( DeviceModel model : models ) {
-                if ( ! model.getMACAddress().equals( INIT_ADDRESS ) ) {
+                if ( model.imuEnabled() ) {
                     c = new CalibrationGamepadVO( String.format( "Gamepad %d", list )
-                            , model.getMACAddress() );
+                            , model.getMACAddress(), model.online() );
                     enabledGamepads.add( c );
                     list++;
                 }
@@ -444,7 +444,7 @@ public class FOTAV2Main extends AppCompatActivity {
                 LogUtil.w( "No Gamepad enabled IMU" );
                 c = new CalibrationGamepadVO(
                         getString( R.string.no_gamepad ),
-                        "Click to re-check Gamepads"
+                        null, false
                 );
                 enabledGamepads.add( c );
             }
@@ -456,7 +456,7 @@ public class FOTAV2Main extends AppCompatActivity {
     
     private void gotoIMUCalibrationScene(final String name, final String addr) {
         AlertDialog.Builder b = new AlertDialog.Builder( this );
-        b.setTitle( "Calibration " + name );
+        b.setTitle( getString( R.string.Calibration ) + " " + name );
         b.setMessage( R.string.calibration_ready );
         b.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
             @Override

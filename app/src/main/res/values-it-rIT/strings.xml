@@ -125,4 +125,5 @@
     <string name="no">No</string>
     <string name="calibration_ready">Posiziona il game pad su una superficie piana prima di iniziare.\nNon toccare il gamepad fino alla fine della calibrazione.\nQuando sei pronto, premi \"SI\".\nPremere \"CANCELLA\" per annullare.</string>
     <string name="calibration_completed">Calibrazione completata</string>
+    <string name="calibration_cancelled">Calibrazione annullata</string>
 </resources>

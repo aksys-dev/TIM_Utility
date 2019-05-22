@@ -5,5 +5,6 @@ public interface SensorCalibrationEvent {
 	void getSavedGyroZero(int x, int y, int z);
 	void progressCalibration(int progress, int max);
 	void startCalibration();
+	void cancelCalibration();
 	void endCalibration();
 }
