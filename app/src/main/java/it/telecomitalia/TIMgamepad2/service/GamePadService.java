@@ -78,11 +78,6 @@ public class GamePadService extends Service {
 
     public class ServiceBinder extends IGamePadService.Stub {
         @Override
-        public void basicTypes(int anInt, long aLong, boolean aBoolean, float aFloat, double aDouble, String aString) throws RemoteException {
-            Log.d(TAG, "int:" + anInt + "; aLong:" + aLong + "; aBoolean:" + aBoolean + "; aFloat:" + aFloat + "; aDouble:" + aDouble + "; aString:" + aString);
-        }
-
-        @Override
         public String getVersion(int device) {
             Log.d(TAG, "User try to get version");
             return getVersionImpl(device);
