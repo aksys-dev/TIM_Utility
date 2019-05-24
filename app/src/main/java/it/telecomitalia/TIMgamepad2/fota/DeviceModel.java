@@ -108,13 +108,17 @@ public class DeviceModel {
 
     public synchronized void setBlueToothDevice(BluetoothDevice device) {
         mDevice = device;
-        
+    }
+    
+    public synchronized void setInputID() {
+        if (mDevice == null) return;
         // Get InputDevide ID from System.
         for ( int i: InputDevice.getDeviceIds() ) {
-            if (device == null) return;
-            if ( mDevice.getName().equals( InputDevice.getDevice( i ).getName() ) )
+            if (getGamePadName().equals( InputDevice.getDevice( i ).getName() ) ) {
+	            LogUtil.d( "setInputID: " + i + " / " + InputDevice.getDevice( i ).getName() + " == " + getGamePadName() );
                 mInputID = i;
-            return;
+	            return;
+            }
         };
     }
 

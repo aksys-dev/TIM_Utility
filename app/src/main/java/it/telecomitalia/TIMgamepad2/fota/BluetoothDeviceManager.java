@@ -132,6 +132,7 @@ public class BluetoothDeviceManager {
         gp.setGamePadName(device.getName());
         gp.setAddress(device.getAddress());
         gp.setBlueToothDevice(device);
+        gp.setInputID();
         enableSensor(gp);
         gp.setSPPConnection(new SPPConnection(gp, listener));
         gp.getSPPConnection().start();
@@ -167,6 +168,7 @@ public class BluetoothDeviceManager {
         if (gamepad != null) {
             LogUtil.d("GamePad " + gamepad.getIndicator() + "/" + gamepad.getGamePadName() + "/" + gamepad.getMACAddress() + " existed!");
             gamepad.setBlueToothDevice(device);
+            gamepad.setInputID();
             enableSensor(gamepad);
             gamepad.setSPPConnection(new SPPConnection(gamepad, listener));
             gamepad.getSPPConnection().start();

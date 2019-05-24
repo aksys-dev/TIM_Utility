@@ -567,7 +567,14 @@ public class FOTAV2Main extends AppCompatActivity {
         if (macAddress == getString(R.string.unknown)) return;
         GamepadVO g = new GamepadVO(macAddress);
 //        Toast.makeText(this, "Detected Bluetooth: " + macAddress, Toast.LENGTH_SHORT).show();
-        g.setGamepadName(String.format("Gamepad %d"));
+        int i = 0;
+        for (DeviceModel device : mGamePadDeviceManager.getBondedDevices()) {
+            i++;
+            if (device.getMACAddress().equals( macAddress )) {
+                break;
+            }
+        }
+        g.setGamepadName(String.format("Gamepad %d", i ));
         gamepadDatas.add(g);
     }
 
