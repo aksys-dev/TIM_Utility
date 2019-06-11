@@ -1,11 +1,9 @@
 package it.telecomitalia.TIMgamepad2.fota;
 
 
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -98,6 +96,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private byte[] byteGyroZero;
     private boolean checkGyroZero = false;
     private int IMU_SAMPLES = 1499;
+    private boolean callCalibration;
     private boolean useHardCalibration;
     private boolean useSoftCalibration;
     
@@ -116,6 +115,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         mInfo = info;
         mGamepadListener = listener;
         byteGyroZero = new byte[] {0x0,0x0,0x0,0x0,0x0,0x0};
+        callCalibration = false;
         useSoftCalibration = false;
         useHardCalibration = false;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
@@ -244,10 +244,12 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
     
     final int SIGNAL_WAIT_TIME = 3000;
-    public void startCalibration() {
+    public synchronized void startCalibration() {
         mHandler = new Handler(  );
         int version = Integer.parseInt( mFirmwareVersion );
-        if ( version > 180943 ) {
+        if ( version > 180943 && !callCalibration ) {
+            callCalibration = true;
+            LogUtil.d("Check HARD Calibration / FW :" + version);
             mConnectionThread.write( CMD_SET_CALIBRATION );
             /// for Cannot detect Eventcode
             mHandler.postDelayed( SoftCalibration, SIGNAL_WAIT_TIME );
@@ -261,7 +263,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     Runnable SoftCalibration = new Runnable() {
         @Override
         public void run() {
-            //LogUtil.d( "Start Calibration in Software" );
+            LogUtil.d( "Start Calibration in Software" );
             checkGyroZero = true;
             useHardCalibration = false;
             useSoftCalibration = true;
@@ -281,16 +283,16 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     Runnable HardCalibration = new Runnable() {
         @Override
         public void run() {
-            LogUtil.d( "Start Calibration in Hardware" );
-            int x = 0;
-            useHardCalibration = true;
-            while (x < IMU_SAMPLES) {
-                calibrationEvent.progressCalibration( x, IMU_SAMPLES );
-                x++;
-                SystemClock.sleep( 1000/50 );
-            }
-            if (x >= IMU_SAMPLES) {
-            
+            LogUtil.d( "Calibration in Hardware (" + list_x.size() + "/" + IMU_SAMPLES + ")" );
+            int x = 0, y = 0,z = 0;
+            if (useHardCalibration && list_x.size() < IMU_SAMPLES) {
+//                calibrationEvent.progressCalibration( x, IMU_SAMPLES );
+                list_x.add( x );
+                list_y.add( y );
+                list_z.add( z );
+                calibrationEvent.progressCalibration( list_x.size(), IMU_SAMPLES );
+    
+                mHandler.postDelayed( HardCalibration, 20 );
             }
         }
     };
@@ -472,9 +474,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                         //byteGyroZero = new byte[]{ data[ 12 ], data[ 13 ], data[ 14 ], data[ 15 ], data[ 16 ], data[ 17 ] };
                         inputGyroscopeData( combineHighAndLowByte( data[ 12 ], data[ 13 ] ), combineHighAndLowByte( data[ 14 ], data[ 15 ] ), combineHighAndLowByte( data[ 16 ], data[ 17 ] ) );
                     }
-                    if (useHardCalibration) {
-                        event = new byte[]{ 0x09, data[ 6 ], data[ 7 ], data[ 8 ], data[ 9 ], data[ 10 ], data[ 11 ],
+                    if ( useHardCalibration ) {
+                        event = new byte[]{ 0x09,
+                                data[ 6 ], data[ 7 ], data[ 8 ], data[ 9 ], data[ 10 ], data[ 11 ],
                                 data[ 12 ], data[ 13 ], data[ 14 ], data[ 15 ], data[ 16 ], data[ 17 ] };
+                        /// Keep data
                     } else {
                         int[] calcs = new int[]{
                                 combineHighAndLowByte( data[ 12 ], data[ 13 ] ) - combineHighAndLowByte( byteGyroZero[ 0 ], byteGyroZero[ 1 ] ),
@@ -558,7 +562,15 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 mHandler.post( HardCalibration );
                 break;
             case CMD_SET_CALIBRATION_END:
-                endSensorCalibration();
+                LogUtil.d( "Ended Sensor Calibration" );
+                if (callCalibration) {
+                    useHardCalibration = false;
+                    callCalibration = false;
+                    mHandler.removeCallbacks( HardCalibration );
+                    endSensorCalibration();
+                } else {
+                    LogUtil.d( "wrong command." );
+                }
                 break;
             default:
                 LogUtil.e("Unknown command!");
@@ -603,7 +615,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             byteGyroZero[4] = seperateIntToBytes( gyrozero[2] )[0];
             byteGyroZero[5] = seperateIntToBytes( gyrozero[2] )[1];
             
-            //endSensorCalibration();
+            endSensorCalibration();
             calibrationEvent.getSavedGyroZero( gyrozero[0], gyrozero[1], gyrozero[2] );
         }
         else {
@@ -645,27 +657,4 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         }
         return s;
     }
-
-//    private class IMUStatusCheckThread extends Thread {
-//        @Override
-//        public void run() {
-//            while (monitoring) {
-//                SystemClock.sleep(IMUMonitorInterval);
-//                if (!mIMUTimeout) {
-////                    LogUtil.d("IMU fresh rate:" + mIMUTimeoutCounter / 2 + " Hz");
-//                    if (mIMUTimeoutCounter < 5) {
-//                        mIMUTimeoutCounter = 0;
-//                        mIMUTimeout = true;
-//                        LogUtil.w("Lack of IMU events:(" + mIMUTimeoutCounter + "), Restart monitor...");
-//                        onConnectionException(new Exception("IMU Time Out"));
-//                        break;
-//                    }
-//                } else {
-//                    LogUtil.d("Waiting for the IMU data recovery");
-//                }
-//                mIMUTimeoutCounter = 0;
-//            }
-//            super.run();
-//        }
-//    }
 }

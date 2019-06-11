@@ -42,7 +42,7 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 		monitorSavedIMU = findViewById( R.id.view_savedimu );
 		monitorSavedIMU.setVisibility( View.GONE );
 		isHardMode = false;
-		isWorking = true;
+		isWorking = false;
 		
 		LogUtil.d( "Calibration Activity" );
 		handler = new Handler();
@@ -88,10 +88,12 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 	Runnable SetCalibrationSoftly = new Runnable() {
 		@Override
 		public void run() {
-			isWorking = true;
+			if (isWorking) return;
+			LogUtil.d( "FOTA_Calibration","Calibration start!" );
 			normalMessage.setText( getString(R.string.gamepad_calibration_first) + "\n" + getString(R.string.gamepad_calibration_wait) );
 			device.getSPPConnection().setCalibrationClear();
 			device.getSPPConnection().startCalibration();
+			isWorking = true;
 		}
 	};
 	
@@ -151,7 +153,6 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 		public void getSavedGyroZero(final int x, final int y, final int z) {
 			zx = x; zy = y; zz = z;
 			handler.post( ViewCalibrationValue );
-			handler.post( EndCalibrationSoftly );
 			SaveCalibrationData( x,y,z);
 		}
 		
@@ -178,13 +179,7 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 		public void endCalibration() {
 			/// its over.
 			isWorking = false;
-			normalMessage.setText( R.string.gamepad_calibration_end );
-			int[] gyrovalues = device.getSPPConnection().getResultSensorCalibration();
-			String textvalue = "";
-			for (int val : gyrovalues) {
-				if (textvalue != "") textvalue += ",";
-				textvalue += String.valueOf( val );
-			}
+			handler.post( EndCalibrationSoftly );
 		}
 	};
 	
