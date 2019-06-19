@@ -221,6 +221,16 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 if (state == BluetoothProfile.STATE_CONNECTED) {
                     LogUtil.d("HID device STATE_CONNECTED: " + device.getAddress());
                     new ConnectedPostThread(device).start();
+                    //// Delete Paired device Check.
+                    final BluetoothDevice d = device;
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!d.getName().contains("TIMGamepad") && DeviceModel.isTarget(d)) DeviceModel.UnpairDevice(d);
+                        }
+                    }, 2000);
+
                 } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
                     mGamepadDeviceManager.notifyDisconnectedDevice(device);
                     LogUtil.d("HID device STATE_DISCONNECTED: " + device.getAddress());

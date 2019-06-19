@@ -79,7 +79,7 @@ public class UpgradeUIActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.upgrade_ui);
 
-        EventBus.getDefault().register(this);
+//        EventBus.getDefault().register(this);
 //        mContext = this;
         mHandler = new MainHandler();
         Intent i = getIntent();

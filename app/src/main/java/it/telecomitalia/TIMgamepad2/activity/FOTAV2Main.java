@@ -21,7 +21,6 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +31,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
@@ -557,10 +555,11 @@ public class FOTAV2Main extends AppCompatActivity {
             BluetoothDevice bluetoothDevice = (BluetoothDevice) object;
             Crashlytics.log(Log.INFO, "FOTA2", "Detected Bluetooth: " + bluetoothDevice.getAddress());
             EventAddGamepad(bluetoothDevice.getAddress());
-        } else if (((String) object).contains("BlueTooth_Connected")) {
-            //蓝牙已连接
-//            Toast.makeText(this, "BlueTooth_Connected", Toast.LENGTH_SHORT).show();
         }
+//        else if ((object instanceof String) && ((String)object).contains("BlueTooth_Connected")) {
+//            //蓝牙已连接
+//            Toast.makeText(this, "BlueTooth_Connected", Toast.LENGTH_SHORT).show();
+//        }
     }
 
     public void EventAddGamepad(String macAddress) {

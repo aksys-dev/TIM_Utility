@@ -4,6 +4,8 @@ import android.app.Application;
 import android.bluetooth.BluetoothDevice;
 import android.view.InputDevice;
 
+import java.lang.reflect.Method;
+
 import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.activity.SensorCalibrationActivity;
@@ -172,5 +174,35 @@ public class DeviceModel {
         this.mMACAddress = address;
         this.mGamedName = name;
     }
-    
+
+    /**
+     * Check device is Bluetooth Controller.
+     * @param device
+     * @return
+     */
+    public static boolean isTarget(BluetoothDevice device) {
+        LogUtil.d("Check Device: " + device.getName());
+        for ( int i: InputDevice.getDeviceIds() ) {
+            if (InputDevice.getDevice( i ).getName().equals( device.getName() ) ) {
+                LogUtil.d(device.getName() + " Type: " + InputDevice.getDevice(i).getKeyboardType() + " Controller: " + InputDevice.getDevice(i).getControllerNumber() );
+                return InputDevice.getDevice(i).getKeyboardType() == 2 &&
+                        InputDevice.getDevice(i).getControllerNumber() > 0;
+            }
+        };
+        return false;
+    }
+
+    public static void UnpairDevice(BluetoothDevice device) {
+        String deviceName = device.getName();
+        LogUtil.d("Delete Device: " + deviceName);
+        try {
+            ////// NEED permission "android.permission.BLUETOOTH_ADMIN"
+            Method m = device.getClass().getMethod("removeBond", (Class[]) null);
+            m.invoke(device, (Object[]) null);
+            LogUtil.i("Removed Device - " + deviceName);
+        } catch (Exception e) {
+            LogUtil.w(e.toString());
+        }
+
+    }
 }
