@@ -173,7 +173,7 @@ public class BluetoothDeviceManager {
             gamepad.setSPPConnection(new SPPConnection(gamepad, listener));
             gamepad.getSPPConnection().start();
             gamepad.setCalibrationData();
-    
+
             FabricModel model = gamepad.getFabricModel();
             FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_CONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
             gamepad.setFabricModel(model);
