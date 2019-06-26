@@ -585,25 +585,25 @@ public class FOTAV2Main extends AppCompatActivity {
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        switch (event.getAction()) {
-
-            case KeyEvent.ACTION_UP:
-	            //LogUtil.logKeyEvent( event );
-                if (mMagicIndex == mMagicKeys[mMagicIndex].getIndex() && event.getKeyCode() == mMagicKeys[mMagicIndex].getKeyCode()) {
-                    mMagicIndex++;
-//                    LogUtil.d("Keycode " + event.getKeyCode() + "; Index =" + mMagicIndex);
-                    if (mMagicIndex == 6) {
-//                        Toast.makeText(FOTAV2Main.this, "Magic key!!!", Toast.LENGTH_LONG).show();
-                        Intent dialogIntent = new Intent(FOTAV2Main.this, BackDoor.class);
-                        dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(dialogIntent);
-                        mMagicIndex = 0;
-                    }
-                } else {
-                    mMagicIndex = 0;
-                }
-                break;
-        }
+//        switch (event.getAction()) {
+//
+//            case KeyEvent.ACTION_UP:
+//	            //LogUtil.logKeyEvent( event );
+//                if (mMagicIndex == mMagicKeys[mMagicIndex].getIndex() && event.getKeyCode() == mMagicKeys[mMagicIndex].getKeyCode()) {
+//                    mMagicIndex++;
+////                    LogUtil.d("Keycode " + event.getKeyCode() + "; Index =" + mMagicIndex);
+//                    if (mMagicIndex == 6) {
+////                        Toast.makeText(FOTAV2Main.this, "Magic key!!!", Toast.LENGTH_LONG).show();
+//                        Intent dialogIntent = new Intent(FOTAV2Main.this, BackDoor.class);
+//                        dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        startActivity(dialogIntent);
+//                        mMagicIndex = 0;
+//                    }
+//                } else {
+//                    mMagicIndex = 0;
+//                }
+//                break;
+//        }
         return super.dispatchKeyEvent(event);
     }
 
