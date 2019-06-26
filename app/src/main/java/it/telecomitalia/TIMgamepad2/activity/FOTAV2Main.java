@@ -155,9 +155,9 @@ public class FOTAV2Main extends AppCompatActivity {
 //        calibrationEnabled = (boolean) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, CALIBRATION_DEFAULT);
 //        calibration.setChecked(calibrationEnabled);
 //        if (calibrationEnabled) {
-//            calibration.setText(getString(R.string.on));
+//            calibration.setText(getStringResource(R.string.on));
 //        } else {
-//            calibration.setText(getString(R.string.off));
+//            calibration.setText(getStringResource(R.string.off));
 //        }
         textSeekBarValue.setText(String.valueOf(restoreValue));
         seekBarSensitivity.setProgress((int) (restoreValue * 100));
@@ -171,9 +171,9 @@ public class FOTAV2Main extends AppCompatActivity {
 //            @Override
 //            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 //                if (isChecked) {
-//                    calibration.setText(getString(R.string.on));
+//                    calibration.setText(getStringResource(R.string.on));
 //                } else {
-//                    calibration.setText(getString(R.string.off));
+//                    calibration.setText(getStringResource(R.string.off));
 //                }
 //                SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, isChecked);
 //            }
@@ -591,9 +591,9 @@ public class FOTAV2Main extends AppCompatActivity {
 	            //LogUtil.logKeyEvent( event );
                 if (mMagicIndex == mMagicKeys[mMagicIndex].getIndex() && event.getKeyCode() == mMagicKeys[mMagicIndex].getKeyCode()) {
                     mMagicIndex++;
-                    LogUtil.d("Keycode " + event.getKeyCode() + "; Index =" + mMagicIndex);
+//                    LogUtil.d("Keycode " + event.getKeyCode() + "; Index =" + mMagicIndex);
                     if (mMagicIndex == 6) {
-                        Toast.makeText(FOTAV2Main.this, "Magic key!!!", Toast.LENGTH_LONG).show();
+//                        Toast.makeText(FOTAV2Main.this, "Magic key!!!", Toast.LENGTH_LONG).show();
                         Intent dialogIntent = new Intent(FOTAV2Main.this, BackDoor.class);
                         dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(dialogIntent);

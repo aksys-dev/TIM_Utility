@@ -157,20 +157,20 @@ public class UpgradeUIActivity extends Activity {
     public void onEvent(GamePadEvent event) {
         if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_CONNECTED)) {
 //            Toast.makeText(this, "Upgrade UI received GamePad connected", Toast.LENGTH_LONG).show();
-            LogUtil.d("Upgrade UI received GamePad connected");
+//            LogUtil.d("Upgrade UI received GamePad connected");
         } else if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED)) {
 //            Toast.makeText(this, "GamePad disconnected", Toast.LENGTH_LONG).show();
-            LogUtil.d("Upgrade UI received GamePad disconnected");
+//            LogUtil.d("Upgrade UI received GamePad disconnected");
             String mac = event.getMAC();
             if (mac != null) {
                 if (mac.equals(targetDeviceMAC)) {
-                    LogUtil.d("Target gamepad" + mac + "(" + targetDeviceMAC + ") disconnected, So abort......");
+                    LogUtil.d(R.string.log_target_gamepad_disconnected, mac, targetDeviceMAC);
                     aborted = true;
                     mProgressText.setTextColor(getResources().getColor(R.color.red));
                     mProgressText.setText(R.string.upgrading_gamepad_disconnected);
                     mDoneButton.setVisibility(View.VISIBLE);
                 } else {
-                    LogUtil.d("Not the target device, go on: " + mac + "(" + targetDeviceMAC + ")");
+                    LogUtil.d(R.string.log_not_the_target_device, mac, targetDeviceMAC);
                 }
             } else {
                 LogUtil.d("Do nothing......");
@@ -249,7 +249,6 @@ public class UpgradeUIActivity extends Activity {
     };
 
     private void initializeBluetoothManager() {
-        LogUtil.d("initializeBluetoothManager");
         mGamePadDeviceManager = BluetoothDeviceManager.getInstance();
         mUpgradeManager = mGamePadDeviceManager.getUpgradeManager();
     }
@@ -257,7 +256,6 @@ public class UpgradeUIActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        LogUtil.d("onResume called");
         mGamePadDeviceManager.queryDeviceFabricInfo();
 //        registerReceiver(mReceiver, makeFilter());
     }
@@ -292,23 +290,23 @@ public class UpgradeUIActivity extends Activity {
 //    }
 
     private void startUpgradeProcess() {
-        LogUtil.d("Start upgrade");
+//        LogUtil.d("Start upgrade");
         Hashtable<String, DeviceModel> deviceMap = mGamePadDeviceManager.getConnectedDevices();
         Set<String> keySet = deviceMap.keySet();
 
         if (keySet.contains(mTargetDevice.getMACAddress())) {
             if (mTargetDevice.online()) {
                 FabricModel fabricModel = mTargetDevice.getFabricModel();
-                LogUtil.d("upgrade check ： " + fabricModel.needUpdate());
+//                LogUtil.d("upgrade check ： " + fabricModel.needUpdate());
                 if (fabricModel.needUpdate()) {
-                    LogUtil.d("Need upgrade");
+//                    LogUtil.d("Need upgrade");
                     mUpgradeManager.startUpgrade(mTargetDevice, mHandler);
                     notifyUpgradeStatus(mTargetDevice.getFabricModel(), true);
                 } else {
-                    LogUtil.d("Device not online, Skip");
+                    LogUtil.d(R.string.log_device_not_online_skip);
                 }
             } else {
-                LogUtil.d("The upgrading device has disconnected, abort!");
+                LogUtil.d(R.string.log_upgrade_device_has_disconnected);
                 mProgressText.setTextColor(getResources().getColor(R.color.red));
                 mProgressText.setText(R.string.upgrading_gamepad_disconnected);
                 mDoneButton.setVisibility(View.VISIBLE);
@@ -339,14 +337,14 @@ public class UpgradeUIActivity extends Activity {
             switch (msg.what) {
                 case UPGRADE_FAILED:
                     aborted = true;
-                    LogUtil.d("The upgrading device failed, abort!");
+//                    LogUtil.d("The upgrading device failed, abort!");
                     mProgressText.setTextColor(getResources().getColor(R.color.red));
                     mProgressText.setText(R.string.upgrading_gamepad_failed);
                     mDoneButton.setVisibility(View.VISIBLE);
                     break;
                 case UPGRADE_CONNECTION_ERROR:
                     aborted = true;
-                    LogUtil.d("The upgrading timeout, abort!");
+//                    LogUtil.d("The upgrading timeout, abort!");
                     mProgressText.setTextColor(getResources().getColor(R.color.red));
                     mProgressText.setText(R.string.upgrading_connection_timeout);
                     mDoneButton.setVisibility(View.VISIBLE);
@@ -363,7 +361,7 @@ public class UpgradeUIActivity extends Activity {
             String event = (String) object;
             if (event.equals(EVENTBUS_MSG_NEED_UPGRADE)) {
                 //启动来自UpdateFotaMainService的升级请求。
-                LogUtil.d("EVENTBUS_MSG_NEED_UPGRADE");
+//                LogUtil.d("EVENTBUS_MSG_NEED_UPGRADE");
             } else if (event.equals(BluetoothDeviceManager.EVENTBUS_MSG_QUERY_END)) {
 //                LogUtil.d("DisplayUpdateInfo");
 //                startUpgradeByOrder(0);

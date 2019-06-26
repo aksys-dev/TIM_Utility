@@ -2,6 +2,7 @@ package it.telecomitalia.TIMgamepad2.Proxy;
 
 import android.os.SystemClock;
 
+import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 
@@ -44,7 +45,7 @@ public class ProxyController implements ProxyStatusListener {
 
     public CommonEventCode commonSendByte(CommonEventCode reqCode, byte data) {
 //        LogUtil.e("Service ready ? " + serviceReady);
-        LogUtil.d("Code = " + reqCode.value(reqCode) + "Sensitivity = " + data);
+        LogUtil.d(R.string.log_code_sensitivity, reqCode.value(reqCode), data);
         mTransmitter.send(new byte[]{reqCode.value(reqCode), data});
         return CommonEventCode.CODE_OK;
     }

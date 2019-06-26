@@ -16,6 +16,7 @@ import java.util.Arrays;
 import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
+import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
@@ -165,7 +166,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private void recoverySPPConnection() {
         SystemClock.sleep(1000);
         if (mInfo != null && mInfo.getDevice() != null) {
-            LogUtil.d("Do recovery");
+            LogUtil.d(R.string.log_do_recovery);
             mConnectionThread.cancel();
             SystemClock.sleep(100);
             mConnectionThread = null;
@@ -175,7 +176,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             mConnectionThread.start();
             checked = false;
         } else {
-            LogUtil.w("Device unpaired from user, Ignore");
+            LogUtil.w(R.string.log_device_unpaired_from_user);
         }
     }
 
@@ -189,7 +190,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
     private void setGamePadLedIndicator() {
         try {
-            LogUtil.d("Channel:" + mInfo.getIndicator());
+//            LogUtil.d("Channel:" + mInfo.getIndicator());
             byte[] cmd = new byte[2];
             cmd[CMD_HEADER] = CMD_SET_CHANNEL;
             cmd[CMD_PAYLOAD] = mInfo.getIndicator();
@@ -202,16 +203,16 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
     private void setGamePadIMU() {
         if (mInfo.imuEnabled()) {
-            LogUtil.d("Enable the IMU actually");
+            LogUtil.d(R.string.log_enable_imu_actually);
             mConnectionThread.write(CMD_ENABLE_IMU);
         } else {
-            LogUtil.d("Disable none predefined device's IMU");
+            LogUtil.d(R.string.log_disable_none_predefined_device);
             mConnectionThread.write(CMD_DISABLE_IMU);
         }
     }
 
     public void fotaOn(byte cmd) {
-        LogUtil.i("SPP Send: " + cmd);
+//        LogUtil.i("SPP Send: " + cmd);
         mConnectionThread.write(cmd);
     }
 
@@ -249,7 +250,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         int version = Integer.parseInt( mFirmwareVersion );
         if ( version > 180943 && !callCalibration ) {
             callCalibration = true;
-            LogUtil.d("Check HARD Calibration / FW :" + version);
+//            LogUtil.d("Check HARD Calibration / FW :" + version);
             mConnectionThread.write( CMD_SET_CALIBRATION );
             /// for Cannot detect Eventcode
             mHandler.postDelayed( SoftCalibration, SIGNAL_WAIT_TIME );
@@ -263,7 +264,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     Runnable SoftCalibration = new Runnable() {
         @Override
         public void run() {
-            LogUtil.d( "Start Calibration in Software" );
+//            LogUtil.d( "Start Calibration in Software" );
             checkGyroZero = true;
             useHardCalibration = false;
             useSoftCalibration = true;
@@ -273,7 +274,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     Runnable SoftCalibrationCancel = new Runnable() {
         @Override
         public void run() {
-            LogUtil.d( "Force Stop Calibration in Software" );
+//            LogUtil.d( "Force Stop Calibration in Software" );
             useHardCalibration = false;
             useSoftCalibration = false;
             checkGyroZero = false;
@@ -283,7 +284,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     Runnable HardCalibration = new Runnable() {
         @Override
         public void run() {
-            LogUtil.d( "Calibration in Hardware (" + list_x.size() + "/" + IMU_SAMPLES + ")" );
+//            LogUtil.d( "Calibration in Hardware (" + list_x.size() + "/" + IMU_SAMPLES + ")" );
             int x = 0, y = 0,z = 0;
             if (useHardCalibration && list_x.size() < IMU_SAMPLES) {
 //                calibrationEvent.progressCalibration( x, IMU_SAMPLES );
@@ -302,7 +303,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             mConnectionThread.write( CMD_SET_CALIBRATION_END ); /// FORCE CANCEL
             calibrationEvent.cancelCalibration();
         } else if (useSoftCalibration) {
-            LogUtil.d( "Cancel Sensor Calibration" );
+            LogUtil.d( R.string.log_cancel_sensor_calibration );
             mHandler.removeCallbacks( SoftCalibration );
             mHandler.post( SoftCalibrationCancel );
             calibrationEvent.cancelCalibration();
@@ -331,19 +332,19 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         }
         try {
             mHandler = handler;
-            LogUtil.d("Start upgrade process");
+            LogUtil.d(R.string.log_start_upgrade_process);
             mPath = path;
             FileInputStream fileInputStream = new FileInputStream(new File(path));
             int len = fileInputStream.available();
-            LogUtil.d("file length : " + len);
+//            LogUtil.d("file length : " + len);
             byte[] buffer = new byte[len];
             int size = fileInputStream.read(buffer);
-            LogUtil.i("File：" + len + " bytes. Will send：" + buffer.length + "(" + size + ") bytes. Transmitting, Please wait......");
+//            LogUtil.i("File：" + len + " bytes. Will send：" + buffer.length + "(" + size + ") bytes. Transmitting, Please wait......");
             if (!startUpgradeProcess(buffer)) {
                 if (handler != null)
                     handler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
             }
-            LogUtil.d("Data finished");
+            LogUtil.d(R.string.log_data_finished);
             fileInputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -351,7 +352,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
 
     public int waitAck(byte[] reply) {
-        LogUtil.d("waitAck Called");
+//        LogUtil.d("waitAck Called");
         return mConnectionThread.read(reply);
     }
 
@@ -388,7 +389,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
     @Override
     public void onConnectionException(Exception e) {
-        LogUtil.w("SPP connection exception: " + e.getMessage());
+        LogUtil.w(R.string.log_spp_connection_exception, e.getMessage());
 //        LogUtil.i("Recovery the SPP connection");
         recoverySPPConnection();
     }
@@ -406,26 +407,26 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         //LogUtil.d("FrameHeader: [" + HexToString(data[INDEX_CMD]) + "]");
         switch (data[INDEX_CMD]) {
             case CMD_ENABLE_IMU:
-                LogUtil.d("CMD_ENABLE_IMU");
+//                LogUtil.d("CMD_ENABLE_IMU");
                 break;
             case CMD_DISABLE_IMU:
-                LogUtil.d("CMD_DISABLE_IMU");
+//                LogUtil.d("CMD_DISABLE_IMU");
                 break;
             case CMD_QUERY_IMU:
-                LogUtil.d("CMD_QUERY_IMU");
+//                LogUtil.d("CMD_QUERY_IMU");
                 break;
             case CMD_SET_CHANNEL:
-                LogUtil.d("CMD_SET_CHANNEL");
+//                LogUtil.d("CMD_SET_CHANNEL");
                 break;
             case CMD_QUERY_FW_VERSION:
                 mFirmwareVersion = new String(data, INDEX_DATA_START, 6);
-                LogUtil.d("Firmware version on device: " + mFirmwareVersion);
+//                LogUtil.d("Firmware version on device: " + mFirmwareVersion);
                 mInfo.setFirmwareVersion(mFirmwareVersion);
                 mInfo.getFabricModel().mPreviousVersion = mFirmwareVersion;
                 mInfo.setFabricModel(mInfo.getFabricModel());
                 break;
             case CMD_START_FW_UPGRADE:
-                LogUtil.d("CMD_START_FW_UPGRADE");
+//                LogUtil.d("CMD_START_FW_UPGRADE");
                 break;
             case CMD_SET_MODEL_PC:
             case CMD_SET_MODEL_GAME:
@@ -436,27 +437,27 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             case CMD_GET_MODEL_CTV:
                 break;
             case CMD_ENABLE_UPDATE_MODE:
-                LogUtil.d("CMD_ENABLE_UPDATE_MODE");
+//                LogUtil.d("CMD_ENABLE_UPDATE_MODE");
                 sentDataSize = 0;
                 break;
             case CMD_DISABLE_UPDATE_MODE:
-                LogUtil.d("CMD_DISABLE_UPDATE_MODE");
+//                LogUtil.d("CMD_DISABLE_UPDATE_MODE");
                 break;
             case CMD_UPGRADE_SUCCESS:
-                LogUtil.d("CMD_UPGRADE_SUCCESS");
+//                LogUtil.d("CMD_UPGRADE_SUCCESS");
                 break;
             case CMD_UPGRADE_FAILED:
-                LogUtil.d("CMD_UPGRADE_FAILED");
+//                LogUtil.d("CMD_UPGRADE_FAILED");
                 break;
             case CMD_MOTOR_ON:
-                LogUtil.d("CMD_MOTOR_ON");
+//                LogUtil.d("CMD_MOTOR_ON");
                 break;
             case CMD_MOTOR_OFF:
-                LogUtil.d("CMD_MOTOR_OFF");
+//                LogUtil.d("CMD_MOTOR_OFF");
                 break;
             case CMD_GET_BAT_V:
                 mBatteryVolt = combineHighAndLowByte(data[INDEX_DATA_START], data[INDEX_DATA_START + 1]);
-                LogUtil.d("BatteryVolt: " + mBatteryVolt);
+//                LogUtil.d("BatteryVolt: " + mBatteryVolt);
                 mInfo.setBatteryVolt(mBatteryVolt);
                 //Enable IMU if android 7 or higher version
                 if (!checked) {
@@ -528,11 +529,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 }
                 break;
             case CMD_PARTITION_VERIFY_FAIL:
-                LogUtil.d("CMD_PARTITION_VERIFY_FAIL");
+//                LogUtil.d("CMD_PARTITION_VERIFY_FAIL");
                 EventBus.getDefault().post(new FotaEvent(FOTA_STATUS_DONE, mInfo.getDevice(), FOTA_UPGRADE_FAILURE));
                 break;
             case CMD_PARTITION_VERIFY_SUCCESS:
-                LogUtil.d("CMD_PARTITION_VERIFY_SUCCESS");
+//                LogUtil.d("CMD_PARTITION_VERIFY_SUCCESS");
                 EventBus.getDefault().post(new FotaEvent(FOTA_STATUS_DONE, mInfo.getDevice(), FOTA_UPGRADE_SUCCESS));
                 sentDataSize = 0;
                 break;
@@ -541,39 +542,39 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 int percent = (int) ((sentDataSize / TOTAL_SIZE) * 100);
                 EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, mInfo.getDevice(), percent));
                 if (percent % 20 == 0) {
-                    LogUtil.d("CMD_OTA_WRITTEN_BYTES: percent = " + percent);
+//                    LogUtil.d("CMD_OTA_WRITTEN_BYTES: percent = " + percent);
                 }
                 break;
             case CMD_OTA_DATA_RECEIVED:
-                LogUtil.d("CMD_OTA_END_TAG");
+//                LogUtil.d("CMD_OTA_END_TAG");
                 break;
             case CMD_ERROR_HEADER:
-                LogUtil.d("CMD_ERROR_HEADER, Try to send the data again");
+//                LogUtil.d("CMD_ERROR_HEADER, Try to send the data again");
                 SystemClock.sleep(800);
                 startUpgrade(mPath, mHandler, true);
 //              mHandler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
                 break;
                 
             case CMD_SET_CALIBRATION:
-                LogUtil.d( "Start Calibration" );
+                LogUtil.d( R.string.log_start_calibration );
                 checkGyroZero = false;
                 useHardCalibration = true;
                 mHandler.removeCallbacks( SoftCalibration );
                 mHandler.post( HardCalibration );
                 break;
             case CMD_SET_CALIBRATION_END:
-                LogUtil.d( "Ended Sensor Calibration" );
+                LogUtil.d( R.string.log_end_calibration );
                 if (callCalibration) {
                     useHardCalibration = false;
                     callCalibration = false;
                     mHandler.removeCallbacks( HardCalibration );
                     endSensorCalibration();
                 } else {
-                    LogUtil.d( "wrong command." );
+                    LogUtil.w(R.string.log_wrong_command);
                 }
                 break;
             default:
-                LogUtil.e("Unknown command!");
+                LogUtil.w(R.string.log_unknown_command);
                 break;
         }
     }
@@ -644,8 +645,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
-            builder.append("CMD : " + mCmd).append("\n");
-            builder.append("RESULT : " + mResult);
+            builder.append("CMD : ").append(mCmd).append("\n");
+            builder.append("RESULT : ").append(mResult);
             return builder.toString();
         }
     }

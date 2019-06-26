@@ -14,7 +14,7 @@ import it.telecomitalia.TIMgamepad2.fota.FabricController;
 
 public class GamePadV2UpgadeApplication extends Application{
     //是否是开发版本
-    public static final boolean isDebug = true;
+    public static final boolean isDebug = BuildConfig.DEBUG;
     private static GamePadV2UpgadeApplication appContext;
 
     @Override
@@ -27,5 +27,9 @@ public class GamePadV2UpgadeApplication extends Application{
 
     public static GamePadV2UpgadeApplication getContext(){
         return appContext;
+    }
+
+    public static String getStringResource(int string) {
+        return getContext().getString(string);
     }
 }

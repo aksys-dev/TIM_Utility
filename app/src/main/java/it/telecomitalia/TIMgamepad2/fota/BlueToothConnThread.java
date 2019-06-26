@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
+import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 
@@ -51,7 +52,7 @@ public class BlueToothConnThread extends Thread {
                         mCb.onDataArrived(recv, bytes);
                     }
                 } catch (IOException e) {
-                    LogUtil.e("SPP disconnected" + e.toString());
+                    LogUtil.e(R.string.loge_spp_disconnected, e.toString());
 //                    if (mListener != null) {
 //                        mListener.onConnectionException(e);
 //                    }
@@ -84,7 +85,7 @@ public class BlueToothConnThread extends Thread {
                     mSocket = mDeviceInfo.getDevice().createRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
                 }
             } catch (IOException e) {
-                LogUtil.e("Error when create socket");
+                LogUtil.e(R.string.loge_error_when_create_socket);
             }
             try {
                 mSocket.connect();
@@ -99,7 +100,7 @@ public class BlueToothConnThread extends Thread {
 //                    LogUtil.d("SPP socket Connected");
                     mStreamReady = STREAM_INITIATED;
                 } catch (NoSuchMethodException | IOException | InvocationTargetException | IllegalAccessException e1) {
-                    LogUtil.e("Connecting failed: " + e1);
+                    LogUtil.e(R.string.loge_connecting_failed, e1);
 
                     if (mSocket != null) {
                         try {
@@ -114,7 +115,7 @@ public class BlueToothConnThread extends Thread {
                         retries++;
                     } else {
                         //Build SPP failed
-                        LogUtil.w("Build SPP connection retry: " + SPP_RETRY_TIMES + " times, Abort");
+                        LogUtil.w(R.string.logw_build_spp_connection_retry_count, SPP_RETRY_TIMES);
                         mListener.onConnectionReady(false);
                         return;
                     }
@@ -127,7 +128,7 @@ public class BlueToothConnThread extends Thread {
             mIS = mSocket.getInputStream();
             mOS = mSocket.getOutputStream();
         } catch (IOException e) {
-            LogUtil.e("temp sockets not created\n" + e.toString());
+            LogUtil.e(R.string.loge_temp_sockets_not_created, e.toString());
             mStreamReady = STREAM_FAILED;
             mListener.onConnectionReady(false);
         }
@@ -146,7 +147,7 @@ public class BlueToothConnThread extends Thread {
     }
 
     public void cancel() {
-        LogUtil.d("Cancel the SPP connection");
+        LogUtil.d(R.string.log_cancel_spp_connection);
         stopSPPDataListener();
         try {
             if (mIS != null) {
@@ -163,7 +164,7 @@ public class BlueToothConnThread extends Thread {
                 mSocket = null;
             }
         } catch (IOException e) {
-            LogUtil.e("close() of connect of Input/Output/socket failed\n" + e.getMessage());
+            LogUtil.e(R.string.loge_close_of_connection_of_io_socket_failed, e.getMessage());
         }
     }
 
@@ -184,10 +185,10 @@ public class BlueToothConnThread extends Thread {
             if (mOS != null) {
                 mOS.write(buffer);
             } else {
-                LogUtil.e("Can not find target device");
+                LogUtil.e(R.string.loge_cannot_find_target);
             }
         } catch (IOException e) {
-            LogUtil.e("Exception during write\n" + e.getMessage());
+            LogUtil.e(R.string.loge_exception_during_write, e.getMessage());
             return false;
         }
         return true;
@@ -199,10 +200,10 @@ public class BlueToothConnThread extends Thread {
             if (mOS != null) {
                 mOS.write(cmd);
             } else {
-                LogUtil.e("Can not find target device");
+                LogUtil.e(R.string.loge_cannot_find_target);
             }
         } catch (IOException e) {
-            LogUtil.e("Exception during write\n" + e.toString());
+            LogUtil.e(R.string.loge_exception_during_write, e.getMessage());
         }
     }
 
@@ -213,7 +214,7 @@ public class BlueToothConnThread extends Thread {
             // Read from the InputStream
             if (mIS != null) {
                 size = mIS.read(recv);
-                LogUtil.i("Received " + size + " bytes");
+//                LogUtil.i("Received " + size + " bytes");
             } else {
                 //LogUtil.i("Input stream socket has been closed");
             }

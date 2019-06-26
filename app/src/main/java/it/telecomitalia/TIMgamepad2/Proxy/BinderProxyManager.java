@@ -79,7 +79,7 @@ public class BinderProxyManager {
 
 
         } catch (RemoteException e) {
-            // TODO Auto-generated catch block
+            //  Auto-generated catch block
             e.printStackTrace();
         } finally {
             _reply.recycle();
@@ -98,7 +98,7 @@ public class BinderProxyManager {
 //            _reply.readException();
 
         } catch (RemoteException e) {
-            // TODO Auto-generated catch block
+            //  Auto-generated catch block
             e.printStackTrace();
         } finally {
             _reply.recycle();

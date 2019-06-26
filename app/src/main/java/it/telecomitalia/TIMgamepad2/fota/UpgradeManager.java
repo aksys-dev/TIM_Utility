@@ -68,12 +68,12 @@ public class UpgradeManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                LogUtil.d("Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
+//                LogUtil.d("Start Upgrade : " + model.getDevice().getAddress() + " Index : " + model.getIndex());
                 if (model.getFabricModel() != null && model.getFabricModel().mFirmwareConfig != null) {
                     String url = model.getFabricModel().mFirmwareConfig.getmDownUrl();
                     if (url != null) {
                         String path = FileUtils.downLoadBin(url, handler);
-                        LogUtil.d("download success " + path);
+//                        LogUtil.d("download success " + path);
                         SPPConnection mainConnection = model.getSPPConnection();
                         if (mainConnection != null) {
                             mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
@@ -101,7 +101,7 @@ public class UpgradeManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                LogUtil.d("Start Local Upgrade: " + model.getDevice().getAddress() + ";Index: " + model.getIndex() + "; Path: " + localPath);
+//                LogUtil.d("Start Local Upgrade: " + model.getDevice().getAddress() + ";Index: " + model.getIndex() + "; Path: " + localPath);
                 SPPConnection mainConnection = model.getSPPConnection();
                 mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
                 EventBus.getDefault().post(new FotaEvent(FOTA_STAUS_FLASHING, model.getDevice(), 0));
@@ -109,12 +109,12 @@ public class UpgradeManager {
                 try {
                     FileInputStream fileInputStream = new FileInputStream(new File(localPath));
                     int len = fileInputStream.available();
-                    LogUtil.d("file length : " + len);
+//                    LogUtil.d("file length : " + len);
                     byte[] buffer = new byte[len];
                     int size = fileInputStream.read(buffer);
-                    LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
+//                    LogUtil.i("File：" + len + " bytes. Will send：" + size + " bytes. Transmitting, Please wait......");
                     mainConnection.startUpgradeProcess(buffer);
-                    LogUtil.d("Data send finished");
+//                    LogUtil.d("Data send finished");
                     fileInputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();

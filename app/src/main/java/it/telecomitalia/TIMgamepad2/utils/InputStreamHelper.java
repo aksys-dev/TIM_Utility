@@ -24,7 +24,7 @@ public class InputStreamHelper {
 			return inputStream;
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		} catch (IOException e) {
@@ -35,7 +35,7 @@ public class InputStreamHelper {
 				try {
 					inputStream.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					//  Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -60,7 +60,7 @@ public class InputStreamHelper {
 			return inputStream;
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			//  Auto-generated catch block
 			e.printStackTrace();
 			fileInput.close();
 			return null;
@@ -73,7 +73,7 @@ public class InputStreamHelper {
 				try {
 					inputStream.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					//  Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

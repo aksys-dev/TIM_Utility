@@ -97,17 +97,17 @@ public class CommerHelper {
             fos.write(data, 0, data.length);
 
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
+            //  Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
+            //  Auto-generated catch block
             e.printStackTrace();
         } finally {
             try {
                 fos.flush();
                 fos.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
+                //  Auto-generated catch block
                 e.printStackTrace();
             }
         }

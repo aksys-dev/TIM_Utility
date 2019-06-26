@@ -126,4 +126,66 @@
     <string name="calibration_ready">Posiziona il game pad su una superficie piana prima di iniziare.\nNon toccare il gamepad fino alla fine della calibrazione.\nQuando sei pronto, premi \"SI\".\nPremere \"CANCELLA\" per annullare.</string>
     <string name="calibration_completed">Calibrazione completata</string>
     <string name="calibration_cancelled">Calibrazione annullata</string>
+    <string name="event_bluetooth_connected" translatable="false">BlueTooth_Connected</string>
+    <string name="log_setup_successfully" translatable="false">Device (%s) setup successfully</string>
+    <string name="log_setup_failed" translatable="false">Device (%s) setup failed</string>
+    <string name="log_wait_for_connection_ready" translatable="false">Waiting for the connection ready (%d) for %s</string>
+    <string name="log_hid_device_disconnected" translatable="false">HID device STATE_DISCONNECTED: %s</string>
+    <string name="log_hid_device_connected" translatable="false">HID device STATE_CONNECTED: %s</string>
+    <string name="log_device_intent_to_be_upgraded" translatable="false">Device %s: intent to be upgraded</string>
+    <string name="log_waiting_imu_driver_ready" translatable="false">Waiting for the IMU driver ready...</string>
+    <string name="logw_create_notification" translatable="false">Warning: create notification</string>
+    <string name="log_running_api" translatable="false">Service running on API: %d</string>
+    <string name="log_sensor_sensitivity" translatable="false">Sensor default sensitivity: %s</string>
+    <string name="desc_v2_notification" translatable="false">TIM Gamepad v2 notification</string>
+    <string name="loge_socket_driver_not_ready" translatable="false">[Socket]Driver not ready, Use default sensitivity</string>
+    <string name="loge_binder_driver_not_ready" translatable="false">[Binder]Driver not ready, Use default sensitivity</string>
+    <string name="log_exited_FotaMainActivity" translatable="false">Exited FotaMainActivity</string>
+    <string name="key_calibration" translatable="false">calibration</string>
+    <string name="log_new_gamepad" translatable="false">New game pad added</string>
+    <string name="log_gamepad_existed" translatable="false">GamePad %s/%s/%s existed!</string>
+    <string name="log_not_valid_tim_gamepad" translatable="false">Not valid tim game pad, Abort</string>
+    <string name="log_devicemanager_initialize" translatable="false">DeviceManager Initialize</string>
+    <string name="log_enable_imu_gamepad_address" translatable="false">Enable imu for game pad: %s</string>
+    <string name="log_not_the_default_imu_device" translatable="false">Not the default imu device, Ignore: %s</string>
+    <string name="log_updatefabric_firmwareversion" translatable="false">newFirmwareVersion : %s； version : %s</string>
+    <string name="log_target_device_attached_isconnect" translatable="false">Target device attached : %s isBluetoothConnected %s</string>
+    <string name="log_start_reconnect_bluetooth" translatable="false">start reconnect BlueTooth : %s name : %s</string>
+    <string name="log_target_device_connected" translatable="false">Target device connected: %s</string>
+    <string name="log_device_found_not_connected" translatable="false">Device found but not connected.</string>
+    <string name="log_device_not_online_skip" translatable="false">Device not online, Skip</string>
+    <string name="log_upgrade_device_has_disconnected" translatable="false">The upgrading device has disconnected, abort!</string>
+    <string name="log_target_gamepad_disconnected" translatable="false">Target gamepad%s(%s) disconnected, So abort......</string>
+    <string name="log_not_the_target_device" translatable="false">Not the target device, go on: %s(%s)</string>
+    <string name="log_target_device_found_counts" translatable="false">Target device found, Total=%d</string>
+    <string name="log_do_recovery" translatable="false">Do recovery</string>
+    <string name="log_device_unpaired_from_user" translatable="false">Device unpaired from user, Ignore</string>
+    <string name="log_enable_imu_actually" translatable="false">Enable the IMU actually</string>
+    <string name="log_disable_none_predefined_device" translatable="false">Disable none predefined device\'s IMU</string>
+    <string name="log_cancel_sensor_calibration" translatable="false">Cancel Sensor Calibration</string>
+    <string name="log_start_upgrade_process" translatable="false">Start upgrade process</string>
+    <string name="log_data_finished" translatable="false">Data finished</string>
+    <string name="log_spp_connection_exception" translatable="false">SPP connection exception: %s</string>
+    <string name="log_start_calibration" translatable="false">Start Calibration</string>
+    <string name="log_end_calibration" translatable="false">Ended Sensor Calibration</string>
+    <string name="log_unknown_command" translatable="false">Unknown command!</string>
+    <string name="log_wrong_command" translatable="false">wrong command.</string>
+    <string name="log_cancel_spp_connection" translatable="false">Cancel the SPP connection</string>
+    <string name="loge_close_of_connection_of_io_socket_failed" translatable="false">close() of connect of Input/Output/socket failed %s</string>
+    <string name="loge_cannot_find_target" translatable="false">Can not find target device</string>
+    <string name="loge_exception_during_write" translatable="false">Exception during write %s</string>
+    <string name="loge_spp_disconnected" translatable="false">SPP disconnected%s</string>
+    <string name="loge_error_when_create_socket" translatable="false">Error when create socket</string>
+    <string name="loge_connecting_failed" translatable="false">Connecting failed: %s</string>
+    <string name="logw_build_spp_connection_retry_count" translatable="false">Build SPP connection retry: %d times, Abort</string>
+    <string name="loge_temp_sockets_not_created" translatable="false">temp sockets not created %s</string>
+    <string name="log_code_sensitivity" translatable="false">Code = %sSensitivity = %s</string>
+    <string name="logw_server_not_ready" translatable="false">Server not ready...</string>
+    <string name="loge_ioexception" translatable="false">IOException: %s</string>
+    <string name="log_interrupt_exception" translatable="false">InterruptedException: %s</string>
+    <string name="logw_there_is_no_device_connected" translatable="false">There is no device connected, Ignore</string>
+    <string name="log_create_device_record" translatable="false">Create %d device record</string>
+    <string name="log_device_cached" translatable="false">Device cached:%s</string>
+    <string name="log_no_existed_device_info" translatable="false">No existed device info, Now init: %s</string>
+    <string name="log_do_restore" translatable="false">Do restore: %s</string>
 </resources>

@@ -103,7 +103,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            // TODO Auto-generated method stub
+            //  Auto-generated method stub
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
@@ -171,10 +171,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 //mGamepadDeviceManager.notifyDisconnectedDevice(device);
 //                }
             } else if (action.equals(BluetoothAdapter.STATE_OFF)) {
-                LogUtil.i("STATE_OFF");
+                //LogUtil.i("STATE_OFF");
 
             } else if (action.equals(BluetoothAdapter.STATE_ON)) {
-                LogUtil.i("STATE_ON");
+                //LogUtil.i("STATE_ON");
 
             } else if (action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)) {
                 //蓝牙扫描状态(SCAN_MODE)发生改变
@@ -186,10 +186,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                         mGamepadDeviceManager.notifyUnpairedDevice(device);
                         break;
                     case BluetoothDevice.BOND_BONDING:
-                        LogUtil.d("BOND_BONDING: " + device.getName());
+//                        LogUtil.d("BOND_BONDING: " + device.getName());
                         break;
                     case BluetoothDevice.BOND_BONDED:
-                        LogUtil.d("BOND_BONDED: " + device.getName() + " / " + device.getAddress());
+//                        LogUtil.d("BOND_BONDED: " + device.getName() + " / " + device.getAddress());
 //                        new ConnectedPostThread(device).start();
                         break;
                 }
@@ -200,7 +200,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 String from = intent.getStringExtra(INTENT_KEY);
                 if (from.equals(INTENT_FROM_USER)) {
                     String macAddress = intent.getStringExtra(INTENT_MAC);
-                    LogUtil.d("Device " + macAddress + ": intent to be upgraded");
+                    LogUtil.d(String.format(getString(R.string.log_device_intent_to_be_upgraded), macAddress));
                     Intent intents = new Intent(UpdateFotaMainService.this, UpgradeUIActivity.class);
                     intents.putExtra(INTENT_MAC, macAddress);
                     intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -219,21 +219,11 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, 0);
 //                LogUtil.i("HID state=" + state + ",device=" + device);
                 if (state == BluetoothProfile.STATE_CONNECTED) {
-                    LogUtil.d("HID device STATE_CONNECTED: " + device.getAddress());
+                    LogUtil.d(String.format(getString(R.string.log_hid_device_connected), device.getAddress()));
                     new ConnectedPostThread(device).start();
-                    //// Delete Paired device Check.
-                    final BluetoothDevice d = device;
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!d.getName().contains("TIMGamepad") && DeviceModel.isTarget(d)) DeviceModel.UnpairDevice(d);
-                        }
-                    }, 2000);
-
                 } else if (state == BluetoothProfile.STATE_DISCONNECTED) {
                     mGamepadDeviceManager.notifyDisconnectedDevice(device);
-                    LogUtil.d("HID device STATE_DISCONNECTED: " + device.getAddress());
+                    LogUtil.d(String.format(getString(R.string.log_hid_device_disconnected), device.getAddress()));
                 }
             }
         }
@@ -286,7 +276,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
             public void run() {
                 while (!mProxy.ready()) {
                     if (waiting_counter++ < 60)
-                        LogUtil.d("Waiting for the IMU driver ready...");
+                        LogUtil.d(getString(R.string.log_waiting_imu_driver_ready));
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -305,10 +295,9 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         String CHANNEL_ID = FOREGROUND_NOTIFICATION_CHANNEL_ID;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 
-            String Description = "TIM Gamepad v2 notification";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, importance);
-            mChannel.setDescription(Description);
+            mChannel.setDescription(getString(R.string.desc_v2_notification));
             mChannel.enableLights(false);
             mChannel.setLightColor(Color.RED);
             mChannel.enableVibration(false);
@@ -317,7 +306,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(mChannel);
             } else {
-                LogUtil.w("Warning: create notification");
+                LogUtil.w(getString(R.string.logw_create_notification));
             }
         }
 
@@ -338,9 +327,9 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 //        restartBTAdapter(mContext);
         //Only use socket on android 7
 
-        LogUtil.d("Service running on API: " + Build.VERSION.SDK_INT);
+        LogUtil.d(String.format(getString(R.string.log_running_api), Build.VERSION.SDK_INT));
         float sensitivityValue = (float) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, 1.0f);
-        LogUtil.d("Sensor default sensitivity: " + sensitivityValue);
+        LogUtil.d(String.format(getString(R.string.log_sensor_sensitivity), String.valueOf(sensitivityValue)));
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
             mProxy = ProxyManager.getInstance();
             checkDriver();
@@ -348,7 +337,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 //                mProxy.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
                 mProxy.setSensitivity((byte) (sensitivityValue * 100));
             } else {
-                LogUtil.e("[Socket]Driver not ready, Use default sensitivity");
+                LogUtil.e(getString(R.string.loge_socket_driver_not_ready));
             }
         }
 
@@ -357,7 +346,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
             if (mgr != null) {
                 mgr.setSensitivity(sensitivityValue);
             } else {
-                LogUtil.e("[Binder]Driver not ready, Use default sensitivity");
+                LogUtil.e(getString(R.string.loge_binder_driver_not_ready));
             }
         }
         if (TEST_A7_ON_A8) {
@@ -394,7 +383,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 }
             }
         } else if (s.equals("outer")) {
-            LogUtil.i("退出了FotaMainActivity");
+            LogUtil.i(getString(R.string.log_exited_FotaMainActivity));
             isEnterFotaMainActivity = false;
         }
     }
@@ -459,15 +448,15 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     @Override
     public void onSetupStatusChanged(boolean success, BluetoothDevice device) {
         if (success) {
-            LogUtil.i("Device (" + device.getName() + ") setup successfully");
-            EventBus.getDefault().post("BlueTooth_Connected");
+            LogUtil.i(String.format(getString(R.string.log_setup_successfully), device.getName()));
+            EventBus.getDefault().post(getString(R.string.event_bluetooth_connected));
             EventBus.getDefault().post(device);
 //            Intent intentBroadcast = new Intent();
 //            intentBroadcast.setAction(GAMEPAD_DEVICE_CONNECTED);
 //            sendBroadcast(intentBroadcast);
             EventBus.getDefault().post(new GamePadEvent(EVENTBUT_MSG_GP_DEVICE_CONNECTED, device.getAddress()));
         } else {
-            LogUtil.w("Device (" + device.getName() + ") setup failed");
+            LogUtil.w(String.format(getString(R.string.log_setup_failed), device.getName()));
 //            gotoGamepadList();
         }
     }
@@ -490,7 +479,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         @Override
         public void run() {
             while (!mGamepadDeviceManager.isConnected(mDevice)) {
-                LogUtil.d("Waiting for the connection ready (" + counter + ") for " + mDevice.getAddress());
+                LogUtil.d(String.format(getString(R.string.log_wait_for_connection_ready), counter, mDevice.getAddress()));
                 if (counter++ >= 10) {
                     LogUtil.e("Device(" + mDevice.getAddress() + ") connect timeout, abort.");
                     return;

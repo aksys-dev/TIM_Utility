@@ -98,8 +98,8 @@ public class DeviceModel {
     }
     
     public synchronized void setCalibrationData() {
-        String value = (String) SharedPreferenceUtils.get( mDevice.getAddress(), GamePadV2UpgadeApplication.getContext(), "calibration", "" );
-        LogUtil.d( mDevice.getName() + " - " + value );
+        String value = (String) SharedPreferenceUtils.get( mDevice.getAddress(), GamePadV2UpgadeApplication.getContext(), GamePadV2UpgadeApplication.getStringResource(R.string.key_calibration), "" );
+        LogUtil.d(mDevice.getName() + " - " + value);
         if (value != "HARDWARE" && online()) mSPPConnection.setByteGyroZero( SensorCalibrationActivity.getCalibrationData( value ) );
     }
 
@@ -115,13 +115,12 @@ public class DeviceModel {
     public synchronized void setInputID() {
         if (mDevice == null) return;
         // Get InputDevide ID from System.
-        for ( int i: InputDevice.getDeviceIds() ) {
-            if (getGamePadName().equals( InputDevice.getDevice( i ).getName() ) ) {
-	            LogUtil.d( "setInputID: " + i + " / " + InputDevice.getDevice( i ).getName() + " == " + getGamePadName() );
+        for (int i : InputDevice.getDeviceIds())
+            if (getGamePadName().equals(InputDevice.getDevice(i).getName())) {
                 mInputID = i;
-	            return;
+                return;
             }
-        };
+
     }
 
     public synchronized void setAddress(String address) {
@@ -173,36 +172,5 @@ public class DeviceModel {
         this.mIMUEnabled = imuEnabled;
         this.mMACAddress = address;
         this.mGamedName = name;
-    }
-
-    /**
-     * Check device is Bluetooth Controller.
-     * @param device
-     * @return
-     */
-    public static boolean isTarget(BluetoothDevice device) {
-        LogUtil.d("Check Device: " + device.getName());
-        for ( int i: InputDevice.getDeviceIds() ) {
-            if (InputDevice.getDevice( i ).getName().equals( device.getName() ) ) {
-                LogUtil.d(device.getName() + " Type: " + InputDevice.getDevice(i).getKeyboardType() + " Controller: " + InputDevice.getDevice(i).getControllerNumber() );
-                return InputDevice.getDevice(i).getKeyboardType() == 2 &&
-                        InputDevice.getDevice(i).getControllerNumber() > 0;
-            }
-        };
-        return false;
-    }
-
-    public static void UnpairDevice(BluetoothDevice device) {
-        String deviceName = device.getName();
-        LogUtil.d("Delete Device: " + deviceName);
-        try {
-            ////// NEED permission "android.permission.BLUETOOTH_ADMIN"
-            Method m = device.getClass().getMethod("removeBond", (Class[]) null);
-            m.invoke(device, (Object[]) null);
-            LogUtil.i("Removed Device - " + deviceName);
-        } catch (Exception e) {
-            LogUtil.w(e.toString());
-        }
-
     }
 }

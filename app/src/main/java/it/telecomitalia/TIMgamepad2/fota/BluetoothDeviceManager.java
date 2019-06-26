@@ -13,6 +13,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
+import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.model.FabricModel;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
 import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
@@ -28,8 +29,6 @@ public class BluetoothDeviceManager {
     public static final String EVENTBUS_MSG_NEED_UPGRADE = "NeedUpgrade";
     public static final String EVENTBUS_MSG_UPGRADE_SUCCESS = "UpgradeSuccess";
     public static final String EVENTBUS_MSG_STAUS_CHANGED = "status_changed";
-    //    public static final String GAMEPAD_DEVICE_CONNECTED = "android.intent.action.GAMEPAD_DEVICE_CONNECTED";
-//    public static final String GAMEPAD_DEVICE_DISCONNECTED = "android.intent.action.GAMEPAD_DEVICE_DISCONNECTED";
     public static final String EVENTBUT_MSG_GP_DEVICE_CONNECTED = "TIM.V2.GAMEPAD_DEVICE_CONNECTED";
     public static final String EVENTBUT_MSG_GP_DEVICE_DISCONNECTED = "TIM.V2.GAMEPAD_DEVICE_DISCONNECTED";
     private static final String TAG = "BluetoothDeviceManager";
@@ -42,7 +41,6 @@ public class BluetoothDeviceManager {
     private UpgradeManager mUpgradeManager;
     private int mTargetDeviceCount = 0;
     private List<DeviceModel> mDevices;
-    private Context mContext;
 
 
     //    public static BluetoothDeviceManager getDeviceManager() {
@@ -72,12 +70,11 @@ public class BluetoothDeviceManager {
 
     public synchronized void initializeDevice(String path, Context context) {
         if (mInitialized) return;
-        LogUtil.d(TAG, "DeviceManager Initialize");
+        LogUtil.d(TAG, R.string.log_devicemanager_initialize);
         makeEmptyDeviceList();
         mUpgradeManager = new UpgradeManager(path);
         DeviceLocalCache.getInstance().restore(mDevices);
         mInitialized = true;
-        mContext = context;
     }
 
     private void makeEmptyDeviceList() {
@@ -94,11 +91,11 @@ public class BluetoothDeviceManager {
     private void enableSensor(DeviceModel gamepad) {
         int indicator = gamepad.getIndicator();
         if (indicator == DEFAULT_IMU_DEVICE_INDEX) {
-            LogUtil.d("Enable imu for game pad: " + gamepad.getMACAddress());
+            LogUtil.d(R.string.log_enable_imu_gamepad_address, gamepad.getMACAddress());
             gamepad.setIMUEnable(true);
 
         } else {
-            LogUtil.d("Not the default imu device, Ignore: " + gamepad.getMACAddress());
+            LogUtil.d(R.string.log_not_the_default_imu_device, gamepad.getMACAddress());
             gamepad.setIMUEnable(false);
         }
     }
@@ -159,14 +156,14 @@ public class BluetoothDeviceManager {
     public void notifyConnectedDevice(BluetoothDevice device, GamePadListener listener) {
         LogUtil.l();
         if (invalidGamePad(device)) {
-            LogUtil.e("Not valid tim game pad, Abort");
+            LogUtil.i(R.string.log_not_valid_tim_gamepad);
             listener.onSetupStatusChanged(false, device);
             return;
         }
 
         DeviceModel gamepad = getTarget(device.getAddress());
         if (gamepad != null) {
-            LogUtil.d("GamePad " + gamepad.getIndicator() + "/" + gamepad.getGamePadName() + "/" + gamepad.getMACAddress() + " existed!");
+            LogUtil.d(R.string.log_gamepad_existed, gamepad.getIndicator(), gamepad.getGamePadName(), gamepad.getMACAddress());
             gamepad.setBlueToothDevice(device);
             gamepad.setInputID();
             enableSensor(gamepad);
@@ -178,7 +175,7 @@ public class BluetoothDeviceManager {
             FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_CONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
             gamepad.setFabricModel(model);
         } else {
-            LogUtil.d("New game pad added");
+            LogUtil.d(R.string.log_new_gamepad);
             byte seat = findFreeSeat(mDevices);
             if (seat != -1) {
                 LogUtil.l();
@@ -201,21 +198,21 @@ public class BluetoothDeviceManager {
         if (model != null) {
             FabricModel fabricModel = model.getFabricModel();
             model.getFabricModel().mPreviousVersion = model.getFWVersion();
-            LogUtil.d("newFirmwareVersion : " + fabricModel.mPreviousVersion + "； version : " + fabricModel.mUpgradeVersion);
+            LogUtil.d(R.string.log_updatefabric_firmwareversion, fabricModel.mPreviousVersion, fabricModel.mUpgradeVersion);
             model.setFabricModel(fabricModel);
         }
     }
 
     public void notifyDisconnectedDevice(BluetoothDevice device) {
         if (invalidGamePad(device)) {
-            LogUtil.w("Not valid tim game pad, Abort");
+            LogUtil.i(R.string.log_not_valid_tim_gamepad);
             return;
         }
 
         DeviceModel gamepad = getTarget(device.getAddress());
         if (gamepad != null) {
 
-            LogUtil.d("GamePad " + gamepad.getIndicator() + "::" + gamepad.getGamePadName() + "::" + gamepad.getMACAddress() + " existed!");
+            LogUtil.d(R.string.log_gamepad_existed, gamepad.getIndicator(), gamepad.getGamePadName(), gamepad.getMACAddress());
             if (gamepad.getSPPConnection() != null) {
                 gamepad.getSPPConnection().stop();
             }
@@ -237,13 +234,13 @@ public class BluetoothDeviceManager {
 
     public void notifyUnpairedDevice(BluetoothDevice device) {
         if (invalidGamePad(device)) {
-            LogUtil.w("Not valid tim game pad, Abort");
+            LogUtil.i(R.string.log_not_valid_tim_gamepad);
             return;
         }
 
         DeviceModel gamepad = getTarget(device.getAddress());
         if (gamepad != null) {
-            LogUtil.d("GamePad " + gamepad.getIndicator() + "::" + gamepad.getGamePadName() + "::" + gamepad.getMACAddress() + " existed!");
+            LogUtil.d(R.string.log_gamepad_existed, gamepad.getIndicator(), gamepad.getGamePadName(), gamepad.getMACAddress());
             if (gamepad.getSPPConnection() != null) {
                 gamepad.getSPPConnection().stop();
             }
@@ -314,8 +311,6 @@ public class BluetoothDeviceManager {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                LogUtil.d(TAG, "queryDeviceFabricInfo");
-
                 for (DeviceModel model : mDevices) {
                     FabricModel fabricModel = new FabricModel();
                     FirmwareConfig firmwareConfig = mUpgradeManager.getNewVersion();
@@ -325,7 +320,6 @@ public class BluetoothDeviceManager {
                     fabricModel.mFirmwareConfig = firmwareConfig;
                     fabricModel.mGamepadHWVersion = "V2";
                     fabricModel.mBattery = model.getBatterVolt();
-                    LogUtil.d(TAG, "battery : " + fabricModel.mBattery);
                     model.setFabricModel(fabricModel);
                 }
                 //notify FotaMainActivity fresh UI.
@@ -351,16 +345,16 @@ public class BluetoothDeviceManager {
             for (BluetoothDevice device : pairedDevices) {
                 // Add the name and address to an array adapter to show in a ListView
                 if (device.getName().contains(GAMEPAD_NAME_RELEASE) && isConnected(device)) {
-                    LogUtil.d(TAG, "Target device attached : " + device.getName() + " isBluetoothConnected " + isConnected(device));
+                    LogUtil.d(TAG, R.string.log_target_device_attached_isconnect, device.getName(), isConnected(device));
                     gamepadList.add(device);
                     mTargetDeviceCount++;
                 }
             }
         }
 
-        //TODO:没有V1的手柄，所以为0
+        //没有V1的手柄，所以为0
         FabricController.getInstance().gamepadPlaying(0, mTargetDeviceCount);
-        //TODO:这里没有V1的手柄，所以只传递V2的手柄
+        //这里没有V1的手柄，所以只传递V2的手柄
         FabricController.getInstance().gamepadNumPerSTB(0, mTargetDeviceCount);
         return gamepadList;
     }
@@ -369,7 +363,7 @@ public class BluetoothDeviceManager {
      * 重新连接蓝牙设备
      */
     public boolean connectBluetooth(final BluetoothDevice btDevice) {
-        LogUtil.d(TAG, "start reconnect BlueTooth : " + btDevice.getAddress() + " name : " + btDevice.getName());
+        LogUtil.d(TAG, R.string.log_start_reconnect_bluetooth, btDevice.getAddress(), btDevice.getName());
         try {
             return btDevice.createBond();
         } catch (Exception e) {
@@ -398,10 +392,10 @@ public class BluetoothDeviceManager {
                     boolean isConnected = (boolean) isConnectedMethod.invoke(device, (Object[]) null);
 
                     if (isConnected && device.getAddress().equals(device.getAddress())) {
-                        LogUtil.i("Target device connected:" + device.getAddress());
+                        LogUtil.i(R.string.log_target_device_connected, device.getAddress());
                         return true;
                     } else {
-                        LogUtil.d("Device found but not connected ");
+                        LogUtil.d(R.string.log_device_found_not_connected);
                         return false;
                     }
                 }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 public class ProxyTransmitter extends Thread {
@@ -37,7 +38,7 @@ public class ProxyTransmitter extends Thread {
         while (true) {
             if (soc == null) {
                 try {
-                    LogUtil.d("socket", "new socket");
+//                    LogUtil.d("socket", "new socket");
                     soc = new Socket(mTargetAddress, PORT);
                     soc.setTcpNoDelay(true);
                     mInput = new DataInputStream(soc.getInputStream());
@@ -51,7 +52,7 @@ public class ProxyTransmitter extends Thread {
 //                        LogUtil.d("Retrying1......");
                         Thread.sleep(3000);
                     } catch (InterruptedException e1) {
-                        LogUtil.d("InterruptedException: " + e.toString());
+                        LogUtil.i(R.string.log_interrupt_exception, e.toString());
                         e1.printStackTrace();
                     }
                     continue;
@@ -74,7 +75,7 @@ public class ProxyTransmitter extends Thread {
                 return false;
             }
         } else {
-            LogUtil.w("Server not ready...");
+            LogUtil.w(R.string.logw_server_not_ready);
             return false;
         }
     }
@@ -84,15 +85,15 @@ public class ProxyTransmitter extends Thread {
         if (mInitiated) {
             try {
                 size = mInput.read(message);
-                LogUtil.d("Received data: " + message[0]);
+//                LogUtil.d("Received data: " + message[0]);
                 return size;
             } catch (IOException e) {
-                LogUtil.e("IOException: " + e.toString());
+                LogUtil.e(R.string.loge_ioexception, e.toString());
                 e.printStackTrace();
             }
             return 0;
         } else {
-            LogUtil.w("Server not ready...");
+            LogUtil.w(R.string.logw_server_not_ready);
             return 0;
         }
     }

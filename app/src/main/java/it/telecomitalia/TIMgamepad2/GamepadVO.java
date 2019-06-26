@@ -43,10 +43,6 @@ public class GamepadVO {
         return coded;
     }
 
-    private void log() {
-        LogUtil.d("GamepadName:" + GamepadName + "; MACAddress" + MACAddress + "; Battery" + Battery + "; Firmware" + Firmware + "; NeedUpdate" + NeedUpdate + "; mOnLine" + mOnLine);
-    }
-
     public GamepadVO(String mac) {
         GamepadName = unc;
         MACAddress = mac;

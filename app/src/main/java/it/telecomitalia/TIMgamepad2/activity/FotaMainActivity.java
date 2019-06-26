@@ -100,7 +100,6 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
     @Override
     protected void onResume() {
-        LogUtil.d("onResume called");
 //        mGamepadDeviceManager.initializeDevice();
         mGamepadDeviceManager.queryDeviceFabricInfo();
 
@@ -258,7 +257,6 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        LogUtil.d("OnClick " + v.getId());
         switch (v.getId()) {
             case R.id.upgrade_describe_btn:
                 //进行升级
@@ -270,11 +268,11 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.open_imu_btn:
 
-//                Toast.makeText(mContext, getString(R.string.enable_imu) + mainConnection.imuSwitch(SPPConnection.CMD_ENABLE_UPDATE_MODE), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, getStringResource(R.string.enable_imu) + mainConnection.imuSwitch(SPPConnection.CMD_ENABLE_UPDATE_MODE), Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.close_imu_btn:
-//                Toast.makeText(mContext, getString(R.string.disable_imu) + mainConnection.imuSwitch(SPPConnection.CMD_DISABLE_UPDATE_MODE), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, getStringResource(R.string.disable_imu) + mainConnection.imuSwitch(SPPConnection.CMD_DISABLE_UPDATE_MODE), Toast.LENGTH_SHORT).show();
                 break;
 
             case R.id.bt_update:
@@ -303,7 +301,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
     }
 
     private void initializeBluetoothManager() {
-        LogUtil.d("initializeBluetoothManager");
+//        LogUtil.d("initializeBluetoothManager");
         mGamepadDeviceManager = BluetoothDeviceManager.getInstance();
         mGamepadDeviceManager.initializeDevice(PATH, FotaMainActivity.this);
         mUpgradeManager = mGamepadDeviceManager.getUpgradeManager();
@@ -313,7 +311,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
      * 按照顺序一个个升级,先升级第一个，如果后面还有，那么就开始升级第二个
      */
     private void startUpgradeByOrder(int index) {
-        LogUtil.d("Start upgrade : " + index);
+//        LogUtil.d("Start upgrade : " + index);
         Hashtable<String, DeviceModel> deviceMap = mGamepadDeviceManager.getConnectedDevices();
         Set<String> keySet = deviceMap.keySet();
         for (String key : keySet) {
@@ -553,7 +551,7 @@ public class FotaMainActivity extends Activity implements View.OnClickListener {
 //            }
 //
 //            public void onNothingSelected(AdapterView<?> arg0) {
-//                // TODO Auto-generated method stub
+//                // T0D0 Auto-generated method stub
 //                Toast.makeText(FotaMainActivity.this, "没有选中" +
 //                        "", Toast.LENGTH_SHORT).show();
 //            }

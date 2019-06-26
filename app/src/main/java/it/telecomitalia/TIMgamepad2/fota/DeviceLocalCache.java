@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.utils.Applications;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
@@ -52,12 +53,12 @@ public class DeviceLocalCache {
             CachedDevice device = new CachedDevice(gamepad.getGamePadName(), gamepad.getMACAddress(), gamepad.getIndicator(), gamepad.imuEnabled());
             devices.add(device);
         }
-        LogUtil.d("Create " + devices.size() + " device record");
+        LogUtil.d(R.string.log_create_device_record, devices.size());
         Gson gson = new Gson();
         String jsonStr = gson.toJson(devices);
         SharedPreferenceUtils.clear(FILE_NAME, mContext);
         SharedPreferenceUtils.put(FILE_NAME, mContext, CACHED_KEY, jsonStr);
-        LogUtil.d("Device cached:" + jsonStr);
+        LogUtil.d(R.string.log_device_cached, jsonStr);
     }
 
     public synchronized void clear() {
@@ -67,7 +68,7 @@ public class DeviceLocalCache {
     public synchronized void restore(List<DeviceModel> list) {
         String str = (String) SharedPreferenceUtils.get(FILE_NAME, mContext, CACHED_KEY, DEFAULT_KEY);
         if (str.equals(DEFAULT_KEY)) {
-            LogUtil.d("No existed device info, Now init: " + str);
+            LogUtil.d(R.string.log_no_existed_device_info, str);
             for (DeviceModel gamepad : list) {
                 gamepad.reset();
             }
@@ -77,7 +78,7 @@ public class DeviceLocalCache {
             ArrayList<CachedDevice> devices;
             devices = gson.fromJson(str, new TypeToken<List<CachedDevice>>() {
             }.getType());
-            LogUtil.d("Do restore: " + gson.toJson(devices));
+            LogUtil.d(R.string.log_do_restore, gson.toJson(devices));
 
             for (int i = 0; i < devices.size(); i++) {
                 CachedDevice device = devices.get(i);

@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
+import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 /**
@@ -36,7 +37,6 @@ public class AttachDevice {
             for (BluetoothDevice device : pairedDevices) {
                 // Add the name and address to an array adapter to show in a ListView
                 if (device.getName().contains(GAMEPAD_NAME_RELEASE)) {
-                    LogUtil.d( "Target device attached : " + device.getName());
                     intent.putExtra(EXTRA_DEVICE_ADDRESS, device.getAddress());
                     return intent;
                 }
@@ -56,7 +56,7 @@ public class AttachDevice {
                 // Add the name and address to an array adapter to show in a ListView
                 if (device.getName().contains(GAMEPAD_NAME_RELEASE)) {
                     number +=1;
-                    LogUtil.d("Target device found, Total="+number);
+                    LogUtil.d(R.string.log_target_device_found_counts, number);
                 }
             }
         }
@@ -106,7 +106,7 @@ public class AttachDevice {
 //                        LogUtil.i("Target connected:" + device.getAddress());
                         return true;
                     } else {
-                        LogUtil.d("Device found but not connected ");
+                        LogUtil.d(R.string.log_device_found_not_connected);
                         return false;
                     }
                 }

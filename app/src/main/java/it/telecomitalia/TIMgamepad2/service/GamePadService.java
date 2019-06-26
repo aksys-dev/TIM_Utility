@@ -9,6 +9,7 @@ import android.util.Log;
 import java.util.List;
 
 import it.telecomitalia.TIMgamepad2.IGamePadService;
+import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
@@ -85,7 +86,7 @@ public class GamePadService extends Service {
 
         @Override
         public void setVibrationState(int id, int left_status, int right_status) {
-            LogUtil.d("SetVibrationState(" + id + "," + left_status + "," + right_status + ")");
+//            LogUtil.d("SetVibrationState(" + id + "," + left_status + "," + right_status + ")");
             List<DeviceModel> devices = mGamePadDeviceManager.getConnectedDevicesList();
 
             if (devices != null) {
@@ -95,7 +96,7 @@ public class GamePadService extends Service {
                     }
                 }
             } else {
-                LogUtil.w("There is no device connected, Ignore");
+                LogUtil.w(R.string.logw_there_is_no_device_connected);
             }
         }
 

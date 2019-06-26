@@ -55,7 +55,7 @@ public class FileUtils {
             mConfigs.setmDownUrl(jsonObject.optString("url"));
             mConfigs.setId(jsonObject.optString("id"));
         } catch (Exception e) {
-            // TODO: handle exception
+            // handle exception
         }
 
         return mConfigs;

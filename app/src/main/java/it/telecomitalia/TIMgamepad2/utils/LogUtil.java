@@ -5,8 +5,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -21,22 +19,32 @@ import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
 public class LogUtil {
     private static final boolean DEBUG = GamePadV2UpgadeApplication.isDebug;
 
-    private static String TUTONG_LOG_FILE = getSDPath() + "/gamepadv2upagde_log.log";
+    //private static String TUTONG_LOG_FILE = getSDPath() + "/gamepadv2upagde_log.log";
 
 
     private static final String TAG = "GamePadUtility";
 
     private static final boolean DEBUG_LINE = false;
 
-    private static String LOG_FILE = getSDPath() + "/gamepad_log.log";
+//    private static String LOG_FILE = getSDPath() + "/gamepad_log.log";
+
+    public static String getStringResource(int stringResource) {
+        return GamePadV2UpgadeApplication.getStringResource(stringResource);
+    }
 
     public static void d(String TAG, String method, String msg) {
-        Log.d(TAG, "[" + method + "]" + msg);
+        if (DEBUG) Log.d(TAG, "[" + method + "]" + msg);
     }
 
     public static void d(String TAG, String msg) {
         if (DEBUG) {
             Log.d(TAG, getFileLineMethod() + msg);
+        }
+    }
+
+    public static void d(String TAG, int msgResource) {
+        if (DEBUG) {
+            Log.d(TAG, getFileLineMethod() + getStringResource(msgResource));
         }
     }
 
@@ -52,6 +60,19 @@ public class LogUtil {
         }
     }
 
+    public static void d(int msgResource) {
+        if (DEBUG) {
+            Log.d(TAG, getLineMethod() + getStringResource(msgResource));
+        }
+    }
+
+    public static void d(int msgResource, Object... args) {
+        if (DEBUG) Log.d(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
+    }
+
+    public static void d(String TAG, int msgResource, Object... args) {
+        if (DEBUG) Log.d(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
+    }
 
     public static void w(String TAG, String msg) {
         if (DEBUG) {
@@ -60,9 +81,15 @@ public class LogUtil {
     }
 
     public static void w(String msg) {
-        if (DEBUG) {
-            Log.w(TAG, getFileLineMethod() + msg);
-        }
+        if (DEBUG) Log.w(TAG, getFileLineMethod() + msg);
+    }
+
+    public static void w(int msgRes) {
+        if (DEBUG) Log.w(TAG, getFileLineMethod() + getStringResource(msgRes));
+    }
+
+    public static void w(int msgResource, Object... args) {
+        if (DEBUG) Log.w(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
     }
 
     public static void i(String TAG, String msg) {
@@ -77,10 +104,30 @@ public class LogUtil {
         }
     }
 
+    public static void i(int msgResource) {
+        if (DEBUG) {
+            Log.i(TAG, getLineMethod() + getStringResource(msgResource));
+        }
+    }
+
+    public static void i(int msgResource, Object... args) {
+        if (DEBUG) {
+            Log.i(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
+        }
+    }
+
     public static void e(String msg) {
         if (DEBUG) {
             Log.e(TAG, getLineMethod() + msg);
         }
+    }
+
+    public static void e(int msgRes) {
+        if (DEBUG) Log.e(TAG, getFileLineMethod() + getStringResource(msgRes));
+    }
+
+    public static void e(int msgResource, Object... args) {
+        if (DEBUG) Log.e(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
     }
 
     public static void l() {
@@ -90,23 +137,21 @@ public class LogUtil {
     }
 
     public static void e(String TAG, String msg) {
-        if (DEBUG) {
-            Log.e(TAG, getLineMethod() + msg);
-        }
+        if (DEBUG) Log.e(TAG, getLineMethod() + msg);
     }
 
-    public static void f(String TAG, String msg) {
-        if (DEBUG) {
-            try {
-                FileWriter fw = new FileWriter(LOG_FILE, true);
-                fw.write(msg + "\n");
-                fw.close();
-                i(TAG, msg);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    public static void f(String TAG, String msg) {
+//        if (DEBUG) {
+//            try {
+//                FileWriter fw = new FileWriter(LOG_FILE, true);
+//                fw.write(msg + "\n");
+//                fw.close();
+//                i(TAG, msg);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
     public static String getFileLineMethod() {
         StackTraceElement traceElement = ((new Exception()).getStackTrace())[2];

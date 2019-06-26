@@ -54,7 +54,7 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 			);
 		}
 		else {
-			Toast.makeText( this, "Wrong ", Toast.LENGTH_SHORT ).show();
+//			Toast.makeText( this, "Wrong ", Toast.LENGTH_SHORT ).show();
 		}
 	}
 	

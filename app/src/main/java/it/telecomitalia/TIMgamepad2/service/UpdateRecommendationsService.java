@@ -61,7 +61,7 @@ public class UpdateRecommendationsService extends IntentService {
         LogUtil.d(TAG, "add recommendation");
         ContentRecommendation.Builder builder = new ContentRecommendation.Builder().setBadgeIcon(R.drawable.ic_launcher);
         int id = 0;
-        builder.setIdTag("0").setTitle(getString(R.string.app_name)).setText(
+        builder.setIdTag("0").setTitle(getStringResource(R.string.app_name)).setText(
                 "Nuovo aggiornamento disponibile").
                 setContentIntentData(ContentRecommendation.INTENT_TYPE_ACTIVITY, buildPendingIntent(), 0, null);
 //        Drawable drawable=UpdateRecommendationsService.this.getResources().getDrawable(R.drawable.ic_launcher);
