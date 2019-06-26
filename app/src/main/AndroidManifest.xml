@@ -54,7 +54,6 @@
             android:name=".activity.UpgradeUIActivity"
             android:launchMode="singleTask" />
         <activity android:name=".activity.FotaMainActivity" />
-        <activity android:name=".activity.BackDoor" />
 
         <receiver android:name=".service.UpdatePowerOnReceiver">
             <intent-filter>
