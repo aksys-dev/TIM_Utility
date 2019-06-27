@@ -22,8 +22,8 @@ android {
         applicationId "it.telecomitalia.TIMgamepad2"
         minSdkVersion 24
         targetSdkVersion 26
-        versionCode 38
-        versionName "v0.12.12"
+        versionCode 39
+        versionName "v1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField 'boolean', 'ANDROID_7_SUPPORT_IMU', 'true'
         buildConfigField 'boolean', 'TEST_A7_ON_A8', 'false'
