@@ -7,6 +7,7 @@ import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.LoginEvent;
 
 import it.telecomitalia.TIMgamepad2.fota.FabricController;
+import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 /**
  * Created by czy on 2018/6/25.
@@ -14,13 +15,14 @@ import it.telecomitalia.TIMgamepad2.fota.FabricController;
 
 public class GamePadV2UpgadeApplication extends Application{
     //是否是开发版本
-    public static final boolean isDebug = false;
+    public static final boolean isDebug = BuildConfig.DEBUG;
     private static GamePadV2UpgadeApplication appContext;
 
     @Override
     public void onCreate() {
         super.onCreate();
         appContext=this;
+        LogUtil.i("This build is Debug Mode");
         FabricController.setContext(getApplicationContext());
         FabricController.getInstance().initializeFabric();
     }

@@ -8,8 +8,8 @@ import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
 import it.telecomitalia.TIMgamepad2.R;
-import it.telecomitalia.TIMgamepad2.utils.Applications;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
@@ -27,7 +27,7 @@ public class DeviceLocalCache {
     private Context mContext;
 
     private DeviceLocalCache() {
-        mContext = Applications.context();
+        mContext = GamePadV2UpgadeApplication.getContext();
     }
 
     public static DeviceLocalCache getInstance() {
