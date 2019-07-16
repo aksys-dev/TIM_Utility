@@ -64,6 +64,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_ENABLE_IMU_HID = (byte) 0x99;
     public static final byte CMD_SET_CALIBRATION = (byte) 0x9a;
     public static final byte CMD_SET_CALIBRATION_END = (byte) 0x9b;
+    public static final byte CMD_CONFIG_GAMEPAD = (byte) 0x9c;
+
     private static final int CMD_HEADER = 0;
     private static final int CMD_PAYLOAD = 1;
     private static final int IMU_FRAME_SIZE = 22;
@@ -110,6 +112,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     
     ArrayList<Integer> list_x = new ArrayList<>();
     ArrayList<Integer> list_y = new ArrayList<>();
+
     ArrayList<Integer> list_z = new ArrayList<>();
 
     SPPConnection(DeviceModel info, GamePadListener listener) {
@@ -241,7 +244,21 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         output[2] = (byte) right;
 
         mConnectionThread.write(output);
+    }
 
+    public void configuration() {
+        byte[] output = new byte[2]; // Device Type Stream
+        output[0] = CMD_CONFIG_GAMEPAD;
+        output[1] = 0x00;
+        output[1] += 0x01; // 0x01: Use HID Sensor Option
+//        output[1] += 0x02; // Use 2nd Option
+//        output[1] += 0x04; // Use 3rd Option
+//        output[1] += 0x08; // Use 4th Option
+//        output[1] += 0x10; // Use 5th Option
+//        output[1] += 0x20; // Use 6th Option
+//        output[1] += 0x40; // Use 7th Option
+//        output[1] += 0x80; // Use 8th Option
+        mConnectionThread.write(output);
     }
     
     final int SIGNAL_WAIT_TIME = 3000;

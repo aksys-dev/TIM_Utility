@@ -58,7 +58,6 @@ import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_
 import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
 
 public class FOTAV2Main extends AppCompatActivity {
-    private static final float SENSITIVE_DEFAULT = 1.0f;
     private static final boolean CALIBRATION_DEFAULT = false;
 
     ConstraintLayout MainTitle, IMUSensorTitle;
@@ -71,9 +70,8 @@ public class FOTAV2Main extends AppCompatActivity {
     ArrayList<GamepadVO> gamepadDatas;
     SeekBar seekBarSensitivity;
     TextView textSeekBarValue;
-    float sensitivityValue = 1.00F;
+//    float sensitivityValue = 1.00F;
 //    boolean calibrationEnabled = true;
-    ListView calibrationGamepadList;
 //    Switch calibration;
 //    FrameLayout frame_newVersion;
     TextView currentVersion, updateVersion;
@@ -146,7 +144,7 @@ public class FOTAV2Main extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        float restoreValue = (float) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, SENSITIVE_DEFAULT);
+//        float restoreValue = (float) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, SENSITIVE_DEFAULT);
 //        calibrationEnabled = (boolean) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_CALIBRATION, CALIBRATION_DEFAULT);
 //        calibration.setChecked(calibrationEnabled);
 //        if (calibrationEnabled) {
@@ -154,9 +152,9 @@ public class FOTAV2Main extends AppCompatActivity {
 //        } else {
 //            calibration.setText(getStringResource(R.string.off));
 //        }
-        textSeekBarValue.setText(String.valueOf(restoreValue));
-        seekBarSensitivity.setProgress((int) (restoreValue * 100));
-        
+//        textSeekBarValue.setText(String.valueOf(restoreValue));
+//        seekBarSensitivity.setProgress((int) (restoreValue * 100));
+
 //        LogUtil.i("calibrationEnabled-> " + calibrationEnabled);
 //        LogUtil.i("sensitivity Value-> " + restoreValue);
 //        LogUtil.i("progress-> " + seekBarSensitivity.getProgress());
@@ -173,38 +171,6 @@ public class FOTAV2Main extends AppCompatActivity {
 //            }
 //        });
 
-        seekBarSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            // IMU Sensitivity Source
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (progress < 1) {
-                    seekBar.setProgress(1);
-                    progress = 1;
-                }
-
-                sensitivityValue = (float) ((progress) / 100.0);
-                textSeekBarValue.setText(String.valueOf(sensitivityValue));
-                SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, sensitivityValue);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    mBinderProxy.setSensitivity(sensitivityValue);
-                }
-//                else if (BuildConfig.ANDROID_7_SUPPORT_IMU) {
-//                        mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
-//                }
-//
-//                if (TEST_A7_ON_A8) {
-//                    mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
-//                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
 
 //        registerReceiver(mReceiver, makeFilter());
     }
@@ -222,15 +188,17 @@ public class FOTAV2Main extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fota_v2_main);
         mContext = this;
-        MainTitle = findViewById(R.id.AppTitle);
-        IMUSensorTitle = findViewById(R.id.IMU_Title);
+//        if ((getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_XLARGE) == Configuration.SCREENLAYOUT_SIZE_XLARGE)
+//            requestWindowFeature(Window.FEATURE_NO_TITLE);
+//        MainTitle = findViewById(R.id.AppTitle);
+//        IMUSensorTitle = findViewById(R.id.IMU_Title);
     
         mGamePadDeviceManager = BluetoothDeviceManager.getInstance();
         gamepadDatas = new ArrayList<>();
 
 //        EventBus.getDefault().register(this);
 
-        activityTitle = findViewById(R.id.ActivityTitle);
+//        activityTitle = findViewById(R.id.ActivityTitle);
 
         // App Main Menu
         menulist = findViewById(R.id.Menus);
@@ -276,53 +244,31 @@ public class FOTAV2Main extends AppCompatActivity {
         } );
 
         // IMU Sensor
-        imuoptionLists = findViewById(R.id.imuoptionLists);
-        aboutLists = findViewById(R.id.aboutLists);
+//        imuoptionLists = findViewById(R.id.imuoptionLists);
+//        aboutLists = findViewById(R.id.aboutLists);
 
-        seekBarSensitivity = findViewById(R.id.seekBar);
-        textSeekBarValue = findViewById(R.id.textSensitibity);
-        calibrationGamepadList = findViewById( R.id.calibrationlist );
-        calibrationGamepadList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView textView = view.findViewById( R.id.gamepad_name );
-                TextView addressData = view.findViewById( R.id.gamepad_address );
-                String addr = addressData.getText().toString();
-                String name = textView.getText().toString();
-                LogUtil.i( "Select " + name );
-                if (!textView.getText().toString().equals( getString(R.string.no_gamepad) )
-                        && !addr.equals( getResources().getText( R.string.gamepad_offline ) )) {
-                    LogUtil.i( "Mac Address " + addr );
-                    gotoIMUCalibrationScene( name, addr );
-                }
-            }
-        } );
-    
-        
-
-//        calibration = findViewById(R.id.sw_calibration);
-
-
-        currentVersion = findViewById(R.id.value_currentVersion);
-        lastUpdateDay = findViewById(R.id.value_updateDay);
-
-        try {
-            android.content.pm.PackageInfo packageInfo = this.getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_META_DATA);
-//            java.util.Date updateDate = new java.util.Date(packageInfo.lastUpdateTime);
-//            SimpleDateFormat dmySlash = new SimpleDateFormat("dd/MM/yyyy");
-
-            currentVersion.setText(packageInfo.versionName);
-//          lastUpdateDay.setText(dmySlash.format(updateDate));
-            lastUpdateDay.setText(BuildConfig.BUILD_TIME);
-        } catch (PackageManager.NameNotFoundException e) {
-            currentVersion.setText(R.string.app_version);
-            lastUpdateDay.setText(R.string.lastupdate);
-        }
-
-
-        
-        mUpgradeManager = mGamePadDeviceManager.getUpgradeManager();
-
+//        seekBarSensitivity = findViewById(R.id.seekBar);
+//        textSeekBarValue = findViewById(R.id.textSensitibity);
+////        calibrationGamepadList = findViewById( R.id.calibrationlist );
+////        calibrationGamepadList.setOnItemClickListener( new AdapterView.OnItemClickListener() {
+////            @Override
+////            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+////                TextView textView = view.findViewById( R.id.gamepad_name );
+////                TextView addressData = view.findViewById( R.id.gamepad_address );
+////                String addr = addressData.getText().toString();
+////                String name = textView.getText().toString();
+////                LogUtil.i( "Select " + name );
+////                if (!textView.getText().toString().equals( getString(R.string.no_gamepad) )
+////                        && !addr.equals( getResources().getText( R.string.gamepad_offline ) )) {
+////                    LogUtil.i( "Mac Address " + addr );
+////                    gotoIMUCalibrationScene( name, addr );
+////                }
+////            }
+////        } );
+////
+////
+//
+////        calibration = findViewById(R.id.sw_calibration);
         String from = getIntent().getStringExtra(INTENT_KEY);
         if (from != null) {
             if (from.equals(INTENT_FROM_SERVICE)) {
@@ -408,80 +354,20 @@ public class FOTAV2Main extends AppCompatActivity {
     }
     
     //// IMU SENSOR SCENE
-    
-    public void SetupIMUEnabledGamepadList() {
-        CalibrationGamepadVO c;
-        ArrayList<CalibrationGamepadVO> enabledGamepads = new ArrayList<>();
-        int list = 1;
-        enabledGamepads.clear();
-        List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
-        if ( models == null || models.size() == 0 ) {
-            LogUtil.w( "No Gamepad enabled IMU" );
-            c = new CalibrationGamepadVO(
-                    getString( R.string.no_gamepad ),
-                    null, false
-            );
-            enabledGamepads.add( c );
-        } else {
-            for ( DeviceModel model : models ) {
-                if ( model.imuEnabled() ) {
-                    c = new CalibrationGamepadVO( String.format( "Gamepad %d", list )
-                            , model.getMACAddress(), model.online() );
-                    enabledGamepads.add( c );
-                    list++;
-                }
-            }
-            if ( enabledGamepads.size() == 0 ) {
-                // No IMU Enabled Gamepad.
-                LogUtil.w( "No Gamepad enabled IMU" );
-                c = new CalibrationGamepadVO(
-                        getString( R.string.no_gamepad ),
-                        null, false
-                );
-                enabledGamepads.add( c );
-            }
-        }
-        
-        CalibrationListAdapter adapter = new CalibrationListAdapter(this, R.layout.gamepad_calibration_list, enabledGamepads );
-        calibrationGamepadList.setAdapter( adapter );
-    }
-    
-    private void gotoIMUCalibrationScene(final String name, final String addr) {
-        AlertDialog.Builder b = new AlertDialog.Builder( this );
-        b.setTitle( getString( R.string.Calibration ) + " " + name );
-        b.setMessage( R.string.calibration_ready );
-        b.setPositiveButton( R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent( FOTAV2Main.this, SensorCalibrationActivity.class );
-                intent.putExtra( "gpname", name );
-                intent.putExtra( "gpaddr", addr );
-                startActivity( intent );
-            }
-        } );
-        b.setNegativeButton( R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            
-            }
-        } );
-        b.show();
-    }
+
 
     @Override
     public void onBackPressed() {
         // User press Back Button
-        if (menulist.getVisibility() == View.GONE) {
-            gamepadView.setVisibility(View.GONE);
-            imuoptionLists.setVisibility(View.GONE);
-            aboutLists.setVisibility(View.GONE);
-
-            IMUSensorTitle.setVisibility(View.GONE);
-            MainTitle.setVisibility(View.VISIBLE);
-
-            activityTitle.setText(R.string.gamepad_v2);
-            menulist.setVisibility(View.VISIBLE);
-        } else finish();
+//        if (menulist.getVisibility() == View.GONE) {
+//            gamepadView.setVisibility(View.GONE);
+//            imuoptionLists.setVisibility(View.GONE);
+//            aboutLists.setVisibility(View.GONE);
+//
+//            activityTitle.setText(R.string.gamepad_v2);
+//            menulist.setVisibility(View.VISIBLE);
+//        } else
+        finish();
     }
 
     @Override
@@ -499,10 +385,11 @@ public class FOTAV2Main extends AppCompatActivity {
 
     void OpenIMUMenu() {
         // IMU Setting
-        SetupIMUEnabledGamepadList();
-        imuoptionLists.setVisibility(View.VISIBLE);
-        MainTitle.setVisibility(View.GONE);
-        IMUSensorTitle.setVisibility(View.VISIBLE);
+//        SetupIMUEnabledGamepadList();
+//        imuoptionLists.setVisibility(View.VISIBLE);
+//        MainTitle.setVisibility(View.GONE);
+//        IMUSensorTitle.setVisibility(View.VISIBLE);
+        startActivity(new Intent(mContext, SetupIMUActivity.class));
     }
 
     void OpenAboutVersion() {
@@ -534,8 +421,7 @@ public class FOTAV2Main extends AppCompatActivity {
                     return;
                 }
                 LogUtil.d("Need upgrade");
-                Intent dialogIntent = new Intent(FOTAV2Main.this, DialogActivity.class);
-                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                Intent dialogIntent = new Intent(mContext, DialogActivity.class);
                 dialogIntent.putExtra(INTENT_KEY, INTENT_FROM_USER);
                 dialogIntent.putExtra(INTENT_MAC, targetDeviceMac);
                 startActivity(dialogIntent);
