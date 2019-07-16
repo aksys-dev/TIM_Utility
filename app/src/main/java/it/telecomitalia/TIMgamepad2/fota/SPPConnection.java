@@ -64,6 +64,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_ERROR_HEADER = (byte) 0x98;
     public static final byte CMD_SET_CALIBRATION = (byte) 0x9a;
     public static final byte CMD_SET_CALIBRATION_END = (byte) 0x9b;
+    public static final byte CMD_CONFIG_GAMEPAD = (byte) 0x9c;
+
     private static final int CMD_HEADER = 0;
     private static final int CMD_PAYLOAD = 1;
     //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
@@ -109,6 +111,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     
     ArrayList<Integer> list_x = new ArrayList<>();
     ArrayList<Integer> list_y = new ArrayList<>();
+
     ArrayList<Integer> list_z = new ArrayList<>();
 
     SPPConnection(DeviceModel info, GamePadListener listener) {
@@ -241,7 +244,21 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         else if (right == 1) output[2] = CMD_VIBRATE_VALUE1;
         else if (right == 0) output[2] = CMD_VIBRATE_VALUE0;
         mConnectionThread.write(output);
+    }
 
+    public void configuration() {
+        byte[] output = new byte[2]; // Device Type Stream
+        output[0] = CMD_CONFIG_GAMEPAD;
+        output[1] = 0x00;
+        output[1] += 0x01; // 0x01: Use HID Sensor Option
+//        output[1] += 0x02; // Use 2nd Option
+//        output[1] += 0x04; // Use 3rd Option
+//        output[1] += 0x08; // Use 4th Option
+//        output[1] += 0x10; // Use 5th Option
+//        output[1] += 0x20; // Use 6th Option
+//        output[1] += 0x40; // Use 7th Option
+//        output[1] += 0x80; // Use 8th Option
+        mConnectionThread.write(output);
     }
     
     final int SIGNAL_WAIT_TIME = 3000;

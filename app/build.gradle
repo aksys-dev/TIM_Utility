@@ -32,7 +32,7 @@ android {
         buildConfigField "String", "CONFIG_FILE_NAME", "\"CONFIG\""
         buildConfigField "String", "KEY_SENSITIVE", "\"sensitivity\""
         buildConfigField "String", "KEY_CALIBRATION", "\"calibration\""
-        buildConfigField "String", "RELEASE_TYPE", "\""+buildPlatform+"\""
+        buildConfigField "String", "RELEASE_TYPE", "\"" + buildPlatform + "\""
     }
 
     buildTypes {
