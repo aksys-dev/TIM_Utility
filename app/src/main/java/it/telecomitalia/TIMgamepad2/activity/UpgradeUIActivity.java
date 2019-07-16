@@ -233,9 +233,8 @@ public class UpgradeUIActivity extends Activity {
     }
 
     private void backToGamepadList() {
-        Intent intents = new Intent(UpgradeUIActivity.this, FOTA_V2.class);
+        Intent intents = new Intent(this, GamepadActivity.class);
         intents.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
-        intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intents);
     }
 

@@ -63,7 +63,7 @@
             android:layout_marginRight="10dp"
             android:background="@drawable/dialog_btn"
             android:padding="5dp"
-            android:text="CONFERMA"
+            android:text="@string/ok"
             android:textColor="#80cbc4"
             android:textSize="18sp" />
     </LinearLayout>

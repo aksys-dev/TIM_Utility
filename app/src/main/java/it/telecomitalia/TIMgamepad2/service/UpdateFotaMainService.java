@@ -2,6 +2,7 @@ package it.telecomitalia.TIMgamepad2.service;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -12,6 +13,7 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -34,6 +36,7 @@ import java.util.Set;
 import java.util.Timer;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
+import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;

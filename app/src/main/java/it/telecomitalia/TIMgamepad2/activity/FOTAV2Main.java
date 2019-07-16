@@ -1,64 +1,40 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
-import android.app.AlertDialog;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.crashlytics.android.Crashlytics;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
-import it.telecomitalia.TIMgamepad2.CalibrationGamepadVO;
-import it.telecomitalia.TIMgamepad2.CalibrationListAdapter;
-import it.telecomitalia.TIMgamepad2.GamepadListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadVO;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
-import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.fota.UpgradeManager;
-import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
 import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
-import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
-import static it.telecomitalia.TIMgamepad2.BuildConfig.CONFIG_FILE_NAME;
-import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_SENSITIVE;
-import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_CONNECTED;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_DISCONNECTED;
-import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
 
 public class FOTAV2Main extends AppCompatActivity {
     private static final boolean CALIBRATION_DEFAULT = false;
@@ -66,9 +42,9 @@ public class FOTAV2Main extends AppCompatActivity {
 //    ConstraintLayout MainTitle, IMUSensorTitle;
 //    ConstraintLayout menulist;
     ListView menulistView;
-    FrameLayout gamepadView;
-    ListView gamepadList2;
-    LinearLayout imuoptionLists;
+//    FrameLayout gamepadView;
+//    ListView gamepadList2;
+    View imuoptionLists;
     ConstraintLayout aboutLists;
     ArrayList<GamepadVO> gamepadDatas;
     SeekBar seekBarSensitivity;
@@ -209,42 +185,31 @@ public class FOTAV2Main extends AppCompatActivity {
         menulistView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (menulist.getVisibility() == View.VISIBLE) {
-                    // Menu Item Click
-                    menulist.setVisibility(View.GONE);
-                    gamepadView.setVisibility(View.GONE);
-                    imuoptionLists.setVisibility(View.GONE);
-                    aboutLists.setVisibility(View.GONE);
-            
-                    switch (position) {
-                        case 0:
-                            OpenGamepadMenu();
-                            break;
-                        case 1:
-                            if (BuildConfig.ANDROID_7_SUPPORT_IMU || Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                OpenIMUMenu();
-                            } else {
-                                OpenAboutVersion();
-                            }
-                            break;
-                        case 2:
-                            OpenAboutVersion();
-                            break;
-                    }
-                }
+                TextView target = view.findViewById(android.R.id.text1);
+                if (target.getText() == getString(R.string.menu_gamepad)) OpenGamepadMenu();
+                if (target.getText() == getString(R.string.menu_imu)) OpenIMUMenu();
+                if (target.getText() == getString(R.string.menu_about)) OpenAboutVersion();
+//                if (menulist.getVisibility() == View.VISIBLE) {
+////                    // Menu Item Click
+////                    menulist.setVisibility(View.GONE);
+////                    gamepadView.setVisibility(View.GONE);
+////                    imuoptionLists.setVisibility(View.GONE);
+////                    aboutLists.setVisibility(View.GONE);
+//
+//                }
             }
         } );
         SetMenuData();
 
         // Gamepad Option
-        gamepadView = findViewById(R.id.gamepadView2);
-        gamepadList2 = findViewById(R.id.gamepadListView);
-        gamepadList2.setOnItemClickListener( new ListView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                showGamepadsInfo(position);
-            }
-        } );
+//        gamepadView = findViewById(R.id.gamepadView2);
+//        gamepadList2 = findViewById(R.id.gamepadListView);
+//        gamepadList2.setOnItemClickListener( new ListView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+//                showGamepadsInfo(position);
+//            }
+//        } );
 
         // IMU Sensor
 //        imuoptionLists = findViewById(R.id.imuoptionLists);
@@ -293,26 +258,19 @@ public class FOTAV2Main extends AppCompatActivity {
 
     private void gotoGamepadsListView(boolean directly) {
         if (directly) {
-            menulist.setVisibility(View.GONE);
-            gamepadView.setVisibility(View.GONE);
-            imuoptionLists.setVisibility(View.GONE);
-            aboutLists.setVisibility(View.GONE);
-
-            SetupGamePadList();
-            gamepadView.setVisibility(View.VISIBLE);
-            activityTitle.setText(R.string.title_gamepad);
+            OpenGamepadMenu();
         } else {
-            if (gamepadView.getVisibility() == View.VISIBLE) {
-                menulist.setVisibility(View.GONE);
-                gamepadView.setVisibility(View.GONE);
-                imuoptionLists.setVisibility(View.GONE);
-                aboutLists.setVisibility(View.GONE);
-                SetupGamePadList();
-                gamepadView.setVisibility(View.VISIBLE);
-                activityTitle.setText(R.string.title_gamepad);
-            } else {
-                SetupGamePadList();
-            }
+//            if (gamepadView.getVisibility() == View.VISIBLE) {
+//                menulist.setVisibility(View.GONE);
+//                gamepadView.setVisibility(View.GONE);
+//                imuoptionLists.setVisibility(View.GONE);
+//                aboutLists.setVisibility(View.GONE);
+////                SetupGamePadList();
+//                gamepadView.setVisibility(View.VISIBLE);
+//                activityTitle.setText(R.string.title_gamepad);
+//            } else {
+////                SetupGamePadList();
+//            }
         }
     }
 
@@ -328,34 +286,34 @@ public class FOTAV2Main extends AppCompatActivity {
         menulistView.setAdapter(adapter);
     }
 
-    public void SetupGamePadList() {
-        GamepadVO g;
-        int list = 1;
-        gamepadDatas.clear();
-        List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
-        if (models == null || models.size() == 0) {
-            LogUtil.w("No gamepad connected or service not running...");
-            g = new GamepadVO();
-            g.setGamepadName(String.format("Gamepad %d", list));
-            gamepadDatas.add(g);
-        } else {
-            for (DeviceModel model : models) {
-                if (!model.getMACAddress().equals(INIT_ADDRESS)) {
-                    EventAddGamepad(model);
-                    list++;
-                }
-            }
-            if ( gamepadDatas.size() == 0) {
-                // No Game pad
-                g = new GamepadVO();
-                g.setGamepadName(String.format("Gamepad %d", list));
-                gamepadDatas.add(g);
-            }
-        }
-    
-        GamepadListAdapter adapter = new GamepadListAdapter(this, R.layout.gamepad_info, gamepadDatas );
-        gamepadList2.setAdapter(adapter);
-    }
+//    public void SetupGamePadList() {
+//        GamepadVO g;
+//        int list = 1;
+//        gamepadDatas.clear();
+//        List<DeviceModel> models = mGamePadDeviceManager.getBondedDevices();
+//        if (models == null || models.size() == 0) {
+//            LogUtil.w("No gamepad connected or service not running...");
+//            g = new GamepadVO();
+//            g.setGamepadName(String.format("Gamepad %d", list));
+//            gamepadDatas.add(g);
+//        } else {
+//            for (DeviceModel model : models) {
+//                if (!model.getMACAddress().equals(INIT_ADDRESS)) {
+//                    EventAddGamepad(model);
+//                    list++;
+//                }
+//            }
+//            if ( gamepadDatas.size() == 0) {
+//                // No Game pad
+//                g = new GamepadVO();
+//                g.setGamepadName(String.format("Gamepad %d", list));
+//                gamepadDatas.add(g);
+//            }
+//        }
+//
+//        GamepadListAdapter adapter = new GamepadListAdapter(this, R.layout.gamepad_info, gamepadDatas );
+//        gamepadList2.setAdapter(adapter);
+//    }
     
     //// IMU SENSOR SCENE
 
@@ -382,9 +340,10 @@ public class FOTAV2Main extends AppCompatActivity {
 
     void OpenGamepadMenu() {
         // Gamepad Menu
-        SetupGamePadList();
-        gamepadView.setVisibility(View.VISIBLE);
-        activityTitle.setText(R.string.title_gamepad);
+//        SetupGamePadList();
+//        gamepadView.setVisibility(View.VISIBLE);
+//        activityTitle.setText(R.string.title_gamepad);
+        startActivity(new Intent(mContext, GamepadActivity.class));
     }
 
     void OpenIMUMenu() {
@@ -397,9 +356,10 @@ public class FOTAV2Main extends AppCompatActivity {
     }
 
     void OpenAboutVersion() {
-        // About App
-        aboutLists.setVisibility(View.VISIBLE);
-        activityTitle.setText(R.string.menu_about);
+        startActivity(new Intent(mContext, AboutActivity.class));
+//        // About App
+//        aboutLists.setVisibility(View.VISIBLE);
+//        activityTitle.setText(R.string.menu_about);
     }
 
 //    private void showGamepadsInfo(int position) {
