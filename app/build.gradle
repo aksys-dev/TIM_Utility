@@ -15,6 +15,7 @@ repositories {
 
 def buildTime = getDate()
 def buildOSType = "A8"
+def buildPlatform = "PlayStore"
 
 android {
     compileSdkVersion 26
@@ -31,7 +32,7 @@ android {
         buildConfigField "String", "CONFIG_FILE_NAME", "\"CONFIG\""
         buildConfigField "String", "KEY_SENSITIVE", "\"sensitivity\""
         buildConfigField "String", "KEY_CALIBRATION", "\"calibration\""
-
+        buildConfigField "String", "RELEASE_TYPE", "\""+buildPlatform+"\""
     }
 
     buildTypes {
@@ -44,7 +45,7 @@ android {
                     variant.outputs.all { output ->
                         def outputFile = output.outputFile
                         if (outputFile != null && outputFile.name.endsWith('.apk')) {
-                            outputFileName = "Gamepad_Utility-${buildOSType}-debug-${defaultConfig.versionName}.apk"
+                            outputFileName = "Gamepad_Utility_${buildPlatform}-${buildOSType}-debug-${defaultConfig.versionName}.apk"
                         }
                     }
                 }
@@ -57,7 +58,7 @@ android {
             applicationVariants.all { variant ->
                 if (variant.buildType.name == ('release')) {
                     variant.outputs.all {
-                        outputFileName = "Gamepad_Utility-${buildOSType}-release-${defaultConfig.versionName}.apk"
+                        outputFileName = "Gamepad_Utility_${buildPlatform}-${buildOSType}-release-${defaultConfig.versionName}.apk"
                     }
                 }
             }
