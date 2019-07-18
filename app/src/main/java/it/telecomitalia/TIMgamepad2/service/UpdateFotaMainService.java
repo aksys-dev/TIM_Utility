@@ -175,13 +175,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 //                }
             } else if (action.equals(BluetoothAdapter.STATE_OFF)) {
                 //LogUtil.i("STATE_OFF");
-
             } else if (action.equals(BluetoothAdapter.STATE_ON)) {
                 //LogUtil.i("STATE_ON");
-
             } else if (action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)) {
                 //蓝牙扫描状态(SCAN_MODE)发生改变
-
             } else if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
                 //指明一个远程设备的连接状态的改变。比如，当一个设备已经被匹配。
                 switch (device.getBondState()) {
