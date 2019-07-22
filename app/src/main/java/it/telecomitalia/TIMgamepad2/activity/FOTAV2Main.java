@@ -22,7 +22,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -38,8 +37,6 @@ import it.telecomitalia.TIMgamepad2.CalibrationGamepadVO;
 import it.telecomitalia.TIMgamepad2.CalibrationListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadVO;
-import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
-import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
@@ -51,7 +48,6 @@ import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
 import static it.telecomitalia.TIMgamepad2.BuildConfig.CONFIG_FILE_NAME;
 import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_SENSITIVE;
-import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
@@ -87,8 +83,8 @@ public class FOTAV2Main extends AppCompatActivity {
     private BluetoothDeviceManager mGamePadDeviceManager;
     //private BluetoothDeviceManager mDeviceManager;
 
-    private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
-    private ProxyManager mProxyManager;// = ProxyManager.getInstance();
+//    private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
+//    private ProxyManager mProxyManager;// = ProxyManager.getInstance();
 
     private MagicKey[] mMagicKeys = new MagicKey[]{new MagicKey(102, 0), new MagicKey(103, 1), new MagicKey(21, 2), new MagicKey(19, 3), new MagicKey(20, 4), new MagicKey(22, 5),};
 
@@ -191,16 +187,16 @@ public class FOTAV2Main extends AppCompatActivity {
                 sensitivityValue = (float) ((progress) / 100.0);
                 textSeekBarValue.setText(String.valueOf(sensitivityValue));
                 SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, sensitivityValue);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    mBinderProxy.setSensitivity(sensitivityValue);
-                } else {
-                    if (BuildConfig.ANDROID_7_SUPPORT_IMU)
-                        mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
-                }
-
-                if (TEST_A7_ON_A8) {
-                    mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
-                }
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                    mBinderProxy.setSensitivity(sensitivityValue);
+//                } else {
+//                    if (BuildConfig.ANDROID_7_SUPPORT_IMU)
+//                        mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
+//                }
+//
+//                if (TEST_A7_ON_A8) {
+//                    mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
+//                }
             }
 
             @Override
@@ -336,13 +332,13 @@ public class FOTAV2Main extends AppCompatActivity {
             }
         }
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
-            mProxyManager = ProxyManager.getInstance();
-        }
-
-        if (TEST_A7_ON_A8) {
-            mProxyManager = ProxyManager.getInstance();
-        }
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
+//            mProxyManager = ProxyManager.getInstance();
+//        }
+//
+//        if (TEST_A7_ON_A8) {
+//            mProxyManager = ProxyManager.getInstance();
+//        }
     }
     
     //// GAMEPAD SCENE

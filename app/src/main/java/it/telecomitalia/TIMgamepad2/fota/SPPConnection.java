@@ -14,13 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
-import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
-import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
-import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_CONNECTION_ERROR;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
@@ -85,8 +82,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     private boolean checked = false;
     private BlueToothConnThread mConnectionThread;
     private DeviceModel mInfo;
-    private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
-    private ProxyManager mProxyManager;// = ProxyManager.getInstance();
+//    private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
+//    private ProxyManager mProxyManager;// = ProxyManager.getInstance();
     private String mFirmwareVersion = UNKNOWN;
     private int mBatteryVolt = -1;
     private GamePadListener mGamepadListener;
@@ -119,13 +116,13 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         callCalibration = false;
         useSoftCalibration = false;
         useHardCalibration = false;
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
-            mProxyManager = ProxyManager.getInstance();
-        }
-
-        if (TEST_A7_ON_A8) {
-            mProxyManager = ProxyManager.getInstance();
-        }
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
+//            mProxyManager = ProxyManager.getInstance();
+//        }
+//
+//        if (TEST_A7_ON_A8) {
+//            mProxyManager = ProxyManager.getInstance();
+//        }
     }
     
     public void setByteGyroZero(String savedata) {
@@ -514,18 +511,18 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                                 combineHighAndLowByte( event[11],event[12] ) );
                     }
                     
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        mBinderProxy.send(event);
-//                        LogUtil.d( "Android O - " + byteViewer( event ) );
-                    } else {
-                        if (BuildConfig.ANDROID_7_SUPPORT_IMU)
-                            mProxyManager.send(event);
-//                        LogUtil.d( "Android N (with IMU) - " + byteViewer( event ));
-                    }
-                    if (TEST_A7_ON_A8) {
-                        mProxyManager.send(event);
-//                        LogUtil.d( "Android N - " + byteViewer( event ));
-                    }
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                        mBinderProxy.send(event);
+////                        LogUtil.d( "Android O - " + byteViewer( event ) );
+//                    } else {
+//                        if (BuildConfig.ANDROID_7_SUPPORT_IMU)
+//                            mProxyManager.send(event);
+////                        LogUtil.d( "Android N (with IMU) - " + byteViewer( event ));
+//                    }
+//                    if (TEST_A7_ON_A8) {
+//                        mProxyManager.send(event);
+////                        LogUtil.d( "Android N - " + byteViewer( event ));
+//                    }
                 }
                 break;
             case CMD_PARTITION_VERIFY_FAIL:
