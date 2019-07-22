@@ -5,9 +5,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,10 +22,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.CalibrationGamepadVO;
 import it.telecomitalia.TIMgamepad2.CalibrationListAdapter;
-import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
@@ -35,12 +32,10 @@ import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
 import static it.telecomitalia.TIMgamepad2.BuildConfig.CONFIG_FILE_NAME;
 import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_SENSITIVE;
-import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 
 public class SetupIMUActivity extends AppCompatActivity {
     private BluetoothDeviceManager mGamePadDeviceManager;
     Context context;
-    private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
 
     /// Views
     SeekBar seekBarSensitivity;
@@ -94,7 +89,7 @@ public class SetupIMUActivity extends AppCompatActivity {
                 }
 
                 sensitivityValue = (float) ((progress) / 100.0);
-                textSeekBarValue.setText(String.valueOf(sensitivityValue));
+                textSeekBarValue.setText(String.format( "%1.2f", sensitivityValue));
                 SharedPreferenceUtils.put(CONFIG_FILE_NAME, context, KEY_SENSITIVE, sensitivityValue);
 
                 // TODO: Check is Proxy need

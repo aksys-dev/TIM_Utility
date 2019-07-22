@@ -15,6 +15,8 @@ import it.telecomitalia.TIMgamepad2.fota.SensorCalibrationEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
+import static android.os.Build.UNKNOWN;
+
 public class SensorCalibrationActivity extends AppCompatActivity {
 	BluetoothDeviceManager deviceManager;
 	DeviceModel device;
@@ -77,9 +79,13 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 			LogUtil.w( "Not Found Device!" );
 			super.onBackPressed();
 		}
-		
+
 		calibrationMessage.setText( getString( R.string.Calibration ) + " " + name );
 		normalMessage.setText( R.string.gamepad_calibration_first );
+
+		if (device.getFWVersion() == null || device.getFWVersion().equals(UNKNOWN)) {
+			device.setDeviceRecheck();
+		}
 		
 		device.getSPPConnection().setCalibrationEventListener( calibrationEvent );
 		handler.postDelayed( SetCalibrationSoftly, USER_WAIT_TIME );

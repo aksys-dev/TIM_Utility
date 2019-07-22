@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
         android:layout_marginBottom="32dp"
+        android:gravity="center"
         android:text="Gamepad Ready..."
         android:textAppearance="@style/TextAppearance.AppCompat.Display2"
         app:layout_constraintBottom_toTopOf="@+id/status_progress"

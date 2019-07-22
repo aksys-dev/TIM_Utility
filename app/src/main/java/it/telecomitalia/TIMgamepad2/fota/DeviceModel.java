@@ -123,6 +123,8 @@ public class DeviceModel {
 
     }
 
+    public void setDeviceRecheck() { mSPPConnection.onDeviceCheck(); }
+
     public synchronized void setAddress(String address) {
         mMACAddress = address;
     }
