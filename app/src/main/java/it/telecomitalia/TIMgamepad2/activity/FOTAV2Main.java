@@ -37,16 +37,6 @@ public class FOTAV2Main extends AppCompatActivity {
         setContentView(R.layout.activity_fota_v2_main);
         mContext = this;
 
-        menulistView = findViewById(R.id.menuListView);
-        menulistView.setOnItemClickListener( new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView target = view.findViewById(android.R.id.text1);
-                if (target.getText() == getString(R.string.menu_gamepad)) OpenGamepadMenu();
-                if (target.getText() == getString(R.string.menu_imu)) OpenIMUMenu();
-                if (target.getText() == getString(R.string.menu_about)) OpenAboutVersion();
-            }
-        } );
         SetMenuData();
 
         String from = getIntent().getStringExtra(INTENT_KEY);
@@ -64,11 +54,15 @@ public class FOTAV2Main extends AppCompatActivity {
     }
 
     public void SetMenuData() {
-        String[] menulists;
-        menulists = new String[]{getString(R.string.menu_gamepad), getString(R.string.menu_imu), getString(R.string.menu_about)};
+//        findViewById(R.id.menu_gamepad).setVisibility(View.GONE);
+//        findViewById(R.id.menu_sensor).setVisibility(View.GONE);
+//        findViewById(R.id.menu_about).setVisibility(View.GONE);
+    }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, menulists);
-        menulistView.setAdapter(adapter);
+    public void onClickMenu(View view) {
+        if (view.getId() == R.id.menu_gamepad) OpenGamepadMenu();
+        if (view.getId() == R.id.menu_sensor) OpenIMUMenu();
+        if (view.getId() == R.id.menu_about) OpenAboutVersion();
     }
 
     @Override

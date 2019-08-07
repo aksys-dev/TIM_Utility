@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -36,6 +37,7 @@ import java.util.Timer;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.activity.DialogActivity;
 import it.telecomitalia.TIMgamepad2.activity.FOTA_V2;
+import it.telecomitalia.TIMgamepad2.activity.GamepadActivity;
 import it.telecomitalia.TIMgamepad2.activity.UpgradeUIActivity;
 import it.telecomitalia.TIMgamepad2.fota.AttachDevice;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
@@ -123,11 +125,51 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                     LogUtil.i("Firmware download finished");
                     if (!isTopActivityGamepad()) {
                         if (!isshowndialog) {
-                            Intent dialogIntent = new Intent(UpdateFotaMainService.this, DialogActivity.class);
-                            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            dialogIntent.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
-                            startActivity(dialogIntent);
-                            isshowndialog = true;
+//                            Intent dialogIntent = new Intent(UpdateFotaMainService.this, DialogActivity.class);
+//                            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                            dialogIntent.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
+//                            startActivity(dialogIntent);
+//                            isshowndialog = true;
+
+                            Intent intent = new Intent(getApplicationContext(), GamepadActivity.class);
+                            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 10, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                String channelID = getString(R.string.app_name);
+                                String channelName = getString(R.string.app_name);
+                                String channelDesc = getString(R.string.dailog_tips);
+
+                                NotificationChannel ch = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
+
+                                if (notificationManager != null) {
+                                    notificationManager.createNotificationChannel(ch);
+                                } else {
+                                    LogUtil.w(getString(R.string.logw_create_notification));
+                                }
+
+                                ch.enableLights(true);
+                                ch.setLightColor(Color.YELLOW);
+                                ch.enableVibration(true);
+                                ch.setVibrationPattern(new long[]{100, 200, 300});
+                                ch.setShowBadge(false);
+
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), channelID);
+                                builder.setContentTitle(getString(R.string.firmware));
+                                builder.setContentText(getString(R.string.dailog_tips));
+                                builder.addAction(new NotificationCompat.Action.Builder(android.R.drawable.ic_menu_share, getString(R.string.ok), pendingIntent).build());
+                                builder.setSmallIcon(R.drawable.ic_launcher_foreground);
+                                notificationManager.notify(112, builder.build());
+                            }
+                            else {
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
+
+                                builder.setContentTitle(getString(R.string.firmware));
+                                builder.setContentText(getString(R.string.dailog_tips));
+//                                builder.addAction(new NotificationCompat.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.cancel), null).build());
+                                builder.addAction(new NotificationCompat.Action.Builder(android.R.drawable.ic_menu_share, getString(R.string.ok), pendingIntent).build());
+                                builder.setSmallIcon(R.drawable.ic_launcher_foreground);
+                                notificationManager.notify(112, builder.build());
+                            }
                         }
                     } else {
                         UpdateModel updateModel = new UpdateModel(mainConnection, true);
@@ -221,10 +263,13 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         }
     };
 
+    NotificationManager notificationManager;
     @Override
     public void onCreate() {
         LogUtil.d("Creating utility service");
         EventBus.getDefault().register(this);
+
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         super.onCreate();
     }
 
@@ -263,9 +308,6 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     }
 
     private Notification buildForegroundNotification(Context context) {
-
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         String CHANNEL_ID = FOREGROUND_NOTIFICATION_CHANNEL_ID;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 

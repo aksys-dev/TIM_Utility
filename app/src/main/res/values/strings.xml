@@ -189,4 +189,5 @@
     <string name="log_no_existed_device_info" translatable="false">No existed device info, Now init: %s</string>
     <string name="log_do_restore" translatable="false">Do restore: %s</string>
     <string name="ok">CONFERMA</string>
+    <string name="open_source_license">Licenza Open Source</string>
 </resources>

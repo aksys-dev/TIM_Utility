@@ -22,7 +22,7 @@ public class AboutActivity extends AppCompatActivity {
 
         try {
             android.content.pm.PackageInfo packageInfo = this.getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_META_DATA);
-            currentVersion.setText( packageInfo.versionName);
+            currentVersion.setText(packageInfo.versionName);
             lastUpdateDay.setText(BuildConfig.BUILD_TIME);
         } catch (PackageManager.NameNotFoundException e) {
             currentVersion.setText(R.string.app_version);

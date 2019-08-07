@@ -127,4 +127,5 @@
     <string name="calibration_completed">Calibrazione completata</string>
     <string name="calibration_cancelled">Calibrazione annullata</string>
     <string name="ok">CONFERMA</string>
+    <string name="open_source_license">Licenza Open Source</string>
 </resources>
