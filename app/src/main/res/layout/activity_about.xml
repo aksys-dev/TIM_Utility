@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/list_background"
+    android:clickable="false"
     tools:context=".activity.AboutActivity">
 
     <android.support.v7.widget.CardView
@@ -13,6 +15,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
+        app:cardBackgroundColor="@color/colorPrimary"
         app:cardCornerRadius="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -21,7 +24,8 @@
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:backgroundTintMode="add">
 
             <TextView
                 android:id="@+id/value_updateDay"
@@ -85,6 +89,8 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:autoLink="web"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         android:text="EventBus version 3.1.1\nhttp://greenrobot.org/eventbus \nExFilePicker version 1.8\nhttps://github.com/bartwell/ExFilePicker \nGson version 2.8.5\nhttps://github.com/google/gson \nGlide version 4.1\nhttps://bumptech.github.io/glide \nFabric version 2.10\nhttps://fabric.io "
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

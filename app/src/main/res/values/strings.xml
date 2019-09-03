@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Utilità Gamepad</string>
+    <string name="app_name">TIM Gamepad</string>
 
     <!--  BluetoothChat -->
     <string name="send">Inviare</string>
@@ -77,7 +77,7 @@
     <!--
     <string name="upgrade_ing">Aggiornamento del Game pad Bluetooth in corso. Si prega di NON spegnere il TIMvision</string>
     -->
-    <string name="upgrade_ing">Aggiornamento in corso, non spegnere il decoder.</string>
+    <string name="upgrade_ing">Aggiornamento in corso, non spegnere il dispositivo smartphone o tablet collegato. Sto scaricando…</string>
 
     <!--
     <string name="upgrade_done">Bluetooth Game Pad upgrading done. Press Button \"Done\" for continue.</string>
@@ -113,7 +113,6 @@
     <string name="upgrading_gamepad_failed">Aggiornamento fallito, Per favore, smetti e riprova</string>
     <string name="upgrading_connection_failed">Si è verificato un errore durante la comunicazione con i dati del gamepad. Reimposta il gamepad e riprova.</string>
     <string name="upgrading_connection_timeout">La richiesta di aggiornamento è scaduta, riprova più tardi.</string>
-    <string name="dailog_tips">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare.</string>
     <string name="utility_service_restarting">"Connecting&#8230;"</string>
     <string name="gamepad_service_running">The TIM Gamepad service is running</string>
     <string name="no_gamepad">Nessun gamepad</string>
@@ -190,4 +189,8 @@
     <string name="log_do_restore" translatable="false">Do restore: %s</string>
     <string name="ok">CONFERMA</string>
     <string name="open_source_license">Licenza Open Source</string>
+    <string name="menu_button_configureation">Ambientazione</string>
+    <string name="setting_o_button">Impostazioni del pulsante O</string>
+    <string name="dailog_tips">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare.</string>
+    <string name="dailog_tips_1">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare ora.</string>
 </resources>

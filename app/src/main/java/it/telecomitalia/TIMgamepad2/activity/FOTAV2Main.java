@@ -5,10 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import it.telecomitalia.TIMgamepad2.R;
 
@@ -37,8 +34,6 @@ public class FOTAV2Main extends AppCompatActivity {
         setContentView(R.layout.activity_fota_v2_main);
         mContext = this;
 
-        SetMenuData();
-
         String from = getIntent().getStringExtra(INTENT_KEY);
         if (from != null) {
             if (from.equals(INTENT_FROM_SERVICE)) {
@@ -53,15 +48,10 @@ public class FOTAV2Main extends AppCompatActivity {
         }
     }
 
-    public void SetMenuData() {
-//        findViewById(R.id.menu_gamepad).setVisibility(View.GONE);
-//        findViewById(R.id.menu_sensor).setVisibility(View.GONE);
-//        findViewById(R.id.menu_about).setVisibility(View.GONE);
-    }
-
     public void onClickMenu(View view) {
         if (view.getId() == R.id.menu_gamepad) OpenGamepadMenu();
-        if (view.getId() == R.id.menu_sensor) OpenIMUMenu();
+        if (view.getId() == R.id.menu_imu) OpenIMUMenu();
+        if (view.getId() == R.id.menu_button_conf) OpenButtonConfigureation();
         if (view.getId() == R.id.menu_about) OpenAboutVersion();
     }
 
@@ -78,6 +68,10 @@ public class FOTAV2Main extends AppCompatActivity {
         startActivity(new Intent(mContext, SetupIMUActivity.class));
     }
 
+    void OpenButtonConfigureation() {
+        startActivity(new Intent(mContext, ButtonSettingActivity.class));
+    }
+    
     void OpenAboutVersion() {
         startActivity(new Intent(mContext, AboutActivity.class));
     }

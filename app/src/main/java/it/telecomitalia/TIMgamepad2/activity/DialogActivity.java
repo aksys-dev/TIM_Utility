@@ -33,8 +33,8 @@ public class DialogActivity extends Activity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.dailog_tips);
-        builder.setTitle(R.string.firmware);
-        builder.setIcon(android.R.drawable.ic_dialog_info);
+//        builder.setTitle(R.string.firmware);
+//        builder.setIcon(android.R.drawable.ic_dialog_info);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

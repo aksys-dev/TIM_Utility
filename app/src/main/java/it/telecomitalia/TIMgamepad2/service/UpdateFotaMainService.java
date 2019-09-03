@@ -137,7 +137,6 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                                 String channelID = getString(R.string.app_name);
                                 String channelName = getString(R.string.app_name);
-                                String channelDesc = getString(R.string.dailog_tips);
 
                                 NotificationChannel ch = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
 
@@ -156,8 +155,9 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                                 NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), channelID);
                                 builder.setContentTitle(getString(R.string.firmware));
                                 builder.setContentText(getString(R.string.dailog_tips));
+                                builder.setStyle(new NotificationCompat.BigTextStyle().bigText(getString(R.string.dailog_tips)));
                                 builder.addAction(new NotificationCompat.Action.Builder(android.R.drawable.ic_menu_share, getString(R.string.ok), pendingIntent).build());
-                                builder.setSmallIcon(R.drawable.ic_launcher_foreground);
+                                builder.setSmallIcon(R.mipmap.ic_launcher_foreground);
                                 notificationManager.notify(112, builder.build());
                             }
                             else {
@@ -165,9 +165,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 
                                 builder.setContentTitle(getString(R.string.firmware));
                                 builder.setContentText(getString(R.string.dailog_tips));
+                                builder.setStyle(new NotificationCompat.BigTextStyle().bigText(getString(R.string.dailog_tips)));
 //                                builder.addAction(new NotificationCompat.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.cancel), null).build());
                                 builder.addAction(new NotificationCompat.Action.Builder(android.R.drawable.ic_menu_share, getString(R.string.ok), pendingIntent).build());
-                                builder.setSmallIcon(R.drawable.ic_launcher_foreground);
+                                builder.setSmallIcon(R.mipmap.ic_launcher_foreground);
                                 notificationManager.notify(112, builder.build());
                             }
                         }
