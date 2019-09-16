@@ -9,8 +9,8 @@ import android.widget.ListView;
 
 import it.telecomitalia.TIMgamepad2.R;
 
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
+import static it.telecomitalia.TIMgamepad2.DialogCode.INTENT_FROM_SERVICE;
+import static it.telecomitalia.TIMgamepad2.DialogCode.INTENT_KEY;
 
 public class FOTAV2Main extends AppCompatActivity {
     private static final boolean CALIBRATION_DEFAULT = false;
