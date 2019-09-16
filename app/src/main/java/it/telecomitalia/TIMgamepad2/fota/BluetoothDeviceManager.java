@@ -2,8 +2,10 @@ package it.telecomitalia.TIMgamepad2.fota;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.util.Log;
+import android.view.InputDevice;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -41,21 +43,11 @@ public class BluetoothDeviceManager {
     private UpgradeManager mUpgradeManager;
     private int mTargetDeviceCount = 0;
     private List<DeviceModel> mDevices;
-
-
-    //    public static BluetoothDeviceManager getDeviceManager() {
-//        if (mDeviceManager == null) {
-//            LogUtil.d("Now create new bluetooth device manager");
-//            mDeviceManager = new BluetoothDeviceManager();
-//        }
-//        return mDeviceManager;
-//    }
+    
     private BluetoothAdapter _bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
     private BluetoothDeviceManager() {
-//        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-//        StrictMode.setThreadPolicy(policy);
-        //mDeviceManager = new BluetoothDeviceManager();
+
     }
 
     public static BluetoothDeviceManager getInstance() {
@@ -130,15 +122,17 @@ public class BluetoothDeviceManager {
         gp.setAddress(device.getAddress());
         gp.setBlueToothDevice(device);
         gp.setInputID();
-        enableSensor(gp);
-        gp.setSPPConnection(new SPPConnection(gp, listener));
-        gp.getSPPConnection().start();
-        gp.setCalibrationData();
+        if (gp.getDevice() != null && gp.getInputID() != -1) {
+            gp.setSPPConnection(new SPPConnection(gp, listener));
+            gp.getSPPConnection().start();
+            enableSensor(gp);
+            gp.setCalibrationData();
 //        gp.print();
-        DeviceLocalCache.getInstance().save(mDevices); //update the local cache
-        FabricModel model = gp.getFabricModel();
-        FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_CONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
-        gp.setFabricModel(model);
+            DeviceLocalCache.getInstance().save(mDevices); //update the local cache
+            FabricModel model = gp.getFabricModel();
+            FabricController.getInstance().gamepadConnection(1, FabricController.STATUS_CONNECTED, FabricController.GP_V2_NAME, model.mPreviousVersion);
+            gp.setFabricModel(model);
+        }
     }
 
 
@@ -166,6 +160,9 @@ public class BluetoothDeviceManager {
             LogUtil.d(R.string.log_gamepad_existed, gamepad.getIndicator(), gamepad.getGamePadName(), gamepad.getMACAddress());
             gamepad.setBlueToothDevice(device);
             gamepad.setInputID();
+        }
+        
+        if (gamepad != null && gamepad.getInputID() != -1) {
             enableSensor(gamepad);
             gamepad.setSPPConnection(new SPPConnection(gamepad, listener));
             gamepad.getSPPConnection().start();
@@ -254,11 +251,21 @@ public class BluetoothDeviceManager {
             EventBus.getDefault().post(new GamePadEvent(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED, gamepad.getMACAddress()));
             return;
         }
-        //LogUtil.e("Abnormal scenario!");
     }
 
     public boolean isEmpty() {
         return mTargetDeviceCount == 0;
+    }
+    
+    public int getTargetDeviceCount() {
+        return mTargetDeviceCount;
+    }
+    
+    public int getTargetDeviceCount(String exceptDeviceAddress) {
+        for (DeviceModel model : mDevices) {
+            if (model.getMACAddress().equals(exceptDeviceAddress)) return mTargetDeviceCount - 1;
+        }
+        return mTargetDeviceCount;
     }
 
     public UpgradeManager getUpgradeManager() {
@@ -284,11 +291,6 @@ public class BluetoothDeviceManager {
         Log.d("Daniel", "mDevices --->>" + mDevices);
         return mDevices;
     }
-
-//    public List<DeviceModel> getConnectedDevices() {
-//        return mDevices;
-//    }
-
 
     public List<DeviceModel> getBondedDevices() {
         return mDevices;
@@ -373,37 +375,20 @@ public class BluetoothDeviceManager {
     }
 
     public boolean isConnected(BluetoothDevice device) {
-
-        Class<BluetoothAdapter> bluetoothAdapterClass = BluetoothAdapter.class;//得到BluetoothAdapter的Class对象
-        try {//得到蓝牙状态的方法
-            Method method = bluetoothAdapterClass.getDeclaredMethod("getConnectionState", (Class[]) null);
-            //打开权限
-            method.setAccessible(true);
-            int state = (int) method.invoke(_bluetoothAdapter, (Object[]) null);
-
-            if (state == BluetoothAdapter.STATE_CONNECTED) {
-
-                Set<BluetoothDevice> devices = _bluetoothAdapter.getBondedDevices();
-
-                if (devices.contains(device)) {
-//                    LogUtil.i("Target device found:" + device.getAddress());
-                    Method isConnectedMethod = BluetoothDevice.class.getDeclaredMethod("isConnected", (Class[]) null);
-                    method.setAccessible(true);
-                    boolean isConnected = (boolean) isConnectedMethod.invoke(device, (Object[]) null);
-
-                    if (isConnected && device.getAddress().equals(device.getAddress())) {
-                        LogUtil.i(R.string.log_target_device_connected, device.getAddress());
-                        return true;
-                    } else {
-                        LogUtil.d(R.string.log_device_found_not_connected);
-                        return false;
-                    }
+        if (!_bluetoothAdapter.isEnabled()) return false;
+        if (device == null) return false;
+        String name = device.getName();
+        if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+            LogUtil.i(R.string.log_target_device_connected, device.getAddress());
+            for (int i : InputDevice.getDeviceIds())
+                if (name.equals(InputDevice.getDevice(i).getName())) {
+                    return true;
                 }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return false;
+        } else {
+            LogUtil.d(R.string.log_device_found_not_connected);
+            return false;
         }
-        return false;
     }
 
     public void generateException() {

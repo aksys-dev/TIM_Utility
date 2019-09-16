@@ -62,7 +62,7 @@ public class LogUtil {
 
     public static void d(int msgResource) {
         if (DEBUG) {
-            Log.d(TAG, getLineMethod() + getStringResource(msgResource));
+            Log.d(TAG, getFileLineMethod() + getStringResource(msgResource));
         }
     }
 
@@ -100,13 +100,13 @@ public class LogUtil {
 
     public static void i(String msg) {
         if (DEBUG) {
-            Log.i(TAG, getLineMethod() + msg);
+            Log.i(TAG, getFileLineMethod() + msg);
         }
     }
 
     public static void i(int msgResource) {
         if (DEBUG) {
-            Log.i(TAG, getLineMethod() + getStringResource(msgResource));
+            Log.i(TAG, getFileLineMethod() + getStringResource(msgResource));
         }
     }
 
@@ -118,7 +118,7 @@ public class LogUtil {
 
     public static void e(String msg) {
         if (DEBUG) {
-            Log.e(TAG, getLineMethod() + msg);
+            Log.e(TAG, getFileLineMethod() + msg);
         }
     }
 

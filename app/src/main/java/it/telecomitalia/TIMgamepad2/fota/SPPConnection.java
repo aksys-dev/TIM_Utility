@@ -4,6 +4,7 @@ package it.telecomitalia.TIMgamepad2.fota;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -144,12 +145,13 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
 
     public void start() {
-        mConnectionThread.start();
+        if (mConnectionThread != null) mConnectionThread.start();
     }
 
     public void stop() {
-        mConnectionThread.cancel();
+        if (mConnectionThread != null) mConnectionThread.cancel();
         mConnectionThread = null;
+        LogUtil.i("SPPConnection Closed. - " + mInfo.getMACAddress());
 //        monitoring = false;
 //        imuStatusCheckThread.interrupt();
     }
@@ -382,11 +384,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 //                imuStatusCheckThread.start();
 //            }
             mConnectionThread.write(CMD_UPGRADE_SUCCESS);
-            SystemClock.sleep(200);
             setGamePadLedIndicator();
-            SystemClock.sleep(200);
             queryFirmwareVersion();
-            SystemClock.sleep(200);
             queryBatteryLevel();
 
         } else {
@@ -417,7 +416,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public void onConnectionException(Exception e) {
         LogUtil.w(R.string.log_spp_connection_exception, e.getMessage());
 //        LogUtil.i("Recovery the SPP connection");
-        recoverySPPConnection();
+//        recoverySPPConnection();
     }
 
     private void queryFirmwareVersion() {
@@ -590,6 +589,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             default:
                 LogUtil.w(R.string.log_unknown_command);
+                LogUtil.w(String.format( "Device: %s Data - bytes: %d / CODE: %x", mInfo.getGamePadName(), data.length, data[INDEX_CMD] ) );
                 break;
         }
     }

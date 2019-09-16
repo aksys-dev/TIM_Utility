@@ -14,6 +14,9 @@ import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
+/**
+ * This service is using for IGamePadService.aidl connection.
+ */
 public class GamePadService extends Service {
     public static final int ERROR_NONE = 0;
     public static final int ERROR_UNKNOWN_MODE = 0xFFFF;

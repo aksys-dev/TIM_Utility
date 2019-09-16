@@ -173,7 +173,7 @@
     <string name="loge_close_of_connection_of_io_socket_failed" translatable="false">close() of connect of Input/Output/socket failed %s</string>
     <string name="loge_cannot_find_target" translatable="false">Can not find target device</string>
     <string name="loge_exception_during_write" translatable="false">Exception during write %s</string>
-    <string name="loge_spp_disconnected" translatable="false">SPP disconnected%s</string>
+    <string name="loge_spp_disconnected" translatable="false">SPP disconnected - %s</string>
     <string name="loge_error_when_create_socket" translatable="false">Error when create socket</string>
     <string name="loge_connecting_failed" translatable="false">Connecting failed: %s</string>
     <string name="logw_build_spp_connection_retry_count" translatable="false">Build SPP connection retry: %d times, Abort</string>

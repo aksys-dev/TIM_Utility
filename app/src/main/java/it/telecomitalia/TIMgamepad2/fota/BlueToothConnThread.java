@@ -14,7 +14,6 @@ import java.util.UUID;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
-
 /**
  * Created by D on 2018/1/18 0018.
  */
@@ -76,49 +75,30 @@ public class BlueToothConnThread extends Thread {
         BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
         do {
             try {
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
-                int sdk = Build.VERSION.SDK_INT;
-                if (sdk >= 10) {
-                    mSocket = mDeviceInfo.getDevice().createInsecureRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
-                } else {
-                    mSocket = mDeviceInfo.getDevice().createRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
-                }
-            } catch (IOException e) {
-                LogUtil.e(R.string.loge_error_when_create_socket);
-            }
-            try {
+                if (mDeviceInfo.getDevice() == null) return;
+                mSocket = mDeviceInfo.getDevice().createInsecureRfcommSocketToServiceRecord(UUID.fromString(SPP_UUID));
                 mSocket.connect();
 //                LogUtil.d("SPP socket Connected");
                 mStreamReady = STREAM_INITIATED;
             } catch (IOException e) {
                 //LogUtil.e("unable to connect() socket, trying fallback...(" + e + ")");
-                try {
-                    mSocket = (BluetoothSocket) mDeviceInfo.getDevice().getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(mDeviceInfo.getDevice(), 1);
-                    mSocket.connect();
-
-//                    LogUtil.d("SPP socket Connected");
-                    mStreamReady = STREAM_INITIATED;
-                } catch (NoSuchMethodException | IOException | InvocationTargetException | IllegalAccessException e1) {
-                    LogUtil.e(R.string.loge_connecting_failed, e1);
-
-                    if (mSocket != null) {
-                        try {
-                            mSocket.close();
-                        } catch (IOException e2) {
-                            LogUtil.e(e2.toString());
-                        }
-                        mSocket = null;
+                LogUtil.e(R.string.loge_connecting_failed, e);
+                if (mSocket != null) {
+                    try {
+                        mSocket.close();
+                    } catch (IOException e2) {
+                        LogUtil.e(e2.toString());
                     }
-                    if (retries < SPP_RETRY_TIMES) {
-                        SystemClock.sleep(1000);
-                        retries++;
-                    } else {
-                        //Build SPP failed
-                        LogUtil.w(R.string.logw_build_spp_connection_retry_count, SPP_RETRY_TIMES);
-                        mListener.onConnectionReady(false);
-                        return;
-                    }
+                    mSocket = null;
+                }
+                if (retries < SPP_RETRY_TIMES) {
+                    SystemClock.sleep(1000);
+                    retries++;
+                } else {
+                    //Build SPP failed
+                    LogUtil.w(R.string.logw_build_spp_connection_retry_count, SPP_RETRY_TIMES);
+                    mListener.onConnectionReady(false);
+                    return;
                 }
             }
         } while (mStreamReady != STREAM_INITIATED);

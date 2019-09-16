@@ -13,8 +13,8 @@ public class UpdatePowerOnReceiver extends BroadcastReceiver {
 
     public void onReceive(Context context, Intent intent) {
         LogUtil.d("Received intent: " + intent.getAction());
-        LogUtil.d("Start TIM gamepad v2 service as foreground");
         Intent intent2 = new Intent(context, UpdateFotaMainService.class);
+        intent2.setAction(intent.getAction());
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             context.startService(intent2);
         } else {

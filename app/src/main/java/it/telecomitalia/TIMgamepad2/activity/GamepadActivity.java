@@ -1,6 +1,8 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -26,12 +28,13 @@ import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.fota.UpgradeManager;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
+import it.telecomitalia.TIMgamepad2.service.UpdateFotaMainService;
 import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
+import static it.telecomitalia.TIMgamepad2.DialogCode.INTENT_FROM_USER;
+import static it.telecomitalia.TIMgamepad2.DialogCode.INTENT_KEY;
+import static it.telecomitalia.TIMgamepad2.DialogCode.INTENT_MAC;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_CONNECTED;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_DISCONNECTED;
 import static it.telecomitalia.TIMgamepad2.fota.DeviceModel.INIT_ADDRESS;
@@ -158,10 +161,35 @@ public class GamepadActivity extends AppCompatActivity {
                 return;
             }
             LogUtil.d("Need upgrade");
-            Intent dialogIntent = new Intent(this, DialogActivity.class);
-            dialogIntent.putExtra(INTENT_KEY, INTENT_FROM_USER);
-            dialogIntent.putExtra(INTENT_MAC, targetDeviceMac);
-            startActivity(dialogIntent);
+            // TODO: Change to Alert Message.
+//            Intent dialogIntent = new Intent(this, DialogCode.class);
+//            dialogIntent.putExtra(INTENT_KEY, INTENT_FROM_USER);
+//            dialogIntent.putExtra(INTENT_MAC, targetDeviceMac);
+//            startActivity(dialogIntent);
+    
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage(R.string.dailog_tips);
+//        builder.setTitle(R.string.firmware);
+//        builder.setIcon(android.R.drawable.ic_dialog_info);
+            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intentBroadcast = new Intent();
+                    intentBroadcast.setAction(UpdateFotaMainService.DIALOG_OK_BROADCAST);
+                    intentBroadcast.putExtra(INTENT_KEY, INTENT_FROM_USER);
+                    intentBroadcast.putExtra(INTENT_MAC, targetDeviceMac);
+                    sendBroadcast(intentBroadcast);
+                }
+            });
+            builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Intent intent = new Intent();
+                    intent.setAction(UpdateFotaMainService.DIALOG_CANCEL_BROADCAST);
+                    sendBroadcast(intent);
+                }
+            });
+            builder.show();
         }
     }
 

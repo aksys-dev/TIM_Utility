@@ -2,23 +2,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="it.telecomitalia.TIMgamepad2">
-    package="it.telecomitalia.TIMgamepad2"
-    >
-    <!--android:sharedUserId="android.uid.system"-->
 
+    <!-- android:sharedUserId="android.uid.system" -->
     <!--
     <uses-sdk android:minSdkVersion="15"
     />
     -->
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:name=".GamePadV2UpgadeApplication"
@@ -28,10 +24,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".activity.ButtonSettingActivity"
-            android:label="@string/menu_button_configureation"></activity>
-        <!--android:persistent="true"-->
-
+        <!--<receiver-->
+            <!--android:name=".service.BluetoothEventReceiver"-->
+            <!--android:enabled="true"-->
+            <!--android:exported="true">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.bluetooth.device.action.ACL_CONNECTED" />-->
+                <!--<action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />-->
+                <!--<action android:name="android.bluetooth.adapter.action.CONNECTION_STATE_CHANGED" />-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
+        <activity
+            android:name=".activity.ButtonSettingActivity"
+            android:label="@string/menu_button_configureation" /> <!-- android:persistent="true" -->
         <service
             android:name=".service.QuickSettingService"
             android:icon="@drawable/tim_logo_transparent"
@@ -72,19 +77,16 @@
             android:label="@string/menu_about"
             android:parentActivityName=".activity.FOTAV2Main" />
         <activity
-            android:name=".activity.DialogActivity"
-            android:launchMode="singleTask"
-            android:theme="@style/MyDialog" />
-        <activity
             android:name=".activity.UpgradeUIActivity"
             android:launchMode="singleTask" />
         <activity android:name=".activity.FotaMainActivity" />
 
         <receiver android:name=".service.UpdatePowerOnReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="it.telecomitalia.TIMgamepad2.RESTART_SERVICE" />
+                <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
             </intent-filter>
         </receiver>
 

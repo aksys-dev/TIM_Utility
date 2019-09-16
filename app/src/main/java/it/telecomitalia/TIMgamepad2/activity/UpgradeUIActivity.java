@@ -9,8 +9,6 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -33,9 +31,9 @@ import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
-import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
+import static it.telecomitalia.TIMgamepad2.DialogCode.INTENT_FROM_SERVICE;
+import static it.telecomitalia.TIMgamepad2.DialogCode.INTENT_KEY;
+import static it.telecomitalia.TIMgamepad2.DialogCode.INTENT_MAC;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUS_MSG_NEED_UPGRADE;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_CONNECTED;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_DISCONNECTED;
@@ -83,12 +81,12 @@ public class UpgradeUIActivity extends Activity {
 //        mContext = this;
         mHandler = new MainHandler();
         Intent i = getIntent();
+        initializeBluetoothManager();
         targetDeviceMAC = i.getStringExtra(INTENT_MAC);
         aborted = false;
 //        PATH = mContext.getCacheDir() + "/firmware/";
-        initUI();
-        initializeBluetoothManager();
         mTargetDevice = mGamePadDeviceManager.getDeviceModelByAddress(targetDeviceMAC);
+        initUI();
     }
 
     @Override
