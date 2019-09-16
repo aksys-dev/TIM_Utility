@@ -63,6 +63,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_SET_CALIBRATION = (byte) 0x9a;
     public static final byte CMD_SET_CALIBRATION_END = (byte) 0x9b;
     public static final byte CMD_CONFIG_GAMEPAD = (byte) 0x9c;
+    public static final byte CMD_CONFIG_KEYCODE = (byte) 0x9d;
 
     private static final int CMD_HEADER = 0;
     private static final int CMD_PAYLOAD = 1;
