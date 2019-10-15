@@ -35,6 +35,8 @@ public class DeviceModel {
     private int mBatteryVolt = -1;
 
     private String mDeviceFWVersion = null;
+    
+    private int mCustomButton = 0;
 
     DeviceModel() {
         mDevice = null;

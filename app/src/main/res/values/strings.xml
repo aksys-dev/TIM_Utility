@@ -193,4 +193,7 @@
     <string name="setting_o_button">Impostazioni del pulsante O</string>
     <string name="dailog_tips">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare.</string>
     <string name="dailog_tips_1">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare ora.</string>
+    <string name="list_camera">Camera</string>
+    <string name="list_screenshot">Screenshot</string>
+    <string name="list_turbo">Turbo Key</string>
 </resources>

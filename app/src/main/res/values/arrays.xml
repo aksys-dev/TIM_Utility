@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="turbo_support">
+        <item>A</item>
+        <item>B</item>
+        <item>X</item>
+        <item>Y</item>
+        <item>LB</item>
+        <item>RB</item>
+        <item>LT</item>
+        <item>RT</item>
+    </string-array>
+</resources>
