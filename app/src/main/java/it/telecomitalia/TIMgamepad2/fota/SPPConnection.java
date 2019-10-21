@@ -57,18 +57,19 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     public static final byte CMD_PARTITION_VERIFY_SUCCESS = (byte) 0x95;
     public static final byte CMD_OTA_WRITTEN_BYTES = (byte) 0x96;
     public static final byte CMD_OTA_DATA_RECEIVED = (byte) 0x97;
-    //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
     public static final byte CMD_ERROR_HEADER = (byte) 0x98;
+    public static final byte CMD_ENABLE_IMU_HID = (byte) 0x99;
     public static final byte CMD_SET_CALIBRATION = (byte) 0x9a;
     public static final byte CMD_SET_CALIBRATION_END = (byte) 0x9b;
     private static final int CMD_HEADER = 0;
     private static final int CMD_PAYLOAD = 1;
-    //    public static final byte CMD_OTA_INTENT_REBOOT = (byte) 0x98;
     private static final int IMU_FRAME_SIZE = 22;
 
     private static final byte CMD_VIBRATE_VALUE0 = (byte) 0x00;
     private static final byte CMD_VIBRATE_VALUE1 = (byte) 0x01;
     private static final byte CMD_VIBRATE_VALUE2 = (byte) 0x02;
+    
+    private static final int SUPPORT_FIRMWARE_IMU_HID = 180945;
 
     private static final int INDEX_CMD = 0;
     private static final int INDEX_STATUS = 1;
@@ -199,7 +200,11 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
 
     private void setGamePadIMU() {
-        if (mInfo.imuEnabled()) {
+        if (mInfo.imuEnabled() && mInfo.getFWVersionInt() >= SUPPORT_FIRMWARE_IMU_HID) {
+            LogUtil.d(R.string.log_enable_imu_hid_actually);
+            mConnectionThread.write(CMD_ENABLE_IMU_HID);
+        }
+        else if (mInfo.imuEnabled()) {
             LogUtil.d(R.string.log_enable_imu_actually);
             mConnectionThread.write(CMD_ENABLE_IMU);
         } else {
@@ -209,7 +214,6 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
     }
 
     public void fotaOn(byte cmd) {
-//        LogUtil.i("SPP Send: " + cmd);
         mConnectionThread.write(cmd);
     }
 

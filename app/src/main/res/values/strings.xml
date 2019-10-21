@@ -161,6 +161,7 @@
     <string name="log_do_recovery" translatable="false">Do recovery</string>
     <string name="log_device_unpaired_from_user" translatable="false">Device unpaired from user, Ignore</string>
     <string name="log_enable_imu_actually" translatable="false">Enable the IMU actually</string>
+    <string name="log_enable_imu_hid_actually" translatable="false">Enable the HID based IMU actually</string>
     <string name="log_disable_none_predefined_device" translatable="false">Disable none predefined device\'s IMU</string>
     <string name="log_cancel_sensor_calibration" translatable="false">Cancel Sensor Calibration</string>
     <string name="log_start_upgrade_process" translatable="false">Start upgrade process</string>

@@ -80,6 +80,12 @@ public class DeviceModel {
     public String getFWVersion() {
         return mDeviceFWVersion;
     }
+    
+    public int getFWVersionInt() {
+        if (mDeviceFWVersion != null) {
+            return Integer.parseInt(mDeviceFWVersion);
+        } else return -1;
+    }
 
     public void setFirmwareVersion(String version) {
         mDeviceFWVersion = version;
