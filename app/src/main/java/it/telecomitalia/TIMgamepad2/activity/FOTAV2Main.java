@@ -87,9 +87,7 @@ public class FOTAV2Main extends AppCompatActivity {
     //private BluetoothDeviceManager mDeviceManager;
 
     private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
-    private ProxyManager mProxyManager;// = ProxyManager.getInstance();
-
-    private MagicKey[] mMagicKeys = new MagicKey[]{new MagicKey(102, 0), new MagicKey(103, 1), new MagicKey(21, 2), new MagicKey(19, 3), new MagicKey(20, 4), new MagicKey(22, 5),};
+    private ProxyManager mProxyManager = ProxyManager.getInstance();
 
     private int mMagicIndex = 0;
     private String targetDeviceMac = "none";
@@ -160,8 +158,7 @@ public class FOTAV2Main extends AppCompatActivity {
 //        }
         textSeekBarValue.setText(String.valueOf(restoreValue));
         seekBarSensitivity.setProgress((int) (restoreValue * 100));
-
-
+        
 //        LogUtil.i("calibrationEnabled-> " + calibrationEnabled);
 //        LogUtil.i("sensitivity Value-> " + restoreValue);
 //        LogUtil.i("progress-> " + seekBarSensitivity.getProgress());
@@ -581,46 +578,5 @@ public class FOTAV2Main extends AppCompatActivity {
         GamepadVO g = new GamepadVO(getString(R.string.gamepad_one) + (model.getIndicator() + 1), model.getMACAddress(), model.getBatterVolt(), model.getFWVersion(), model.online(), mgr.getNewVersion().getmVersion());
         gamepadDatas.add(g);
     }
-
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-//        switch (event.getAction()) {
-//
-//            case KeyEvent.ACTION_UP:
-//	            //LogUtil.logKeyEvent( event );
-//                if (mMagicIndex == mMagicKeys[mMagicIndex].getIndex() && event.getKeyCode() == mMagicKeys[mMagicIndex].getKeyCode()) {
-//                    mMagicIndex++;
-////                    LogUtil.d("Keycode " + event.getKeyCode() + "; Index =" + mMagicIndex);
-//                    if (mMagicIndex == 6) {
-////                        Toast.makeText(FOTAV2Main.this, "Magic key!!!", Toast.LENGTH_LONG).show();
-//                        Intent dialogIntent = new Intent(FOTAV2Main.this, BackDoor.class);
-//                        dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                        startActivity(dialogIntent);
-//                        mMagicIndex = 0;
-//                    }
-//                } else {
-//                    mMagicIndex = 0;
-//                }
-//                break;
-//        }
-        return super.dispatchKeyEvent(event);
-    }
-
-    private class MagicKey {
-        private int mKeyCode;
-        private int mIndex;
-
-        MagicKey(int keyCode, int index) {
-            this.mKeyCode = keyCode;
-            this.mIndex = index;
-        }
-
-        int getKeyCode() {
-            return mKeyCode;
-        }
-
-        int getIndex() {
-            return mIndex;
-        }
-    }
+    
 }

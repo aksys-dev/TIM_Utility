@@ -237,13 +237,15 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 
         byte[] output = new byte[3]; // Vibrate Stream
         output[0] = CMD_MOTOR_ON;
-        if (left == 2) output[1] = CMD_VIBRATE_VALUE2;
-        else if (left == 1) output[1] = CMD_VIBRATE_VALUE1;
-        else if (left == 0) output[1] = CMD_VIBRATE_VALUE0;
-
-        if (right == 2) output[2] = CMD_VIBRATE_VALUE2;
-        else if (right == 1) output[2] = CMD_VIBRATE_VALUE1;
-        else if (right == 0) output[2] = CMD_VIBRATE_VALUE0;
+        output[1] = (byte) left;
+        output[2] = (byte) right;
+//        if (left == 2) output[1] = CMD_VIBRATE_VALUE2;
+//        else if (left == 1) output[1] = CMD_VIBRATE_VALUE1;
+//        else if (left == 0) output[1] = CMD_VIBRATE_VALUE0;
+//
+//        if (right == 2) output[2] = CMD_VIBRATE_VALUE2;
+//        else if (right == 1) output[2] = CMD_VIBRATE_VALUE1;
+//        else if (right == 0) output[2] = CMD_VIBRATE_VALUE0;
         mConnectionThread.write(output);
 
     }
