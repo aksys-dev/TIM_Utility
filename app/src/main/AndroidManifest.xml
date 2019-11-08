@@ -45,7 +45,8 @@
             android:theme="@style/MyDialog" />
         <activity
             android:name=".activity.UpgradeUIActivity"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:configChanges="keyboardHidden|orientation|keyboard" />
         <activity android:name=".activity.FotaMainActivity" />
 
         <receiver android:name=".service.UpdatePowerOnReceiver">
