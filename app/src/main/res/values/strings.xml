@@ -113,7 +113,7 @@
     <string name="upgrading_gamepad_failed">Aggiornamento fallito, Per favore, smetti e riprova</string>
     <string name="upgrading_connection_failed">Si è verificato un errore durante la comunicazione con i dati del gamepad. Reimposta il gamepad e riprova.</string>
     <string name="upgrading_connection_timeout">La richiesta di aggiornamento è scaduta, riprova più tardi.</string>
-    <string name="dailog_tips">Nuovo aggiornamento disponibile per il TIM Gamepad. Premi CONFERMA per installare.</string>
+    <string name="dailog_tips">"Nuovo aggiornamento per il sensore di movimento del TIM Gamepad.\nL’aggiornamento scollegherà il TIM Gamepad dal TIM Box.\nPer procedere premere CONFERMA."</string>
     <string name="utility_service_restarting">"Connecting&#8230;"</string>
     <string name="gamepad_service_running">The TIM Gamepad service is running</string>
     <string name="no_gamepad">Nessun gamepad</string>
@@ -189,4 +189,7 @@
     <string name="log_device_cached" translatable="false">Device cached:%s</string>
     <string name="log_no_existed_device_info" translatable="false">No existed device info, Now init: %s</string>
     <string name="log_do_restore" translatable="false">Do restore: %s</string>
+    <string name="upgrade_success_need_repair_message">TIM Gamepad è stato aggiornato alla nuova versione ma è scollegato. Associa il TIM Gamepad al TIM Box in\nImpostazioni &gt; Telecomando e accessori &gt; Aggiungi accessorio.</string>
+    <string name="upgrade_success_reboot">Accendere il gamepad</string>
+    <string name="confirm">CONFERMA</string>
 </resources>

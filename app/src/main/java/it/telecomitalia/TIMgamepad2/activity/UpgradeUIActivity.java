@@ -1,13 +1,13 @@
 package it.telecomitalia.TIMgamepad2.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -42,6 +42,7 @@ import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_CONNECTION_ERROR;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_FAILED;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_TIMEOUT;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_CHECK;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_DOWNLOADING;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
@@ -60,8 +61,12 @@ public class UpgradeUIActivity extends Activity {
     private DeviceModel mTargetDevice;
 
     private String targetDeviceMAC = "none";
+    
+    static final int REPAIR_TARGET_FIRMWARE = 180945;
 
     private boolean aborted = false;
+    private boolean isInstalled = false;
+    private int beforeFirmware = -1;
 
 //    private IntentFilter makeFilter() {
 //        IntentFilter intentFilter = new IntentFilter();
@@ -89,6 +94,7 @@ public class UpgradeUIActivity extends Activity {
         initUI();
         initializeBluetoothManager();
         mTargetDevice = mGamePadDeviceManager.getDeviceModelByAddress(targetDeviceMAC);
+        beforeFirmware = mTargetDevice.getFWVersionInt();
     }
 
     @Override
@@ -158,7 +164,7 @@ public class UpgradeUIActivity extends Activity {
         if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_CONNECTED)) {
 //            Toast.makeText(this, "Upgrade UI received GamePad connected", Toast.LENGTH_LONG).show();
 //            LogUtil.d("Upgrade UI received GamePad connected");
-        } else if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED)) {
+        } else if (!isInstalled && event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED)) {
 //            Toast.makeText(this, "GamePad disconnected", Toast.LENGTH_LONG).show();
 //            LogUtil.d("Upgrade UI received GamePad disconnected");
             String mac = event.getMAC();
@@ -191,19 +197,17 @@ public class UpgradeUIActivity extends Activity {
         mDoneButton.setOnClickListener(listener);
         mDoneButton.setVisibility(View.GONE);
     }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-    }
+    
 
     private void displayUpgradeStatus(FotaEvent event) {
         if (!aborted) {
             switch (event.getEventName()) {
                 case FOTA_STAUS_DOWNLOADING:
-                    mProgressText.setText(R.string.upgrade_download);
-                    mUpdateProgressBar.setProgress(10);
-                    startUpgradeProcess();
+                    if(!mUpdateProgressBar.isIndeterminate()) {
+                        mProgressText.setText(R.string.upgrade_download);
+                        mUpdateProgressBar.setProgress(10);
+                        startUpgradeProcess();
+                    }
                     break;
                 case FOTA_STAUS_FLASHING:
 //                LogUtil.d("status " + event.getStatus());
@@ -211,29 +215,57 @@ public class UpgradeUIActivity extends Activity {
                     mUpdateProgressBar.setProgress(20 + event.getStatus());
                     break;
                 case FOTA_STATUS_DONE:
-                    mProgressText.setText("");
                     mProgressText.setText(R.string.upgrade_done);
                     mUpdateProgressBar.setProgress(120);
                     switch (event.getStatus()) {
                         case FOTA_UPGRADE_SUCCESS:
-                            mProgressText.setText(R.string.upgrade_success);
-                            Toast.makeText(UpgradeUIActivity.this, R.string.toast_upgrade_success, Toast.LENGTH_LONG).show();
+                            isInstalled = true;
+                            mProgressText.setText(getString(R.string.upgrade_success_reboot));
+                            mUpdateProgressBar.setIndeterminate(true);
                             break;
                         case FOTA_UPGRADE_FAILURE:
                             mProgressText.setText(R.string.upgrade_failure);
-                            Toast.makeText(UpgradeUIActivity.this, R.string.toast_upgrade_failed, Toast.LENGTH_LONG).show();
+                            Toast.makeText(this, R.string.toast_upgrade_failed, Toast.LENGTH_LONG).show();
+                            CompleteInstall();
                             break;
                     }
-                    backToGamepadList();
-                    SystemClock.sleep(200);
-                    finish();
+                    break;
+                case FOTA_STATUS_CHECK:
+                    LogUtil.i("displayUpgradeStatus: " + event.getStringValues());
+                    if (beforeFirmware < REPAIR_TARGET_FIRMWARE && event.getIntValues() >=REPAIR_TARGET_FIRMWARE) {
+                        mUpdateProgressBar.setIndeterminate(false);
+                        mProgressText.setText(R.string.upgrade_success);
+                        Toast.makeText(this, R.string.toast_upgrade_success, Toast.LENGTH_LONG).show();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        builder.setMessage(getString(R.string.upgrade_success_need_repair_message));
+                        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                CompleteInstall();
+                                mTargetDevice.removeDevice();
+                            }
+                        });
+                        builder.show();
+                    }
+                    else {
+                        mProgressText.setText(R.string.upgrade_success);
+                        Toast.makeText(this, R.string.toast_upgrade_success, Toast.LENGTH_LONG).show();
+                        CompleteInstall();
+                    }
                     break;
             }
         }
     }
+    
+    private void CompleteInstall() {
+        backToGamepadList();
+        SystemClock.sleep(200);
+        finish();
+    }
 
     private void backToGamepadList() {
-        Intent intents = new Intent(UpgradeUIActivity.this, FOTA_V2.class);
+        Intent intents = new Intent(this, FOTA_V2.class);
         intents.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
         intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intents);
@@ -379,14 +411,9 @@ public class UpgradeUIActivity extends Activity {
 
         }
     }
-
+    
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        switch (event.getKeyCode()) {
-            case KeyEvent.KEYCODE_BACK:
-            case KeyEvent.KEYCODE_BUTTON_B:
-                return true;
-        }
-        return super.dispatchKeyEvent(event);
+    public void onBackPressed() {
+    
     }
 }

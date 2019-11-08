@@ -54,6 +54,7 @@ public class FileUtils {
             mConfigs.setmVersion(jsonObject.optString("versionCode"));
             mConfigs.setmDownUrl(jsonObject.optString("url"));
             mConfigs.setId(jsonObject.optString("id"));
+            LogUtil.i("Version Code: " + jsonObject.optString("versionCode") + "\nURL: " + jsonObject.optString("url"));
         } catch (Exception e) {
             // handle exception
         }

@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.model.Constant;
 import it.telecomitalia.TIMgamepad2.model.FirmwareConfig;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
@@ -73,7 +74,7 @@ public class UpgradeManager {
                     String url = model.getFabricModel().mFirmwareConfig.getmDownUrl();
                     if (url != null) {
                         String path = FileUtils.downLoadBin(url, handler);
-//                        LogUtil.d("download success " + path);
+                        LogUtil.d("download success " + path);
                         SPPConnection mainConnection = model.getSPPConnection();
                         if (mainConnection != null) {
                             mainConnection.fotaOn(SPPConnection.CMD_ENABLE_UPDATE_MODE);
@@ -150,8 +151,8 @@ public class UpgradeManager {
 
     public FirmwareConfig getNewVersion() {
         //把本地从服务器下载的json文件读取出来，获取里面的版本号
-//        getJsonFromeServer(Constant.REMOTE_CONFIG_URL_GAMEPAD1_NEW, CONFIG_FILE_NAME_GAMEPAD1);
-        getJsonFromeServer(Constant.REMOTE_CONFIG_URL_KOREA_NEW, CONFIG_FILE_NAME_GAMEPAD1);
+        if (BuildConfig.DEBUG) getJsonFromeServer(Constant.REMOTE_CONFIG_URL_KOREA_TEST_NEW, CONFIG_FILE_NAME_GAMEPAD1);
+        else getJsonFromeServer(Constant.REMOTE_CONFIG_URL_KOREA_NEW, CONFIG_FILE_NAME_GAMEPAD1);
         File file = new File(mFWPath + CONFIG_FILE_NAME_GAMEPAD1);
         FirmwareConfig config = new FirmwareConfig();
 
@@ -176,7 +177,7 @@ public class UpgradeManager {
                     int count = 0;
 
                     URL url = new URL(path);
-//                    LogUtil.i("URL: " + path);
+                    LogUtil.i("URL: " + path);
                     HttpURLConnection conection = (HttpURLConnection) url.openConnection();
                     conection.connect();
                     conection.setConnectTimeout(4000);

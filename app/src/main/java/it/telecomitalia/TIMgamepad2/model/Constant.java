@@ -25,8 +25,8 @@ public class Constant {
     /**
      * gamapd1的json地址
      */
-    public static final String REMOTE_CONFIG_URL_GAMEPAD1_NEW = "http://192.168.1.252:10006/api/device/15/firmware/latest/";
-
+    public static final String REMOTE_CONFIG_URL_KOREA_TEST_NEW = "http://192.168.200.244:8000/api/device/6/firmware/latest/";
+    
     public static final String REMOTE_CONFIG_URL_KOREA_NEW = "http://ota1.gamepadota.com:28081/api/device/6/firmware/latest/";
 
     /**

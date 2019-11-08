@@ -1,6 +1,5 @@
 package it.telecomitalia.TIMgamepad2.fota;
 
-import android.app.Application;
 import android.bluetooth.BluetoothDevice;
 import android.view.InputDevice;
 
@@ -82,7 +81,7 @@ public class DeviceModel {
     }
     
     public int getFWVersionInt() {
-        if (mDeviceFWVersion != null) {
+        if (mDeviceFWVersion != null || mDeviceFWVersion != "" || !mDeviceFWVersion.isEmpty()) {
             return Integer.parseInt(mDeviceFWVersion);
         } else return -1;
     }
@@ -178,5 +177,15 @@ public class DeviceModel {
         this.mIMUEnabled = imuEnabled;
         this.mMACAddress = address;
         this.mGamedName = name;
+    }
+    
+    public void removeDevice() {
+        if (mDevice != null)
+            try {
+                Method m = mDevice.getClass().getMethod("removeBond", (Class[]) null);
+                m.invoke(mDevice, (Object[]) null);
+            } catch (Exception e) {
+                LogUtil.e(e.getMessage());
+            }
     }
 }

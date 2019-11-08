@@ -22,6 +22,7 @@ import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_CONNECTION_ERROR;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_CHECK;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_FLASHING;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_UPGRADE_FAILURE;
@@ -239,13 +240,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
         output[0] = CMD_MOTOR_ON;
         output[1] = (byte) left;
         output[2] = (byte) right;
-//        if (left == 2) output[1] = CMD_VIBRATE_VALUE2;
-//        else if (left == 1) output[1] = CMD_VIBRATE_VALUE1;
-//        else if (left == 0) output[1] = CMD_VIBRATE_VALUE0;
-//
-//        if (right == 2) output[2] = CMD_VIBRATE_VALUE2;
-//        else if (right == 1) output[2] = CMD_VIBRATE_VALUE1;
-//        else if (right == 0) output[2] = CMD_VIBRATE_VALUE0;
+
         mConnectionThread.write(output);
 
     }
@@ -345,7 +340,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
 //            LogUtil.d("file length : " + len);
             byte[] buffer = new byte[len];
             int size = fileInputStream.read(buffer);
-//            LogUtil.i("File：" + len + " bytes. Will send：" + buffer.length + "(" + size + ") bytes. Transmitting, Please wait......");
+            String newfw = new String(buffer, 2, 6);
+            LogUtil.i( "startUpgrade: " + mFirmwareVersion + " >> " + newfw);
             if (!startUpgradeProcess(buffer)) {
                 if (handler != null)
                     handler.sendEmptyMessage(UPGRADE_CONNECTION_ERROR);
@@ -430,6 +426,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 mInfo.setFirmwareVersion(mFirmwareVersion);
                 mInfo.getFabricModel().mPreviousVersion = mFirmwareVersion;
                 mInfo.setFabricModel(mInfo.getFabricModel());
+                EventBus.getDefault().post(new FotaEvent(FOTA_STATUS_CHECK, mInfo.getDevice(), FOTA_UPGRADE_SUCCESS).setValues(mFirmwareVersion));
                 break;
             case CMD_START_FW_UPGRADE:
 //                LogUtil.d("CMD_START_FW_UPGRADE");
@@ -443,17 +440,17 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
             case CMD_GET_MODEL_CTV:
                 break;
             case CMD_ENABLE_UPDATE_MODE:
-//                LogUtil.d("CMD_ENABLE_UPDATE_MODE");
+                LogUtil.d("CMD_ENABLE_UPDATE_MODE");
                 sentDataSize = 0;
                 break;
             case CMD_DISABLE_UPDATE_MODE:
-//                LogUtil.d("CMD_DISABLE_UPDATE_MODE");
+                LogUtil.d("CMD_DISABLE_UPDATE_MODE");
                 break;
             case CMD_UPGRADE_SUCCESS:
-//                LogUtil.d("CMD_UPGRADE_SUCCESS");
+                LogUtil.d("CMD_UPGRADE_SUCCESS");
                 break;
             case CMD_UPGRADE_FAILED:
-//                LogUtil.d("CMD_UPGRADE_FAILED");
+                LogUtil.d("CMD_UPGRADE_FAILED");
                 break;
             case CMD_MOTOR_ON:
 //                LogUtil.d("CMD_MOTOR_ON");
@@ -463,7 +460,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 break;
             case CMD_GET_BAT_V:
                 mBatteryVolt = combineHighAndLowByte(data[INDEX_DATA_START], data[INDEX_DATA_START + 1]);
-//                LogUtil.d("BatteryVolt: " + mBatteryVolt);
+                LogUtil.d("BatteryVolt: " + mBatteryVolt);
                 mInfo.setBatteryVolt(mBatteryVolt);
                 //Enable IMU if android 7 or higher version
                 if (!checked) {
