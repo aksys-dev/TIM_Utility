@@ -35,7 +35,6 @@ import java.util.Timer;
 
 import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
-import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.activity.DialogActivity;
 import it.telecomitalia.TIMgamepad2.activity.FOTA_V2;
@@ -58,7 +57,6 @@ import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
 
 import static it.telecomitalia.TIMgamepad2.BuildConfig.CONFIG_FILE_NAME;
 import static it.telecomitalia.TIMgamepad2.BuildConfig.KEY_SENSITIVE;
-import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_SERVICE;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_FROM_USER;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
@@ -99,7 +97,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
     private BluetoothDeviceManager mGamepadDeviceManager;
     private UpgradeManager mUpgradeManager;
     private boolean isUpgradeMode = false;
-    private ProxyManager mProxy;
+//    private ProxyManager mProxy;
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler() {
         @Override
@@ -275,24 +273,24 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         LogUtil.i("Adapter (Re)started");
     }
 
-    private void checkDriver() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!mProxy.ready()) {
-                    if (waiting_counter++ < 60)
-                        LogUtil.d(getString(R.string.log_waiting_imu_driver_ready));
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                LogUtil.i("SPP to Sensor Driver Ready.");
-                driverReady = true;
-            }
-        }).start();
-    }
+//    private void checkDriver() {
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (!mProxy.ready()) {
+//                    if (waiting_counter++ < 60)
+//                        LogUtil.d(getString(R.string.log_waiting_imu_driver_ready));
+//                    try {
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//                LogUtil.i("SPP to Sensor Driver Ready.");
+//                driverReady = true;
+//            }
+//        }).start();
+//    }
 
     private Notification buildForegroundNotification(Context context) {
 
@@ -336,16 +334,16 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         LogUtil.d(String.format(getString(R.string.log_running_api), Build.VERSION.SDK_INT));
         float sensitivityValue = (float) SharedPreferenceUtils.get(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, 1.0f);
         LogUtil.d(String.format(getString(R.string.log_sensor_sensitivity), String.valueOf(sensitivityValue)));
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
-            mProxy = ProxyManager.getInstance();
-            checkDriver();
-            if (mProxy != null) {
-//                mProxy.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
-                mProxy.setSensitivity((byte) (sensitivityValue * 100));
-            } else {
-                LogUtil.e(getString(R.string.loge_socket_driver_not_ready));
-            }
-        }
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
+//            mProxy = ProxyManager.getInstance();
+//            checkDriver();
+//            if (mProxy != null) {
+////                mProxy.send(new byte[]{0x07, (byte) (sensitivityValue * 10)});
+//                mProxy.setSensitivity((byte) (sensitivityValue * 100));
+//            } else {
+//                LogUtil.e(getString(R.string.loge_socket_driver_not_ready));
+//            }
+//        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             BinderProxyManager mgr = BinderProxyManager.getInstance();
@@ -355,10 +353,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                 LogUtil.e(getString(R.string.loge_binder_driver_not_ready));
             }
         }
-        if (TEST_A7_ON_A8) {
-            mProxy = ProxyManager.getInstance();
-            checkDriver();
-        }
+//        if (BuildConfig.DEBUG && Build.VERSION.SDK_INT == Build.VERSION_CODES.N) {
+//            mProxy = ProxyManager.getInstance();
+//            checkDriver();
+//        }
         sp = UpdateFotaMainService.this.getSharedPreferences(CommerHelper.SPNAME, Activity.MODE_PRIVATE);
         PATH = mContext.getCacheDir() + "/firmware/";
 

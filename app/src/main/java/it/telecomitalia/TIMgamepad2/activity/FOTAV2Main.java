@@ -37,7 +37,6 @@ import it.telecomitalia.TIMgamepad2.CalibrationListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadListAdapter;
 import it.telecomitalia.TIMgamepad2.GamepadVO;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
-import it.telecomitalia.TIMgamepad2.Proxy.ProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
@@ -86,7 +85,7 @@ public class FOTAV2Main extends AppCompatActivity {
     //private BluetoothDeviceManager mDeviceManager;
 
     private BinderProxyManager mBinderProxy = BinderProxyManager.getInstance();
-    private ProxyManager mProxyManager = ProxyManager.getInstance();
+//    private ProxyManager mProxyManager = ProxyManager.getInstance();
 
     private int mMagicIndex = 0;
     private String targetDeviceMac = "none";
@@ -188,14 +187,14 @@ public class FOTAV2Main extends AppCompatActivity {
                 SharedPreferenceUtils.put(CONFIG_FILE_NAME, mContext, KEY_SENSITIVE, sensitivityValue);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     mBinderProxy.setSensitivity(sensitivityValue);
-                } else {
-                    if (BuildConfig.ANDROID_7_SUPPORT_IMU)
-                        mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
                 }
-
-                if (TEST_A7_ON_A8) {
-                    mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
-                }
+//                else if (BuildConfig.ANDROID_7_SUPPORT_IMU) {
+//                        mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
+//                }
+//
+//                if (TEST_A7_ON_A8) {
+//                    mProxyManager.setSensitivity((byte) (sensitivityValue * 100));
+//                }
             }
 
             @Override
@@ -331,13 +330,13 @@ public class FOTAV2Main extends AppCompatActivity {
             }
         }
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
-            mProxyManager = ProxyManager.getInstance();
-        }
-
-        if (TEST_A7_ON_A8) {
-            mProxyManager = ProxyManager.getInstance();
-        }
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && BuildConfig.ANDROID_7_SUPPORT_IMU) {
+//            mProxyManager = ProxyManager.getInstance();
+//        }
+//
+//        if (TEST_A7_ON_A8) {
+//            mProxyManager = ProxyManager.getInstance();
+//        }
     }
     
     //// GAMEPAD SCENE

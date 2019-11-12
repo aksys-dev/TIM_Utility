@@ -12,8 +12,10 @@ import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 public class BinderProxyManager {
 
     private static final java.lang.String DESCRIPTOR = "SensorData";
-    private static final int INJECT = android.os.IBinder.FIRST_CALL_TRANSACTION;
-    private static final int SET_SENSITIVITY = android.os.IBinder.FIRST_CALL_TRANSACTION+1;
+    private static final int SET_SENSITIVITY     = android.os.IBinder.FIRST_CALL_TRANSACTION;
+    private static final int ENABLE_IMU          = android.os.IBinder.FIRST_CALL_TRANSACTION + 1;
+    private static final int DISABLE_IMU         = android.os.IBinder.FIRST_CALL_TRANSACTION + 2;
+    private static final int INJECT_IMU_DATA     = android.os.IBinder.FIRST_CALL_TRANSACTION + 3;
 
     private IBinder mServiceBinder;
 
@@ -35,6 +37,17 @@ public class BinderProxyManager {
     public void setSensitivity(float value) {
         if (mServiceBinder != null) {
             setSensitivityValue(mServiceBinder, value);
+        }
+    }
+    
+    public void enableIMU() {
+        if (mServiceBinder != null) {
+            nativeEnableIMU(mServiceBinder);
+        }
+    }
+    public void disableIMU() {
+        if (mServiceBinder != null) {
+            nativeDisableIMU(mServiceBinder);
         }
     }
 
@@ -73,7 +86,7 @@ public class BinderProxyManager {
             _data.writeInterfaceToken(DESCRIPTOR);
             _data.writeByteArray(data);
 
-            b.transact(INJECT, _data, _reply, IBinder.FLAG_ONEWAY);
+            b.transact(INJECT_IMU_DATA, _data, _reply, IBinder.FLAG_ONEWAY);
             _reply.readException();
             _reply.readInt();
 
@@ -99,6 +112,35 @@ public class BinderProxyManager {
 
         } catch (RemoteException e) {
             //  Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            _reply.recycle();
+            _data.recycle();
+        }
+    }
+    
+    private void nativeEnableIMU(IBinder b) {
+        Parcel _data = Parcel.obtain();
+        Parcel _reply = Parcel.obtain();
+        try {
+            _data.writeInterfaceToken(DESCRIPTOR);
+            b.transact(ENABLE_IMU, _data, _reply, IBinder.FLAG_ONEWAY);
+            _reply.readException();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } finally {
+            _reply.recycle();
+            _data.recycle();
+        }
+    }
+    private void nativeDisableIMU(IBinder b) {
+        Parcel _data = Parcel.obtain();
+        Parcel _reply = Parcel.obtain();
+        try {
+            _data.writeInterfaceToken(DESCRIPTOR);
+            b.transact(DISABLE_IMU, _data, _reply, IBinder.FLAG_ONEWAY);
+            _reply.readException();
+        } catch (RemoteException e) {
             e.printStackTrace();
         } finally {
             _reply.recycle();
