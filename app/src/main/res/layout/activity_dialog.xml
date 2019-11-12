@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/dialog_btn"
             android:padding="8dp"
-            android:text="@string/confirm"
+            android:text="@string/upgrade"
             android:textColor="#80cbc4"
             android:textSize="18sp" />
     </LinearLayout>
