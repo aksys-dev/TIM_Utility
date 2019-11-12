@@ -242,7 +242,7 @@ public class FileUtils {
             // closing streams
             output.close();
             input.close();
-            handler.sendEmptyMessage(2);
+            handler.sendEmptyMessage(2); // what = 2;
         } catch (Exception e) {
 
         }

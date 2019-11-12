@@ -65,6 +65,7 @@ import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_KEY;
 import static it.telecomitalia.TIMgamepad2.activity.DialogActivity.INTENT_MAC;
 import static it.telecomitalia.TIMgamepad2.fota.AttachDevice.getConnectedTargetDevice;
 import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_CONNECTED;
+import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_CHECK;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STAUS_DOWNLOADING;
 
 
@@ -124,7 +125,10 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
                     }
                     break;
                 case 2:
-                    //固件下载完回到这里,弹出对话框提示用户升级
+                    // 固件下载完回到这里,弹出对话框提示用户升级
+                    // 펌웨어 다운로드가 완료되면이 대화 상자로 돌아가서 팝업 대화 상자에 사용자에게 업그레이드하라는 메시지가 표시됩니다.
+                    // After the firmware download is finished, return to this, a pop-up dialog box prompts the user to upgrade.
+                    // FileUtils.java:245
                     LogUtil.i("Firmware download finished");
                     if (!isTopActivityGamepad()) {
                         if (!isshowndialog) {
@@ -148,6 +152,7 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+	        LogUtil.i("onReceive: getAction: " + action);
 
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 //            LogUtil.d("Daniel ACTION:" + action);
@@ -375,17 +380,39 @@ public class UpdateFotaMainService extends Service implements GamePadListener {
 
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void getEvent(final String s) {
-        if (s.equals("enter")) {
-            isEnterFotaMainActivity = true;
-            if (isConnect) {
-                if (mainConnection != null) {
+    public void getEvent(final Object s) {
+        if (s instanceof String) {
+            if (s.equals("enter")) {
+                isEnterFotaMainActivity = true;
+                if (isConnect && mainConnection != null) {
                     EventBus.getDefault().postSticky(mainConnection);
                 }
+            } else if (s.equals("outer")) {
+                LogUtil.i(getString(R.string.log_exited_FotaMainActivity));
+                isEnterFotaMainActivity = false;
             }
-        } else if (s.equals("outer")) {
-            LogUtil.i(getString(R.string.log_exited_FotaMainActivity));
-            isEnterFotaMainActivity = false;
+        } else if (s instanceof FotaEvent) {
+            if (((FotaEvent) s).getEventName() == FOTA_STATUS_CHECK) {
+                ArrayList<DeviceModel> deviceList = mGamepadDeviceManager.getNeedUpgradedDevice(mUpgradeManager.getNewVersion());
+                boolean online = false;
+    
+                for (DeviceModel model : deviceList) {
+                    LogUtil.d("Device online? " + model.online());
+                    if (model.online()) {
+                        online = true;
+                        break;
+                    }
+                }
+                if (!online) {
+                    LogUtil.d("Device not online");
+                    return;
+                }
+                LogUtil.d("Need upgrade");
+                Intent dialogIntent = new Intent(this, DialogActivity.class);
+                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                dialogIntent.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
+                startActivity(dialogIntent);
+            }
         }
     }
 
