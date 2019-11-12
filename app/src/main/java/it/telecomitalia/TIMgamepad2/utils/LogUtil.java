@@ -155,9 +155,9 @@ public class LogUtil {
 
     public static String getFileLineMethod() {
         StackTraceElement traceElement = ((new Exception()).getStackTrace())[2];
-        StringBuffer toStringBuffer = new StringBuffer("[")
-                .append(traceElement.getFileName()).append("|")
-                .append(traceElement.getLineNumber()).append("|")
+        StringBuffer toStringBuffer = new StringBuffer("[(")
+                .append(traceElement.getFileName()).append(":")
+                .append(traceElement.getLineNumber()).append(")")
                 .append(traceElement.getMethodName()).append("]  ");
         return toStringBuffer.toString();
     }
