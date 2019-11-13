@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.Timer;
 
-import it.telecomitalia.TIMgamepad2.BuildConfig;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.activity.DialogActivity;

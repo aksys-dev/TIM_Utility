@@ -1,10 +1,6 @@
 package it.telecomitalia.TIMgamepad2;
 
 import android.app.Application;
-import android.os.Build;
-
-import com.crashlytics.android.answers.Answers;
-import com.crashlytics.android.answers.LoginEvent;
 
 import it.telecomitalia.TIMgamepad2.fota.FabricController;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;

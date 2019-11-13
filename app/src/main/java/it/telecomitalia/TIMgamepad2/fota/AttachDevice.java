@@ -3,8 +3,6 @@ package it.telecomitalia.TIMgamepad2.fota;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.util.Log;
-
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
