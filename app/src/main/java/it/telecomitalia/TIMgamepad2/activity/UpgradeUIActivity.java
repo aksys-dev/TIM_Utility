@@ -259,8 +259,6 @@ public class UpgradeUIActivity extends Activity {
     }
     
     private void CompleteInstall() {
-        backToGamepadList();
-        SystemClock.sleep(200);
         finish();
     }
 
@@ -274,8 +272,6 @@ public class UpgradeUIActivity extends Activity {
     private View.OnClickListener listener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            backToGamepadList();
-            SystemClock.sleep(200);
             finish();
         }
     };

@@ -96,7 +96,7 @@ public class SetupIMUActivity extends AppCompatActivity {
                 sensitivityValue = (float) ((progress) / 100.0);
                 textSeekBarValue.setText(String.valueOf(sensitivityValue));
                 SharedPreferenceUtils.put(CONFIG_FILE_NAME, context, KEY_SENSITIVE, sensitivityValue);
-
+                mBinderProxy.setSensitivity(sensitivityValue);
                 // TODO: Check is Proxy need
 //                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //                    mBinderProxy.setSensitivity(sensitivityValue);

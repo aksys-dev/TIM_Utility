@@ -32,14 +32,14 @@ public class DialogActivity extends Activity {
         Intent i = getIntent();  //直接获取传过来的intent
         final String targetMAC = i.getStringExtra(INTENT_MAC);
         final String whereFrom = i.getStringExtra(INTENT_KEY);
-
+        dialog_ok.requestFocus();
         dialog_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 LogUtil.d("OK button clicked");
 
                 if (whereFrom.equals(INTENT_FROM_SERVICE)) {
-                    Intent intents = new Intent(DialogActivity.this, FOTA_V2.class);
+                    Intent intents = new Intent(DialogActivity.this, GamepadActivity.class);
                     intents.putExtra(INTENT_KEY, INTENT_FROM_SERVICE);
                     intents.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intents);

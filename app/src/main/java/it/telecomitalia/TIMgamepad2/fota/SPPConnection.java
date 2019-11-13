@@ -13,13 +13,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import it.telecomitalia.TIMgamepad2.BuildConfig;
+import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
 import it.telecomitalia.TIMgamepad2.Proxy.BinderProxyManager;
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.model.FotaEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
-import static it.telecomitalia.TIMgamepad2.BuildConfig.TEST_A7_ON_A8;
 import static it.telecomitalia.TIMgamepad2.fota.UpgradeManager.UPGRADE_CONNECTION_ERROR;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_CHECK;
 import static it.telecomitalia.TIMgamepad2.model.FotaEvent.FOTA_STATUS_DONE;
@@ -428,6 +427,9 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 LogUtil.d("CMD_ENABLE_IMU");
                 mBinderProxy.enableIMU();
                 break;
+            case CMD_ENABLE_IMU_HID:
+                LogUtil.d("CMD_ENABLE_IMU_HID");
+                break;
             case CMD_DISABLE_IMU:
                 LogUtil.d("CMD_DISABLE_IMU");
                 mBinderProxy.disableIMU();
@@ -482,7 +484,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 mInfo.setBatteryVolt(mBatteryVolt);
                 //Enable IMU if android 7 or higher version
                 if (!checked) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || BuildConfig.ANDROID_7_SUPPORT_IMU) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || GamePadV2UpgadeApplication.IS_DEBUG) {
                         setGamePadIMU();
                     }
                     mGamepadListener.onSetupStatusChanged(true, mInfo.getDevice());
@@ -518,8 +520,8 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                         //Use binder instead of socket on android 8 or higher version
                         event = new byte[]{ 0x09, data[ 6 ], data[ 7 ], data[ 8 ], data[ 9 ], data[ 10 ], data[ 11 ],
                                 gyros[ 0 ], gyros[ 1 ], gyros[ 2 ], gyros[ 3 ], gyros[ 4 ], gyros[ 5 ] };
-                        mBinderProxy.send(event);
-
+//                        LogUtil.i(String.format("SPPSensor: %d\t%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+//                                event[0], event[1],event[2],event[3],event[4],event[5],event[6],event[7],event[8],event[9],event[10],event[11],event[12] ));
 //                            (byte) (data[12] - byteGyroZero[0]), (byte) (data[13] - byteGyroZero[1]), (byte) (data[14] - byteGyroZero[2]),
 //                            (byte) (data[15] - byteGyroZero[3]), (byte) (data[16] - byteGyroZero[4]), (byte) (data[17] - byteGyroZero[5]) };
 
@@ -597,7 +599,7 @@ public class SPPConnection implements ConnectionReadyListener, SPPDataListener {
                 }
                 break;
             default:
-                LogUtil.w(R.string.log_unknown_command);
+                LogUtil.w(LogUtil.getStringResource(R.string.log_unknown_command) + " >> " + String.format("%02x", data[INDEX_CMD]));
                 break;
         }
     }
