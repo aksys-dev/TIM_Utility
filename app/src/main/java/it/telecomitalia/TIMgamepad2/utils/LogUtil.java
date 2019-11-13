@@ -17,7 +17,7 @@ import it.telecomitalia.TIMgamepad2.GamePadV2UpgadeApplication;
  * @author czy
  */
 public class LogUtil {
-    private static final boolean DEBUG = GamePadV2UpgadeApplication.isDebug;
+    private static final boolean DEBUG = GamePadV2UpgadeApplication.IS_DEBUG;
 
     //private static String TUTONG_LOG_FILE = getSDPath() + "/gamepadv2upagde_log.log";
 
