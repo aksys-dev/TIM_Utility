@@ -28,7 +28,11 @@
         android:theme="@style/AppTheme"
         android:persistent="true"
         tools:ignore="GoogleAppIndexingWarning">
-
+        <activity
+            android:name=".activity.GamepadActivity"
+            android:label="@string/title_gamepad"
+            android:launchMode="singleTask"
+            android:parentActivityName=".activity.FOTAV2Main"></activity>
         <activity
             android:name=".activity.FOTA_V2"
             android:configChanges="keyboardHidden|orientation|mcc|mnc|uiMode|locale|keyboard">
@@ -38,18 +42,28 @@
                 <action android:name="technicolor.intent.action.MANAGE_PARTNER_ACCESSORY" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.FOTAV2Main" android:label="@string/app_name" />
-        <activity android:name=".activity.GamepadActivity" android:label="@string/title_gamepad" android:parentActivityName=".activity.FOTAV2Main" />
-        <activity android:name=".activity.SetupIMUActivity" android:label="@string/menu_imu" android:parentActivityName=".activity.FOTAV2Main" />
-        <activity android:name=".activity.AboutActivity" android:label="@string/menu_about" android:parentActivityName=".activity.FOTAV2Main" />
+        <activity
+            android:name=".activity.FOTAV2Main"
+            android:launchMode="singleTop"
+            android:label="@string/app_name" />
+        <activity
+            android:name=".activity.SetupIMUActivity"
+            android:label="@string/menu_imu"
+            android:launchMode="singleTask"
+            android:parentActivityName=".activity.FOTAV2Main" />
+        <activity
+            android:name=".activity.AboutActivity"
+            android:label="@string/menu_about"
+            android:launchMode="singleTask"
+            android:parentActivityName=".activity.FOTAV2Main" />
         <activity
             android:name=".activity.DialogActivity"
             android:launchMode="singleTask"
             android:theme="@style/MyDialog" />
         <activity
             android:name=".activity.UpgradeUIActivity"
-            android:launchMode="singleTask"
-            android:configChanges="keyboardHidden|orientation|keyboard" />
+            android:configChanges="keyboardHidden|orientation|keyboard"
+            android:launchMode="singleTask" />
         <activity android:name=".activity.FotaMainActivity" />
 
         <receiver android:name=".service.UpdatePowerOnReceiver">
@@ -88,7 +102,7 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".activity.SensorCalibrationActivity"></activity>
+        <activity android:name=".activity.SensorCalibrationActivity" />
     </application>
 
 </manifest>
