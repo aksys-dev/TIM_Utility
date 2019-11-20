@@ -75,21 +75,19 @@ public class LogUtil {
     }
 
     public static void w(String TAG, String msg) {
-        if (DEBUG) {
-            Log.w(TAG, "[" + getFileLineMethod() + "]" + msg);
-        }
+        Log.w(TAG, "[" + getFileLineMethod() + "]" + msg);
     }
 
     public static void w(String msg) {
-        if (DEBUG) Log.w(TAG, getFileLineMethod() + msg);
+        Log.w(TAG, getFileLineMethod() + msg);
     }
 
     public static void w(int msgRes) {
-        if (DEBUG) Log.w(TAG, getFileLineMethod() + getStringResource(msgRes));
+        Log.w(TAG, getFileLineMethod() + getStringResource(msgRes));
     }
 
     public static void w(int msgResource, Object... args) {
-        if (DEBUG) Log.w(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
+        Log.w(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
     }
 
     public static void i(String TAG, String msg) {
@@ -117,17 +115,15 @@ public class LogUtil {
     }
 
     public static void e(String msg) {
-        if (DEBUG) {
-            Log.e(TAG, getLineMethod() + msg);
-        }
+        Log.e(TAG, getLineMethod() + msg);
     }
 
     public static void e(int msgRes) {
-        if (DEBUG) Log.e(TAG, getFileLineMethod() + getStringResource(msgRes));
+        Log.e(TAG, getFileLineMethod() + getStringResource(msgRes));
     }
 
     public static void e(int msgResource, Object... args) {
-        if (DEBUG) Log.e(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
+        Log.e(TAG, getLineMethod() + String.format(getStringResource(msgResource), args));
     }
 
     public static void l() {
@@ -137,7 +133,7 @@ public class LogUtil {
     }
 
     public static void e(String TAG, String msg) {
-        if (DEBUG) Log.e(TAG, getLineMethod() + msg);
+        Log.e(TAG, getLineMethod() + msg);
     }
 
 //    public static void f(String TAG, String msg) {
