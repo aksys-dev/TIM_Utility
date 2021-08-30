@@ -1,14 +1,11 @@
 package it.telecomitalia.TIMgamepad2.Proxy;
 
-
-import android.net.LocalServerSocket;
 import android.net.LocalSocket;
+import android.net.LocalSocketAddress;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-//import java.net.InetAddress;
-//import java.net.Socket;
 
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
@@ -17,11 +14,9 @@ public class ProxyTransmitter extends Thread {
 
     private final String SOCKET_ADDRESS = "aks_v_imu_data_socket";
     private LocalSocket soc = null;
-    private LocalServerSocket lss = null;
     private DataOutputStream mOutput = null;
     private DataInputStream mInput = null;
 
-//    private InetAddress mTargetAddress;
     private boolean mInitiated = false;
     private final ProxyStatusListener mListener;
 
@@ -40,12 +35,11 @@ public class ProxyTransmitter extends Thread {
 //            LogUtil.e("IOException: " + e.toString());
 //        }
         while (true) {
-            if (lss == null && soc == null) {
+            if (soc == null) {
                 try {
 //                    LogUtil.d("socket", "new socket");
-                    lss = new LocalServerSocket(SOCKET_ADDRESS);
                     soc = new LocalSocket();
-                    soc.connect(lss.getLocalSocketAddress());
+                    soc.connect(new LocalSocketAddress(SOCKET_ADDRESS));
 //                    soc.setTcpNoDelay(true);
                     mInput = new DataInputStream(soc.getInputStream());
                     mOutput = new DataOutputStream(soc.getOutputStream());
