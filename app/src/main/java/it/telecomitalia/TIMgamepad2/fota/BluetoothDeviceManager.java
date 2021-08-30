@@ -145,7 +145,7 @@ public class BluetoothDeviceManager {
     private synchronized DeviceModel getTarget(String key) {
         if (mDevices != null) {
             for (DeviceModel model : mDevices) {
-                if (model.getMACAddress().equals(key)) {
+                if (model.getMACAddress() != null && model.getMACAddress().equals(key)) {
                     return model;
                 }
             }

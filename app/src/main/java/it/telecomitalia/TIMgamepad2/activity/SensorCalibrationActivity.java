@@ -2,18 +2,24 @@ package it.telecomitalia.TIMgamepad2.activity;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager;
 import it.telecomitalia.TIMgamepad2.fota.DeviceModel;
 import it.telecomitalia.TIMgamepad2.fota.SensorCalibrationEvent;
+import it.telecomitalia.TIMgamepad2.utils.GamePadEvent;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 import it.telecomitalia.TIMgamepad2.utils.SharedPreferenceUtils;
+
+import static it.telecomitalia.TIMgamepad2.fota.BluetoothDeviceManager.EVENTBUT_MSG_GP_DEVICE_DISCONNECTED;
 
 public class SensorCalibrationActivity extends AppCompatActivity {
 	BluetoothDeviceManager deviceManager;
@@ -57,6 +63,25 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 //			Toast.makeText( this, "Wrong ", Toast.LENGTH_SHORT ).show();
 		}
 	}
+	@Override
+	protected void onStart() {
+		super.onStart();
+		EventBus.getDefault().register(this);
+	}
+	
+	@Override
+	protected void onStop() {
+		super.onStop();
+		EventBus.getDefault().unregister(this);
+	}
+	
+	@Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+	public void onEvent(GamePadEvent event) {
+		if (event.getMessage().equals(EVENTBUT_MSG_GP_DEVICE_DISCONNECTED)) {
+			LogUtil.d("GamePad disconnected");
+			onBackPressed();
+		}
+	}
 	
 	@Override
 	public void onBackPressed() {
@@ -72,17 +97,23 @@ public class SensorCalibrationActivity extends AppCompatActivity {
 	
 	public void SetGamepadEvent(String name, String address) {
 		LogUtil.d( name + " - " + address );
-		device = deviceManager.getDeviceModelByAddress( address );
-		if (device == null) {
-			LogUtil.w( "Not Found Device!" );
-			super.onBackPressed();
+		
+		if (address == null) close();
+		else device = deviceManager.getDeviceModelByAddress( address );
+		
+		if (device == null) close();
+		else {
+			calibrationMessage.setText(getString(R.string.Calibration) + " " + name);
+			normalMessage.setText(R.string.gamepad_calibration_first);
+			
+			device.getSPPConnection().setCalibrationEventListener(calibrationEvent);
+			handler.postDelayed(SetCalibrationSoftly, USER_WAIT_TIME);
 		}
-		
-		calibrationMessage.setText( getString( R.string.Calibration ) + " " + name );
-		normalMessage.setText( R.string.gamepad_calibration_first );
-		
-		device.getSPPConnection().setCalibrationEventListener( calibrationEvent );
-		handler.postDelayed( SetCalibrationSoftly, USER_WAIT_TIME );
+	}
+	
+	public void close() {
+		LogUtil.w( "Not Found Device!" );
+		super.onBackPressed();
 	}
 	
 	Runnable SetCalibrationSoftly = new Runnable() {

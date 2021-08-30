@@ -8,8 +8,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
-import android.support.v7.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -21,8 +21,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
-import com.crashlytics.android.Crashlytics;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -391,7 +389,7 @@ public class FOTAV2Main extends AppCompatActivity {
             gamepadDatas.add(g);
         } else {
             for (DeviceModel model : models) {
-                if (!model.getMACAddress().equals(INIT_ADDRESS)) {
+                if (model.getMACAddress() != null && !model.getMACAddress().equals(INIT_ADDRESS)) {
                     EventAddGamepad(model);
                     list++;
                 }
@@ -548,7 +546,7 @@ public class FOTAV2Main extends AppCompatActivity {
     public void getEvent(final Object object) {
         if (object instanceof BluetoothDevice) {
             BluetoothDevice bluetoothDevice = (BluetoothDevice) object;
-            Crashlytics.log(Log.INFO, "FOTA2", "Detected Bluetooth: " + bluetoothDevice.getAddress());
+//            Crashlytics.log(Log.INFO, "FOTA2", "Detected Bluetooth: " + bluetoothDevice.getAddress());
             EventAddGamepad(bluetoothDevice.getAddress());
         }
 //        else if ((object instanceof String) && ((String)object).contains("BlueTooth_Connected")) {
