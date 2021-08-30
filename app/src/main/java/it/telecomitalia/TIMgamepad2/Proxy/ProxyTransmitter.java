@@ -1,25 +1,29 @@
 package it.telecomitalia.TIMgamepad2.Proxy;
 
 
+import android.net.LocalServerSocket;
+import android.net.LocalSocket;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
+//import java.net.InetAddress;
+//import java.net.Socket;
 
 import it.telecomitalia.TIMgamepad2.R;
 import it.telecomitalia.TIMgamepad2.utils.LogUtil;
 
 public class ProxyTransmitter extends Thread {
 
-    private Socket soc = null;
-
+    private final String SOCKET_ADDRESS = "aks_v_imu_data_socket";
+    private LocalSocket soc = null;
+    private LocalServerSocket lss = null;
     private DataOutputStream mOutput = null;
     private DataInputStream mInput = null;
 
-    private InetAddress mTargetAddress;
+//    private InetAddress mTargetAddress;
     private boolean mInitiated = false;
-    private ProxyStatusListener mListener;
+    private final ProxyStatusListener mListener;
 
     ProxyTransmitter(ProxyStatusListener listener) {
         mListener = listener;
@@ -28,19 +32,21 @@ public class ProxyTransmitter extends Thread {
 
     @Override
     public void run() {
-        final int PORT = 9529;
-        try {
-            mTargetAddress = InetAddress.getLocalHost();
-            LogUtil.e("Local IP address is " + mTargetAddress.getHostAddress());
-        } catch (IOException e) {
-            LogUtil.e("IOException: " + e.toString());
-        }
+//        final int PORT = 9529;
+//        try {
+//            mTargetAddress = InetAddress.getLocalHost();
+//            LogUtil.e("Local IP address is " + mTargetAddress.getHostAddress());
+//        } catch (IOException e) {
+//            LogUtil.e("IOException: " + e.toString());
+//        }
         while (true) {
-            if (soc == null) {
+            if (lss == null && soc == null) {
                 try {
 //                    LogUtil.d("socket", "new socket");
-                    soc = new Socket(mTargetAddress, PORT);
-                    soc.setTcpNoDelay(true);
+                    lss = new LocalServerSocket(SOCKET_ADDRESS);
+                    soc = new LocalSocket();
+                    soc.connect(lss.getLocalSocketAddress());
+//                    soc.setTcpNoDelay(true);
                     mInput = new DataInputStream(soc.getInputStream());
                     mOutput = new DataOutputStream(soc.getOutputStream());
                 } catch (IOException e) {
